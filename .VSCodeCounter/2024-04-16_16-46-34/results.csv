@@ -1,0 +1,13 @@
+"filename", "language", "Rust", "TOML", "comment", "blank", "total"
+"g:\Projects\Bachelor-Thesis\ikaros\Cargo.lock", "TOML", 0, 65, 2, 10, 77
+"g:\Projects\Bachelor-Thesis\ikaros\Cargo.toml", "TOML", 0, 7, 1, 3, 11
+"g:\Projects\Bachelor-Thesis\ikaros\src\contextgen.rs", "Rust", 2, 0, 0, 1, 3
+"g:\Projects\Bachelor-Thesis\ikaros\src\contextgen\context.rs", "Rust", 33, 0, 0, 4, 37
+"g:\Projects\Bachelor-Thesis\ikaros\src\contextgen\contextgenerator.rs", "Rust", 372, 0, 36, 21, 429
+"g:\Projects\Bachelor-Thesis\ikaros\src\ir.rs", "Rust", 4, 0, 0, 1, 5
+"g:\Projects\Bachelor-Thesis\ikaros\src\ir\base.rs", "Rust", 21, 0, 0, 2, 23
+"g:\Projects\Bachelor-Thesis\ikaros\src\ir\id.rs", "Rust", 11, 0, 0, 4, 15
+"g:\Projects\Bachelor-Thesis\ikaros\src\ir\ir_type.rs", "Rust", 33, 0, 0, 4, 37
+"g:\Projects\Bachelor-Thesis\ikaros\src\ir\variant.rs", "Rust", 11, 0, 0, 1, 12
+"g:\Projects\Bachelor-Thesis\ikaros\src\main.rs", "Rust", 24, 0, 0, 2, 26
+"Total", "-", 511, 72, 39, 53, 675
