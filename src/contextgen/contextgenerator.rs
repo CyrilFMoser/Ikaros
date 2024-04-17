@@ -70,7 +70,8 @@ impl ContextGenerator {
         let mut variants = Vec::new();
         for _ in 0..num_variants {
             // TODO: Allow some variants to instantiate their bases, for scala inheritance.
-            variants.push(self.generate_variant(id, &typargs));
+            let variant = self.generate_variant(id, &typargs, &variants);
+            variants.push(variant);
         }
         let base = Base::new(
             id,
@@ -81,7 +82,12 @@ impl ContextGenerator {
         self.custom_types.push(id);
     }
 
-    fn generate_variant(&mut self, bas_id: BasId, typargs: &Vec<GenId>) -> VarId {
+    fn generate_variant(
+        &mut self,
+        bas_id: BasId,
+        typargs: &Vec<GenId>,
+        other_vars: &Vec<VarId>,
+    ) -> VarId {
         let id = VarId(self.variants_count);
         self.variants_count += 1;
         let param_count = self.rng.gen_range(0..=self.ctxt_args.max_variant_params);
@@ -90,6 +96,15 @@ impl ContextGenerator {
             params.push(self.generate_parameter(bas_id, typargs));
         }
         let new_typargs = typargs.clone().into_iter().map(Type::Generic).collect();
+        /*  TODO:
+            For each type argument:
+            - Decide if we want to instantiate it
+                - If we do, decide if we want to use an instantiation of another variant of this base
+                - Otherwise get a Primitive, or custom type to instantiate
+                - Instantiate the variant
+                - Add it
+                - Somehow handle conflict with original base
+        */
         self.add_variant(Variant {
             id,
             base: Some(bas_id),
