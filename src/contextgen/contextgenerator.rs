@@ -17,7 +17,7 @@ pub struct ContextGenerator {
     base_count: usize,
     variants_count: usize,
     generics_count: usize,
-    custom_types: Vec<BasId>,
+    custom_types: Vec<BasId>, // contains only base declarations, no parameters
     bases: HashMap<BasId, Base>,
     variants: HashMap<VarId, Variant>,
     base_names: HashMap<BasId, String>,
@@ -103,7 +103,7 @@ impl ContextGenerator {
                 - Otherwise get a Primitive, or custom type to instantiate
                 - Instantiate the variant
                 - Add it
-                - Somehow handle conflict with original base
+                - Somehow handle conflict with original base  <- (Not an issue if no new bases get added for instantiations)
         */
         self.add_variant(Variant {
             id,
