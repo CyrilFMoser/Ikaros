@@ -82,7 +82,7 @@
     - if we want to use an available complex type:
         - if the complex type has typargs, replace them with the new typargs
         - Decide if we want to instantiate some of the type arguments with new types (limit the depth)
-    
+    - otherwise generate a new type that does not need a declaration (again limit depth)
 
 - function generate_graph()
     - all_types = union(available_types,custom_types)
@@ -90,3 +90,8 @@
         - if t1 != t2:
             - if get_instantiation(t1,t2) is valid: // instantiation from t1 -> t2 exists and is valid, could also just be a subtype
                 - graph.add_edge(t1,t2,substitution)
+
+
+- function generate_match()
+    - get some interesting type that is refineable
+    - Then simply proceed as in the previous scala pattern match generator.
