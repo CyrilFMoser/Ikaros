@@ -1,6 +1,3 @@
-- ! Store the instantiated type arguments of the Base with the Variant, don't create new bases for new instantiations of the base. !
-    Therefore only add new bases for declarations and if they somehow appear in a parameter of a variant
-
 - Merge generics
 
 - Allow variants to instantiate some of the bases type arguments, (for scala)
