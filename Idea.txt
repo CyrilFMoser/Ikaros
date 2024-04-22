@@ -35,6 +35,8 @@
 
     - needs_declaration function: reutrns if a type needs a declaration for us to use it (case classes, but not type unions)
 
+    - set_name function, sets the name of the type
+
 
 - Each language implements it with an enum
 
@@ -54,15 +56,16 @@
     - for each such base:
         - Choose a number of type arguments and add them
         - add_type(base)
-        - if allows_base_instantiation AND we want to instantiate:
-                - Instantiate some of the type arguments of the base
-                - Add this base to list of bases from before
-                - add_type(new_base)
+
 
     - for each base we choose to generate:
         - templates = get_case_templates() to get the case templates for this base
         - for each case we choose to generate for this base:
                 - case_template <- get_random(templates)
+                - if allows_base_instantiation AND we want to instantiate:
+                    - Decide if we want to simply copy an instantiation of a different case. Otherwise: 
+                        - Instantiate some of the type arguments of the base
+                        - add_type(new_base)
                 - add generics of the base to typargs of case
                 - case.bases add base
                 - if case.allows_multiple_bases AND we want to extends multiple bases:
