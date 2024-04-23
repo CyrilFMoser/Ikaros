@@ -1,5 +1,4 @@
 use std::collections::HashSet;
-use std::fmt::Debug;
 use std::hash::Hash;
 use std::{collections::HashMap, fmt::Display};
 
@@ -54,7 +53,11 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> TypeGenerator<Lang
             generic_count: 0,
         }
     }
-    pub fn generate_bases(&mut self) {
+    pub fn generate(&mut self) {
+        self.generate_bases();
+    }
+
+    fn generate_bases(&mut self) {
         let base_templates: Vec<Template<LangTyp>> = LangTyp::get_types()
             .iter()
             .filter(|t| t.0.is_base())
@@ -176,7 +179,7 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> TypeGenerator<Lang
         }
     }
 
-    pub fn add_type(&mut self, t: &LangTyp, declaration: bool) {
+    fn add_type(&mut self, t: &LangTyp, declaration: bool) {
         self.all_types.push(t.clone());
         let index = self.all_types.len() - 1;
         if !t.is_local() {
@@ -189,8 +192,7 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> TypeGenerator<Lang
             self.declarations.push(index);
         }
     }
-
-    pub fn generate_type(&mut self, typargs: &[LangTyp], depth: u32) -> LangTyp {
+    fn generate_type(&mut self, typargs: &[LangTyp], depth: u32) -> LangTyp {
         if depth >= self.typgen_args.max_type_depth
             || self.rng.gen_bool(self.typgen_args.use_prelude_type_prob)
         {
@@ -264,7 +266,7 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> TypeGenerator<Lang
         //TODO: Generate other types, such as type unions etc. here
     }
 
-    pub fn substitute(typ: &mut LangTyp, orig: &LangTyp, new_typ: &LangTyp) {
+    fn substitute(typ: &mut LangTyp, orig: &LangTyp, new_typ: &LangTyp) {
         if typ == orig {
             *typ = new_typ.clone();
         }
@@ -285,7 +287,7 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> TypeGenerator<Lang
         }
     }
 
-    pub fn get_generics(typ: &LangTyp) -> HashSet<LangTyp> {
+    fn get_generics(typ: &LangTyp) -> HashSet<LangTyp> {
         let mut generics = Vec::new();
         if typ.is_generic() {
             generics.push(typ.clone());
@@ -308,7 +310,7 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> TypeGenerator<Lang
         generics.into_iter().collect()
     }
 
-    pub fn generate_generic(&mut self) -> LangTyp {
+    fn generate_generic(&mut self) -> LangTyp {
         let mut template = LangTyp::get_generic_template();
         template.0.set_id(self.generic_count);
         self.generic_count += 1;
@@ -316,7 +318,7 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> TypeGenerator<Lang
         template.0
     }
 
-    pub fn generate_variance(&mut self) -> Variance {
+    fn generate_variance(&mut self) -> Variance {
         if self.rng.gen_bool(self.typgen_args.contravariance_prob) {
             Variance::Contravariant
         } else if self.rng.gen_bool(self.typgen_args.covariance_prob) {

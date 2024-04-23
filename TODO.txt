@@ -1,3 +1,11 @@
+- Change is_subtype() so that it returns a result, Err if there is no way it could be a subtype,
+  Ok(Constraint) with constraint being equality constraints on the types for it to be a subtype. (Sets of (t1,t2) => t1 <: t2)
+  The constraints will be solved by the type graph, so they don't have to make sense.
+  => Need to modify it even further. Create a Constraint struct, that captures:
+    1. Equality constraints with a field for a HashSet<(Type,Type)>
+    2. Subtype constraints with a field for a HashSet<(Type,Type)>
+    Then it would probably be worth it to return Result<Option<THAT_STRUCT>,()>
+
 - Merge generics
 
 - Allow variance declarations for case classes 

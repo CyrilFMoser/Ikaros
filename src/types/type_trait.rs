@@ -1,7 +1,18 @@
-use super::{languages::scala::variance::Variance, template::Template};
+use super::{
+    languages::scala::variance::Variance, template::Template, type_graph::graph::Substitutions,
+};
+use std::collections::HashSet;
+use std::hash::Hash;
 
+pub fn setify<T: Eq + Hash + Clone>(t1: &T, t2: &T) -> Result<Substitutions<T>, ()> {
+    let mut set = HashSet::new();
+    set.insert((t1.clone(), t2.clone()));
+    Ok(set)
+}
 pub trait Type {
-    fn is_subtype(&self, other: &Self) -> bool;
+    fn is_subtype(&self, other: &Self) -> Result<Substitutions<Self>, ()>
+    where
+        Self: Sized;
 
     fn set_name(&mut self, name: String);
 

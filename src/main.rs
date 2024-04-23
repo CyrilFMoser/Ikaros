@@ -3,6 +3,8 @@ use generators::typegen_args::TypeContextArgs;
 use rand::{thread_rng, Rng, SeedableRng};
 use rand_chacha::ChaCha8Rng;
 use types::languages::scala::scala_type::ScalaType;
+
+use crate::generators::programgen::ProgramGenerator;
 mod generators;
 mod types;
 fn main() {
@@ -24,7 +26,7 @@ fn main() {
     let mut seed = thread_rng().gen();
     println!("using seed: {}", seed);
     let rng = ChaCha8Rng::seed_from_u64(seed);
-    let mut generator: TypeGenerator<ScalaType> = TypeGenerator::new(args.clone(), rng);
-    generator.generate_bases();
-    println!("{}", generator.declarations_to_string());
+    let mut program_generator: ProgramGenerator<ScalaType> = ProgramGenerator::new(&args, rng);
+    program_generator.generate();
+    println!("{}", program_generator.typ_gen.declarations_to_string());
 }

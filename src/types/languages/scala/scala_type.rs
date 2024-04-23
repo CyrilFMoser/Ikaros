@@ -1,6 +1,14 @@
-use std::fmt::Display;
+use std::{
+    collections::{BTreeSet, HashSet},
+    fmt::Display,
+    hash::Hash,
+};
 
-use crate::types::{template::Template, type_trait::Type};
+use crate::types::{
+    template::Template,
+    type_graph::graph::Substitutions,
+    type_trait::{setify, Type},
+};
 
 use super::{case_class::CaseClass, generic::Generic, traits::Trait, variance::Variance};
 
@@ -14,17 +22,22 @@ pub enum ScalaType {
     Bool,
     Byte,
 }
+type Constraints = Result<Substitutions<ScalaType>, ()>;
 
 impl ScalaType {
-    fn subtype_primitive(&self, other: &Self) -> bool {
-        self == other
+    fn subtype_primitive(&self, other: &Self) -> Constraints {
+        if self == other {
+            Ok(HashSet::new())
+        } else {
+            Err(())
+        }
     }
 }
 
 impl Type for ScalaType {
-    fn is_subtype(&self, other: &Self) -> bool {
+    fn is_subtype(&self, other: &Self) -> Constraints {
         if self == other {
-            return true;
+            return setify(self, other);
         }
         match self {
             ScalaType::Bool | ScalaType::Byte | ScalaType::Char | ScalaType::Int => {
