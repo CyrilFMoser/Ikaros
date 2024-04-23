@@ -1,5 +1,3 @@
 - Merge generics
 
-- Allow variants to instantiate some of the bases type arguments, (for scala)
-
-- Maybe add structs to the IR?
+- Allow variance declarations for case classes 

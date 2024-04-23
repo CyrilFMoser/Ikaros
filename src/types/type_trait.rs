@@ -22,6 +22,12 @@ pub trait Type {
     where
         Self: Sized;
 
+    // minimal number of parameters this type needs, None if there is no minimum
+    fn get_min_params(&self) -> Option<u32>;
+
+    // maximal number of parameters this type can use, None if there is no maximum
+    fn get_max_params(&self) -> Option<u32>;
+
     fn get_params(&self) -> Option<&Vec<Self>>
     where
         Self: Sized;
@@ -86,4 +92,11 @@ pub trait Type {
 
     /// Returns if a type needs a declaration for us to use it (case classes, but not type unions)
     fn needs_declaration(&self) -> bool;
+
+    /// Treat the supplied types as declarations and return the program as a string declaring all these types
+    fn declarations_to_string(types: &[&Self]) -> String
+    where
+        Self: Sized;
+    /// Sets the id of the type (if available). Mostly used for generics
+    fn set_id(&mut self, id: u32);
 }

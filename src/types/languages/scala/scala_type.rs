@@ -1,10 +1,10 @@
-use std::fmt::{Debug, Display};
+use std::fmt::Display;
 
 use crate::types::{template::Template, type_trait::Type};
 
 use super::{case_class::CaseClass, generic::Generic, traits::Trait, variance::Variance};
 
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum ScalaType {
     Trait(Trait),
     CaseClass(CaseClass),
@@ -191,6 +191,7 @@ impl Type for ScalaType {
     fn get_generic_template() -> Template<ScalaType> {
         Template(ScalaType::Generic(Generic {
             name: String::new(),
+            id: 0,
         }))
     }
 
@@ -241,6 +242,88 @@ impl Type for ScalaType {
             ScalaType::CaseClass(cc) => Some(&mut cc.extends),
             ScalaType::Trait(tr) => Some(&mut tr.extends),
             _ => None,
+        }
+    }
+
+    fn get_min_params(&self) -> Option<u32> {
+        None
+    }
+
+    fn get_max_params(&self) -> Option<u32> {
+        match self {
+            ScalaType::CaseClass(_) => None,
+            ScalaType::Trait(_)
+            | ScalaType::Generic(_)
+            | ScalaType::Int
+            | ScalaType::Char
+            | ScalaType::Byte
+            | ScalaType::Bool => Some(0),
+        }
+    }
+
+    fn declarations_to_string(types: &[&Self]) -> String
+    where
+        Self: Sized,
+    {
+        let mut out = String::new();
+        let traits = types.iter().filter(|t| matches!(t, Self::Trait(_)));
+        for tr in traits {
+            out.push_str("sealed trait ");
+            out.push_str(tr.get_name());
+            if let Some(typargs) = tr.get_typargs() {
+                if let Some(variances) = tr.get_variances() {
+                    let n = typargs.len();
+                    if n > 0 {
+                        out.push('[');
+                        for i in 0..n {
+                            match variances.get(i).unwrap() {
+                                Variance::Covariant => out.push('+'),
+                                Variance::Contravariant => out.push('-'),
+                                Variance::Invariant => (),
+                            }
+                            out.push_str(typargs.get(i).unwrap().get_name());
+                            out.push_str(", ");
+                        }
+                        out.pop();
+                        out.pop();
+                        out.push(']');
+                    }
+                }
+            }
+            out.push('\n');
+        }
+        let case_classes = types.iter().filter(|t| matches!(t, Self::CaseClass(_)));
+        for cc in case_classes {
+            out.push_str("case class ");
+            out.push_str(cc.to_string().as_str());
+            out.push('(');
+            let mut param_names = 'a'..='z'; // Assume that there are leq than 52 parameters in a case class
+            if let Some(params) = cc.get_params() {
+                for param in params {
+                    out.push_str(format!("{}: {}, ", param_names.next().unwrap(), param).as_str());
+                }
+                if !params.is_empty() {
+                    out.pop(); // remove ','
+                    out.pop(); // remove ' '
+                }
+            }
+            out.push(')');
+            if let Some(extends) = cc.get_bases() {
+                out.push_str(" extends ");
+                for tr in extends {
+                    out.push_str(format!("{},", tr).as_str());
+                }
+                out.pop(); // remove ,
+            }
+            out.push('\n');
+        }
+
+        out
+    }
+
+    fn set_id(&mut self, id: u32) {
+        if let ScalaType::Generic(g) = self {
+            g.id = id
         }
     }
 }

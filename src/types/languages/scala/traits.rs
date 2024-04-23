@@ -4,7 +4,7 @@ use crate::types::type_trait::Type;
 
 use super::{scala_type::ScalaType, variance::Variance};
 
-#[derive(Clone, Default, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Hash, Default, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Trait {
     pub name: String,
     pub variances: Vec<Variance>,
