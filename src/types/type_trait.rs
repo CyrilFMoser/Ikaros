@@ -1,16 +1,15 @@
-use super::{
-    languages::scala::variance::Variance, template::Template, type_graph::graph::Substitutions,
-};
-use std::collections::HashSet;
+use super::constraints::Constraint;
+use super::{languages::scala::variance::Variance, template::Template};
 use std::hash::Hash;
 
-pub fn setify<T: Eq + Hash + Clone>(t1: &T, t2: &T) -> Result<Substitutions<T>, ()> {
-    let mut set = HashSet::new();
-    set.insert((t1.clone(), t2.clone()));
-    Ok(set)
+/// encodes S <: T for generics, to remember to which type the generics belong to.
+#[derive(Debug, Hash, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum TypeTag {
+    S,
+    T,
 }
 pub trait Type {
-    fn is_subtype(&self, other: &Self) -> Result<Substitutions<Self>, ()>
+    fn is_subtype(&self, other: &Self) -> Result<Constraint<Self>, ()>
     where
         Self: Sized;
 
@@ -20,6 +19,12 @@ pub trait Type {
 
     /// generates an appropriate name that is not in names, sets the name of self to that name, and adds it to names
     fn generate_name(&mut self, names: &mut Vec<String>);
+
+    /// tags the generic type of the language with this type tag
+    fn tag_generic(&mut self, tag: TypeTag);
+
+    /// removes the tag of the generic
+    fn reset_tag_generic(&mut self);
 
     fn get_variances(&self) -> Option<&Vec<Variance>>;
 

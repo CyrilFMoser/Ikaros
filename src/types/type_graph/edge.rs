@@ -1,10 +1,12 @@
-use super::{graph::Substitutions, node::Node};
+use crate::types::constraints::{self, Constraint};
+
+use super::node::Node;
 
 pub struct Edge<LangTyp> {
     pub id: EdgeId,
     pub u: Node<LangTyp>,
     pub v: Node<LangTyp>,
-    pub substitutions: Option<Substitutions<LangTyp>>,
+    pub constraints: Option<Constraint<LangTyp>>,
 }
 
 impl<LangTyp> Edge<LangTyp> {
@@ -12,13 +14,13 @@ impl<LangTyp> Edge<LangTyp> {
         id: EdgeId,
         u: Node<LangTyp>,
         v: Node<LangTyp>,
-        substitutions: Option<Substitutions<LangTyp>>,
+        constraints: Option<Constraint<LangTyp>>,
     ) -> Self {
         Edge {
             id,
             u,
             v,
-            substitutions,
+            constraints,
         }
     }
 }

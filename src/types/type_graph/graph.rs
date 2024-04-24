@@ -1,3 +1,4 @@
+use crate::types::constraints::Constraint;
 use crate::types::type_trait::Type;
 use std::collections::HashSet;
 use std::hash::Hash;
@@ -9,7 +10,6 @@ use super::{
     node::{Node, NodeId},
 };
 
-pub type Substitutions<T> = HashSet<(T, T)>;
 pub struct Graph<LangTyp: Type> {
     nodes: HashMap<NodeId, Node<LangTyp>>,
     node_count: u32,
@@ -58,10 +58,10 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> Graph<LangTyp> {
         &mut self,
         u: Node<LangTyp>,
         v: Node<LangTyp>,
-        substitutions: Option<Substitutions<LangTyp>>,
+        constraints: Option<Constraint<LangTyp>>,
     ) -> EdgeId {
         let id = self.get_new_edgeid();
-        let edge = Edge::new(id, u, v, substitutions);
+        let edge = Edge::new(id, u, v, constraints);
         self.edges.insert(id, edge);
         id
     }

@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use crate::types::type_trait::Type;
+use crate::types::{constraints::Constraint, type_trait::Type};
 
 use super::{scala_type::ScalaType, variance::Variance};
 
@@ -13,7 +13,7 @@ pub struct Trait {
 }
 
 impl Trait {
-    pub fn subtype_trait(&self, other: &ScalaType) -> bool {
+    pub fn subtype_trait(&self, other: &ScalaType) -> Result<Constraint<ScalaType>, ()> {
         if let ScalaType::Trait(tr) = other {
             let t = if self.name != tr.name {
                 let t_opt = self.extends.iter().find(|t| t.get_name() == tr.name);

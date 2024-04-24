@@ -1,9 +1,6 @@
 use std::{collections::HashSet, fmt::Display};
 
-use crate::types::{
-    type_graph::graph::Substitutions,
-    type_trait::{setify, Type},
-};
+use crate::types::{constraints::Constraint, type_trait::Type};
 
 use super::{scala_type::ScalaType, variance::Variance};
 
@@ -16,10 +13,8 @@ pub struct CaseClass {
     pub extends: Vec<ScalaType>,
 }
 
-type Constraints = Result<Substitutions<ScalaType>, ()>;
-
 impl CaseClass {
-    pub fn subtype_caseclass(&self, t: &ScalaType) -> Constraints {
+    pub fn subtype_caseclass(&self, t: &ScalaType) -> Result<Constraint<ScalaType>, ()> {
         match t {
             ScalaType::CaseClass(cc) => {
                 if cc.name != self.name || cc.typargs.len() != self.typargs.len() {
@@ -32,7 +27,7 @@ impl CaseClass {
                     let result = match cc.variances.get(i).unwrap() {
                         Variance::Covariant => s_i.is_subtype(t_i),
                         Variance::Contravariant => t_i.is_subtype(s_i),
-                        Variance::Invariant => setify(s_i, t_i),
+                        Variance::Invariant => todo!(), // equality constraint,
                     };
                     if let Ok(constraints) = result {
                         for constraint in constraints {

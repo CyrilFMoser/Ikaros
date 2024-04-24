@@ -1,13 +1,9 @@
-use std::{
-    collections::{BTreeSet, HashSet},
-    fmt::Display,
-    hash::Hash,
-};
+use std::{collections::HashSet, fmt::Display, hash::Hash};
 
 use crate::types::{
+    constraints::Constraint,
     template::Template,
-    type_graph::graph::Substitutions,
-    type_trait::{setify, Type},
+    type_trait::{Type, TypeTag},
 };
 
 use super::{case_class::CaseClass, generic::Generic, traits::Trait, variance::Variance};
@@ -22,12 +18,15 @@ pub enum ScalaType {
     Bool,
     Byte,
 }
-type Constraints = Result<Substitutions<ScalaType>, ()>;
 
 impl ScalaType {
-    fn subtype_primitive(&self, other: &Self) -> Constraints {
+    fn subtype_primitive(&self, other: &Self) -> Result<Constraint<Self>, ()> {
         if self == other {
-            Ok(HashSet::new())
+            if other.is_generic() {
+                todo!() // return constraint with this
+            } else {
+                Ok(Constraint::new())
+            }
         } else {
             Err(())
         }
@@ -35,9 +34,9 @@ impl ScalaType {
 }
 
 impl Type for ScalaType {
-    fn is_subtype(&self, other: &Self) -> Constraints {
+    fn is_subtype(&self, other: &Self) -> Result<Constraint<Self>, ()> {
         if self == other {
-            return setify(self, other);
+            todo!()
         }
         match self {
             ScalaType::Bool | ScalaType::Byte | ScalaType::Char | ScalaType::Int => {
@@ -205,6 +204,7 @@ impl Type for ScalaType {
         Template(ScalaType::Generic(Generic {
             name: String::new(),
             id: 0,
+            tag: None,
         }))
     }
 
@@ -337,6 +337,18 @@ impl Type for ScalaType {
     fn set_id(&mut self, id: u32) {
         if let ScalaType::Generic(g) = self {
             g.id = id
+        }
+    }
+
+    fn tag_generic(&mut self, tag: TypeTag) {
+        if let ScalaType::Generic(g) = self {
+            g.tag = Some(tag);
+        }
+    }
+
+    fn reset_tag_generic(&mut self) {
+        if let ScalaType::Generic(g) = self {
+            g.tag = None;
         }
     }
 }
