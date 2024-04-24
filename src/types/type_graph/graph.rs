@@ -1,4 +1,3 @@
-use crate::types::constraints::Constraint;
 use crate::types::type_trait::Type;
 use std::collections::HashSet;
 use std::hash::Hash;
@@ -58,7 +57,7 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> Graph<LangTyp> {
         &mut self,
         u: Node<LangTyp>,
         v: Node<LangTyp>,
-        constraints: Option<Constraint<LangTyp>>,
+        constraints: Option<HashSet<(LangTyp, LangTyp)>>,
     ) -> EdgeId {
         let id = self.get_new_edgeid();
         let edge = Edge::new(id, u, v, constraints);

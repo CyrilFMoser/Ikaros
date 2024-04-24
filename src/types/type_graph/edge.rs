@@ -1,4 +1,4 @@
-use crate::types::constraints::{self, Constraint};
+use std::collections::HashSet;
 
 use super::node::Node;
 
@@ -6,7 +6,7 @@ pub struct Edge<LangTyp> {
     pub id: EdgeId,
     pub u: Node<LangTyp>,
     pub v: Node<LangTyp>,
-    pub constraints: Option<Constraint<LangTyp>>,
+    pub substitutions: Option<HashSet<(LangTyp, LangTyp)>>,
 }
 
 impl<LangTyp> Edge<LangTyp> {
@@ -14,13 +14,13 @@ impl<LangTyp> Edge<LangTyp> {
         id: EdgeId,
         u: Node<LangTyp>,
         v: Node<LangTyp>,
-        constraints: Option<Constraint<LangTyp>>,
+        substitutions: Option<HashSet<(LangTyp, LangTyp)>>,
     ) -> Self {
         Edge {
             id,
             u,
             v,
-            constraints,
+            substitutions,
         }
     }
 }

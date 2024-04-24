@@ -1,10 +1,6 @@
-use std::{collections::HashSet, fmt::Display, hash::Hash};
+use std::{fmt::Display, hash::Hash};
 
-use crate::types::{
-    constraints::Constraint,
-    template::Template,
-    type_trait::{Type, TypeTag},
-};
+use crate::types::{template::Template, type_trait::Type};
 
 use super::{case_class::CaseClass, generic::Generic, traits::Trait, variance::Variance};
 
@@ -20,23 +16,15 @@ pub enum ScalaType {
 }
 
 impl ScalaType {
-    fn subtype_primitive(&self, other: &Self) -> Result<Constraint<Self>, ()> {
-        if self == other {
-            if other.is_generic() {
-                todo!() // return constraint with this
-            } else {
-                Ok(Constraint::new())
-            }
-        } else {
-            Err(())
-        }
+    fn subtype_primitive(&self, other: &Self) -> bool {
+        self == other
     }
 }
 
 impl Type for ScalaType {
-    fn is_subtype(&self, other: &Self) -> Result<Constraint<Self>, ()> {
+    fn is_subtype(&self, other: &Self) -> bool {
         if self == other {
-            todo!()
+            return self.is_generic(); // only allow subtypes of non generics
         }
         match self {
             ScalaType::Bool | ScalaType::Byte | ScalaType::Char | ScalaType::Int => {
@@ -204,7 +192,6 @@ impl Type for ScalaType {
         Template(ScalaType::Generic(Generic {
             name: String::new(),
             id: 0,
-            tag: None,
         }))
     }
 
@@ -337,18 +324,6 @@ impl Type for ScalaType {
     fn set_id(&mut self, id: u32) {
         if let ScalaType::Generic(g) = self {
             g.id = id
-        }
-    }
-
-    fn tag_generic(&mut self, tag: TypeTag) {
-        if let ScalaType::Generic(g) = self {
-            g.tag = Some(tag);
-        }
-    }
-
-    fn reset_tag_generic(&mut self) {
-        if let ScalaType::Generic(g) = self {
-            g.tag = None;
         }
     }
 }

@@ -1,17 +1,7 @@
-use super::constraints::Constraint;
 use super::{languages::scala::variance::Variance, template::Template};
-use std::hash::Hash;
 
-/// encodes S <: T for generics, to remember to which type the generics belong to.
-#[derive(Debug, Hash, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub enum TypeTag {
-    S,
-    T,
-}
 pub trait Type {
-    fn is_subtype(&self, other: &Self) -> Result<Constraint<Self>, ()>
-    where
-        Self: Sized;
+    fn is_subtype(&self, other: &Self) -> bool;
 
     fn set_name(&mut self, name: String);
 
@@ -19,12 +9,6 @@ pub trait Type {
 
     /// generates an appropriate name that is not in names, sets the name of self to that name, and adds it to names
     fn generate_name(&mut self, names: &mut Vec<String>);
-
-    /// tags the generic type of the language with this type tag
-    fn tag_generic(&mut self, tag: TypeTag);
-
-    /// removes the tag of the generic
-    fn reset_tag_generic(&mut self);
 
     fn get_variances(&self) -> Option<&Vec<Variance>>;
 

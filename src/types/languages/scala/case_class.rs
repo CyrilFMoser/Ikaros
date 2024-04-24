@@ -1,6 +1,6 @@
 use std::{collections::HashSet, fmt::Display};
 
-use crate::types::{constraints::Constraint, type_trait::Type};
+use crate::types::type_trait::Type;
 
 use super::{scala_type::ScalaType, variance::Variance};
 
@@ -14,63 +14,53 @@ pub struct CaseClass {
 }
 
 impl CaseClass {
-    pub fn subtype_caseclass(&self, t: &ScalaType) -> Result<Constraint<ScalaType>, ()> {
+    pub fn subtype_caseclass(&self, t: &ScalaType) -> bool {
         match t {
             ScalaType::CaseClass(cc) => {
                 if cc.name != self.name || cc.typargs.len() != self.typargs.len() {
-                    return Err(());
+                    return false;
                 }
-                let mut subs = HashSet::new();
                 for i in 0..self.typargs.len() {
                     let s_i = self.typargs.get(i).unwrap();
                     let t_i = cc.typargs.get(i).unwrap();
-                    let result = match cc.variances.get(i).unwrap() {
+                    let is_subtype = match cc.variances.get(i).unwrap() {
                         Variance::Covariant => s_i.is_subtype(t_i),
                         Variance::Contravariant => t_i.is_subtype(s_i),
-                        Variance::Invariant => todo!(), // equality constraint,
+                        Variance::Invariant => s_i == t_i && !s_i.is_generic(),
                     };
-                    if let Ok(constraints) = result {
-                        for constraint in constraints {
-                            subs.insert(constraint);
-                        }
-                    } else {
-                        return Err(());
+                    if !is_subtype {
+                        return false;
                     }
                 }
-                Ok(subs)
+                true
             }
             ScalaType::Trait(tr) => {
                 let t_opt = self.extends.iter().find(|t| t.get_name() == tr.name);
                 if t_opt.is_none() {
-                    return Err(());
+                    return false;
                 }
                 if let ScalaType::Trait(t) = t_opt.unwrap() {
                     if t.typargs.len() != tr.typargs.len() {
-                        return Err(());
+                        return false;
                     }
                     // t <: tr
-                    let mut subs = HashSet::new();
                     for i in 0..t.typargs.len() {
                         let s_i = t.typargs.get(i).unwrap();
                         let t_i = tr.typargs.get(i).unwrap();
-                        let result = match t.variances.get(i).unwrap() {
+                        let is_subtype = match t.variances.get(i).unwrap() {
                             Variance::Covariant => s_i.is_subtype(t_i),
                             Variance::Contravariant => t_i.is_subtype(s_i),
-                            Variance::Invariant => setify(s_i, t_i),
+                            Variance::Invariant => s_i == t_i && !s_i.is_generic(),
                         };
-                        if let Ok(constraints) = result {
-                            for constraint in constraints {
-                                subs.insert(constraint);
-                            }
-                        } else {
-                            return Err(());
+                        if !is_subtype {
+                            return false;
                         }
                     }
-                    return Ok(subs);
+                    return true;
                 }
-                Err(())
+                false
             }
-            _ => Err(()),
+            _ => false,
         }
     }
 }
