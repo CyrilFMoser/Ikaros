@@ -1,20 +1,22 @@
-use std::collections::HashSet;
+use crate::types::{constraints::Constraint, type_trait::Type};
+use std::fmt::Display;
+use std::hash::Hash;
 
-use super::node::Node;
-
-pub struct Edge<LangTyp> {
+use super::node::NodeId;
+#[derive(Clone)]
+pub struct Edge<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> {
     pub id: EdgeId,
-    pub u: Node<LangTyp>,
-    pub v: Node<LangTyp>,
-    pub substitutions: Option<HashSet<(LangTyp, LangTyp)>>,
+    pub u: NodeId,
+    pub v: NodeId,
+    pub substitutions: Option<Constraint<LangTyp>>,
 }
 
-impl<LangTyp> Edge<LangTyp> {
+impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> Edge<LangTyp> {
     pub fn new(
         id: EdgeId,
-        u: Node<LangTyp>,
-        v: Node<LangTyp>,
-        substitutions: Option<HashSet<(LangTyp, LangTyp)>>,
+        u: NodeId,
+        v: NodeId,
+        substitutions: Option<Constraint<LangTyp>>,
     ) -> Self {
         Edge {
             id,

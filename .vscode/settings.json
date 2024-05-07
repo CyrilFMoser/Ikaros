@@ -9,5 +9,8 @@
         ".\\Cargo.toml",
         ".\\Cargo.toml",
         ".\\Cargo.toml"
-    ]
+    ],
+    "files.watcherExclude": {
+        "**/target": true
+    }
 }

@@ -1,3 +1,5 @@
+use crate::matches::statements::Statement;
+
 use super::{languages::scala::variance::Variance, template::Template};
 
 pub trait Type {
@@ -10,6 +12,7 @@ pub trait Type {
     /// generates an appropriate name that is not in names, sets the name of self to that name, and adds it to names
     fn generate_name(&mut self, names: &mut Vec<String>);
 
+    /// gets the variances for each type argument (if present) of this type. Has to be as long as the type argument vector
     fn get_variances(&self) -> Option<&Vec<Variance>>;
 
     fn get_variances_mut(&mut self) -> Option<&mut Vec<Variance>>;
@@ -55,6 +58,12 @@ pub trait Type {
     /// Returns true if this type is interesting to match against
     fn match_against(&self) -> bool;
 
+    fn get_number_type() -> Self;
+
+    fn statement_to_string(s: &Statement<Self>) -> String
+    where
+        Self: Sized;
+
     /// Returns this types case types as templates
     fn get_case_templates(&self) -> Option<Vec<Template<Self>>>
     where
@@ -85,7 +94,7 @@ pub trait Type {
 
     ///  Returns if a type can be refined into new cases (traits into case classes,
     ///  OR type combinations of types such as type unions) *EXHAUSTIVELY*
-    fn sealed(&self) -> bool;
+    fn is_sealed(&self) -> bool;
 
     ///  Returns if we consider a type to be complex (traits, case classes for example)
     fn is_complex(&self) -> bool;

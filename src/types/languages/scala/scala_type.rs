@@ -1,6 +1,13 @@
 use std::{fmt::Display, hash::Hash};
 
-use crate::types::{template::Template, type_trait::Type};
+use crate::{
+    matches::{
+        expression::{Expression, MatchExp},
+        pattern::{Pattern, Variant},
+        statements::{Declaration, Statement, VarDecl},
+    },
+    types::{template::Template, type_trait::Type},
+};
 
 use super::{case_class::CaseClass, generic::Generic, traits::Trait, variance::Variance};
 
@@ -17,14 +24,14 @@ pub enum ScalaType {
 
 impl ScalaType {
     fn subtype_primitive(&self, other: &Self) -> bool {
-        self == other
+        *self == *other
     }
 }
 
 impl Type for ScalaType {
     fn is_subtype(&self, other: &Self) -> bool {
         if self == other {
-            return self.is_generic(); // only allow subtypes of non generics
+            return !self.is_generic(); // only allow subtypes of non generics
         }
         match self {
             ScalaType::Bool | ScalaType::Byte | ScalaType::Char | ScalaType::Int => {
@@ -133,7 +140,7 @@ impl Type for ScalaType {
         !matches!(self, ScalaType::Generic(_))
     }
 
-    fn sealed(&self) -> bool {
+    fn is_sealed(&self) -> bool {
         matches!(self, ScalaType::Trait(_) | ScalaType::CaseClass(_))
     }
 
@@ -176,16 +183,21 @@ impl Type for ScalaType {
             ScalaType::Generic(_) => "",
             _ => return,
         });
-        prefix.push(('A'..='Z').nth(names.len() % 26).unwrap());
+        let others_count = match self {
+            ScalaType::Trait(_) => names.iter().filter(|s| s.starts_with("T_")).count(),
+            ScalaType::CaseClass(_) => names.iter().filter(|s| s.starts_with("CC_")).count(),
+            ScalaType::Generic(_) => names.iter().filter(|s| !s.contains('_')).count(),
+            _ => return,
+        };
+        prefix.push(('A'..='Z').nth(others_count % 26).unwrap());
         let mut count = 0;
-        while names.contains(&format!("{}_{}", prefix, count)) {
+        let mut cur_name = prefix.clone();
+        while names.contains(&cur_name) {
             count += 1;
+            cur_name = format!("{}_{}", prefix.clone(), count);
         }
-        if count > 0 {
-            prefix.push_str(&format!("_{}", count));
-        }
-        names.push(prefix.clone());
-        self.set_name(prefix);
+        names.push(cur_name.clone());
+        self.set_name(cur_name);
     }
 
     fn get_generic_template() -> Template<ScalaType> {
@@ -221,6 +233,10 @@ impl Type for ScalaType {
 
     fn is_generic(&self) -> bool {
         matches!(self, ScalaType::Generic(_))
+    }
+
+    fn get_number_type() -> Self {
+        ScalaType::Int
     }
 
     fn get_bases(&self) -> Option<&Vec<Self>>
@@ -321,9 +337,76 @@ impl Type for ScalaType {
         out
     }
 
+    fn statement_to_string(s: &Statement<ScalaType>) -> String {
+        match s {
+            Statement::Decl(Declaration::Var(VarDecl {
+                name,
+                typ_annotation,
+                typ,
+                exp,
+            })) => {
+                let annotation = if *typ_annotation {
+                    format!(": {}", typ)
+                } else {
+                    String::new()
+                };
+                format!("val {}{} = {}", name, annotation, exp_to_string(exp))
+            }
+        }
+    }
+
     fn set_id(&mut self, id: u32) {
         if let ScalaType::Generic(g) = self {
             g.id = id
+        }
+    }
+}
+
+fn exp_to_string(e: &Expression<ScalaType>) -> String {
+    match e {
+        Expression::Match(m) => match_to_string(m),
+        Expression::Var(v) => v.name.clone(),
+        Expression::BottomType => "null".to_string(),
+        Expression::Int(i) => i.to_string(),
+    }
+}
+
+fn match_to_string(m: &MatchExp<ScalaType>) -> String {
+    let mut out = format!("{} match{{\n", exp_to_string(&m.to_match));
+    for (p, arm) in m.cases.iter().zip(&m.arms) {
+        out.push_str(
+            format!(
+                "  case {} => {} \n",
+                pattern_to_string(p),
+                exp_to_string(arm)
+            )
+            .as_str(),
+        );
+    }
+    out.push('}');
+    out
+}
+
+fn pattern_to_string(p: &Pattern<ScalaType>) -> String {
+    match p {
+        Pattern::WildCard(w) => {
+            if w.annotate {
+                format!("_:{}", w.typ)
+            } else {
+                "_".to_string()
+            }
+        }
+        Pattern::Variant(Variant { typ, parameters }) => {
+            let mut out = format!("{}(", typ.get_name());
+            for p in parameters {
+                out.push_str(format!("{}, ", pattern_to_string(p)).as_str());
+            }
+            if !parameters.is_empty() {
+                out.pop(); // comma
+                out.pop(); // space
+            }
+            out.push(')');
+            out
         }
     }
 }

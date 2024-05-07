@@ -1,0 +1,188 @@
+2024.05.06 14:15:38 INFO  Started: Metals version 1.3.0 in folders 'G:\Projects\Bachelor-Thesis\Ikaros\out' for client Visual Studio Code 1.89.0.
+SLF4J: Class path contains multiple SLF4J providers.
+SLF4J: Found provider [scribe.slf4j.ScribeServiceProvider@40b89198]
+SLF4J: Found provider [ch.qos.logback.classic.spi.LogbackServiceProvider@7d6c4bb4]
+SLF4J: See https://www.slf4j.org/codes.html#multiple_bindings for an explanation.
+SLF4J: Actual provider is of type [scribe.slf4j.ScribeServiceProvider@40b89198]
+2024.05.06 14:15:39 WARN  Flyway upgrade recommended: H2 2.2.224 is newer than this version of Flyway and support has not been tested. The latest supported version of H2 is 2.2.220.
+2024.05.06 14:15:39 WARN  no build tool detected in workspace 'G:\Projects\Bachelor-Thesis\Ikaros\out'. The most common cause for this problem is that the editor was opened in the wrong working directory, for example if you use sbt then the workspace directory should contain build.sbt. 
+2024.05.06 14:15:39 WARN  Build server is not auto-connectable.
+2024.05.06 14:51:17 INFO  no build target found for G:\Projects\Bachelor-Thesis\Ikaros\out\Scala\Unreduced\Unreachable\prog_3.scala. Using presentation compiler with project's scala-library version: 3.3.1
+Mai 06, 2024 2:51:17 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint fallbackResponseError
+SCHWERWIEGEND: Internal error: java.util.NoSuchElementException: BatchedFunction
+java.util.concurrent.CompletionException: java.util.NoSuchElementException: BatchedFunction
+	at java.base/java.util.concurrent.CompletableFuture.encodeThrowable(CompletableFuture.java:332)
+	at java.base/java.util.concurrent.CompletableFuture.completeThrowable(CompletableFuture.java:347)
+	at java.base/java.util.concurrent.CompletableFuture$UniAccept.tryFire(CompletableFuture.java:708)
+	at java.base/java.util.concurrent.CompletableFuture.postComplete(CompletableFuture.java:510)
+	at java.base/java.util.concurrent.CompletableFuture.completeExceptionally(CompletableFuture.java:2162)
+	at scala.meta.internal.metals.CancelTokens$.$anonfun$future$1(CancelTokens.scala:40)
+	at scala.meta.internal.metals.CancelTokens$.$anonfun$future$1$adapted(CancelTokens.scala:38)
+	at scala.concurrent.impl.Promise$Transformation.run(Promise.scala:484)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+Caused by: java.util.NoSuchElementException: BatchedFunction
+	at scala.meta.internal.metals.BatchedFunction.<init>(BatchedFunction.scala:101)
+	at scala.meta.internal.metals.MetalsLspService.<init>(MetalsLspService.scala:283)
+	at scala.meta.internal.metals.WorkspaceLspService.createService(WorkspaceLspService.scala:183)
+	at scala.meta.internal.metals.WorkspaceLspService.$anonfun$workspaceFolders$1(WorkspaceLspService.scala:190)
+	at scala.meta.internal.metals.WorkspaceFolders.$anonfun$folderServices$2(WorkspaceFolders.scala:25)
+	at scala.collection.immutable.List.map(List.scala:247)
+	at scala.meta.internal.metals.WorkspaceFolders.<init>(WorkspaceFolders.scala:25)
+	at scala.meta.internal.metals.WorkspaceLspService.<init>(WorkspaceLspService.scala:188)
+	at scala.meta.metals.MetalsLanguageServer.createService(MetalsLanguageServer.scala:231)
+	at scala.meta.metals.MetalsLanguageServer.initialize(MetalsLanguageServer.scala:170)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.lambda$null$0(GenericEndpoint.java:65)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.request(GenericEndpoint.java:120)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.handleRequest(RemoteEndpoint.java:261)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.consume(RemoteEndpoint.java:190)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.handleMessage(StreamMessageProducer.java:194)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.listen(StreamMessageProducer.java:94)
+	at org.eclipse.lsp4j.jsonrpc.json.ConcurrentMessageProcessor.run(ConcurrentMessageProcessor.java:113)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:539)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	... 3 more
+
+Mai 06, 2024 2:51:17 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNUNG: Unmatched cancel notification for request id 5
+Mai 06, 2024 2:51:17 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNUNG: Unmatched cancel notification for request id 7
+2024.05.06 14:51:19 INFO  time: code lens generation in 1.8s
+2024.05.06 14:51:24 WARN  Could not find semantic tokens for: file:///G:/Projects/Bachelor-Thesis/Ikaros/out/Scala/Unreduced/Unreachable/prog_4.scala
+Mai 06, 2024 2:51:24 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint fallbackResponseError
+SCHWERWIEGEND: Internal error: java.util.NoSuchElementException: BatchedFunction
+java.util.concurrent.CompletionException: java.util.NoSuchElementException: BatchedFunction
+	at java.base/java.util.concurrent.CompletableFuture.encodeThrowable(CompletableFuture.java:332)
+	at java.base/java.util.concurrent.CompletableFuture.completeThrowable(CompletableFuture.java:347)
+	at java.base/java.util.concurrent.CompletableFuture$UniAccept.tryFire(CompletableFuture.java:708)
+	at java.base/java.util.concurrent.CompletableFuture.postComplete(CompletableFuture.java:510)
+	at java.base/java.util.concurrent.CompletableFuture.completeExceptionally(CompletableFuture.java:2162)
+	at scala.meta.internal.metals.CancelTokens$.$anonfun$future$1(CancelTokens.scala:40)
+	at scala.meta.internal.metals.CancelTokens$.$anonfun$future$1$adapted(CancelTokens.scala:38)
+	at scala.concurrent.impl.Promise$Transformation.run(Promise.scala:484)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+Caused by: java.util.NoSuchElementException: BatchedFunction
+	at scala.meta.internal.metals.BatchedFunction.<init>(BatchedFunction.scala:101)
+	at scala.meta.internal.metals.MetalsLspService.<init>(MetalsLspService.scala:283)
+	at scala.meta.internal.metals.WorkspaceLspService.createService(WorkspaceLspService.scala:183)
+	at scala.meta.internal.metals.WorkspaceLspService.$anonfun$workspaceFolders$1(WorkspaceLspService.scala:190)
+	at scala.meta.internal.metals.WorkspaceFolders.$anonfun$folderServices$2(WorkspaceFolders.scala:25)
+	at scala.collection.immutable.List.map(List.scala:247)
+	at scala.meta.internal.metals.WorkspaceFolders.<init>(WorkspaceFolders.scala:25)
+	at scala.meta.internal.metals.WorkspaceLspService.<init>(WorkspaceLspService.scala:188)
+	at scala.meta.metals.MetalsLanguageServer.createService(MetalsLanguageServer.scala:231)
+	at scala.meta.metals.MetalsLanguageServer.initialize(MetalsLanguageServer.scala:170)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.lambda$null$0(GenericEndpoint.java:65)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.request(GenericEndpoint.java:120)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.handleRequest(RemoteEndpoint.java:261)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.consume(RemoteEndpoint.java:190)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.handleMessage(StreamMessageProducer.java:194)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.listen(StreamMessageProducer.java:94)
+	at org.eclipse.lsp4j.jsonrpc.json.ConcurrentMessageProcessor.run(ConcurrentMessageProcessor.java:113)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:539)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	... 3 more
+
+Mai 06, 2024 2:51:24 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint fallbackResponseError
+SCHWERWIEGEND: Internal error: java.util.NoSuchElementException: BatchedFunction
+java.util.concurrent.CompletionException: java.util.NoSuchElementException: BatchedFunction
+	at java.base/java.util.concurrent.CompletableFuture.encodeThrowable(CompletableFuture.java:332)
+	at java.base/java.util.concurrent.CompletableFuture.completeThrowable(CompletableFuture.java:347)
+	at java.base/java.util.concurrent.CompletableFuture$UniAccept.tryFire(CompletableFuture.java:708)
+	at java.base/java.util.concurrent.CompletableFuture.unipush(CompletableFuture.java:593)
+	at java.base/java.util.concurrent.CompletableFuture.uniAcceptStage(CompletableFuture.java:737)
+	at java.base/java.util.concurrent.CompletableFuture.thenAccept(CompletableFuture.java:2182)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.handleRequest(RemoteEndpoint.java:279)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.consume(RemoteEndpoint.java:190)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.handleMessage(StreamMessageProducer.java:194)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.listen(StreamMessageProducer.java:94)
+	at org.eclipse.lsp4j.jsonrpc.json.ConcurrentMessageProcessor.run(ConcurrentMessageProcessor.java:113)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:539)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+Caused by: java.util.NoSuchElementException: BatchedFunction
+	at scala.meta.internal.metals.BatchedFunction.<init>(BatchedFunction.scala:101)
+	at scala.meta.internal.metals.MetalsLspService.<init>(MetalsLspService.scala:283)
+	at scala.meta.internal.metals.WorkspaceLspService.createService(WorkspaceLspService.scala:183)
+	at scala.meta.internal.metals.WorkspaceLspService.$anonfun$workspaceFolders$1(WorkspaceLspService.scala:190)
+	at scala.meta.internal.metals.WorkspaceFolders.$anonfun$folderServices$2(WorkspaceFolders.scala:25)
+	at scala.collection.immutable.List.map(List.scala:247)
+	at scala.meta.internal.metals.WorkspaceFolders.<init>(WorkspaceFolders.scala:25)
+	at scala.meta.internal.metals.WorkspaceLspService.<init>(WorkspaceLspService.scala:188)
+	at scala.meta.metals.MetalsLanguageServer.createService(MetalsLanguageServer.scala:231)
+	at scala.meta.metals.MetalsLanguageServer.initialize(MetalsLanguageServer.scala:170)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.lambda$null$0(GenericEndpoint.java:65)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.request(GenericEndpoint.java:120)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.handleRequest(RemoteEndpoint.java:261)
+	... 9 more
+
+Mai 06, 2024 2:51:24 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint fallbackResponseError
+SCHWERWIEGEND: Internal error: java.util.NoSuchElementException: BatchedFunction
+java.util.concurrent.CompletionException: java.util.NoSuchElementException: BatchedFunction
+	at java.base/java.util.concurrent.CompletableFuture.encodeThrowable(CompletableFuture.java:332)
+	at java.base/java.util.concurrent.CompletableFuture.completeThrowable(CompletableFuture.java:347)
+	at java.base/java.util.concurrent.CompletableFuture$UniAccept.tryFire(CompletableFuture.java:708)
+	at java.base/java.util.concurrent.CompletableFuture.postComplete(CompletableFuture.java:510)
+	at java.base/java.util.concurrent.CompletableFuture.completeExceptionally(CompletableFuture.java:2162)
+	at scala.meta.internal.metals.CancelTokens$.$anonfun$future$1(CancelTokens.scala:40)
+	at scala.meta.internal.metals.CancelTokens$.$anonfun$future$1$adapted(CancelTokens.scala:38)
+	at scala.concurrent.impl.Promise$Transformation.run(Promise.scala:484)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+Caused by: java.util.NoSuchElementException: BatchedFunction
+	at scala.meta.internal.metals.BatchedFunction.<init>(BatchedFunction.scala:101)
+	at scala.meta.internal.metals.MetalsLspService.<init>(MetalsLspService.scala:283)
+	at scala.meta.internal.metals.WorkspaceLspService.createService(WorkspaceLspService.scala:183)
+	at scala.meta.internal.metals.WorkspaceLspService.$anonfun$workspaceFolders$1(WorkspaceLspService.scala:190)
+	at scala.meta.internal.metals.WorkspaceFolders.$anonfun$folderServices$2(WorkspaceFolders.scala:25)
+	at scala.collection.immutable.List.map(List.scala:247)
+	at scala.meta.internal.metals.WorkspaceFolders.<init>(WorkspaceFolders.scala:25)
+	at scala.meta.internal.metals.WorkspaceLspService.<init>(WorkspaceLspService.scala:188)
+	at scala.meta.metals.MetalsLanguageServer.createService(MetalsLanguageServer.scala:231)
+	at scala.meta.metals.MetalsLanguageServer.initialize(MetalsLanguageServer.scala:170)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.lambda$null$0(GenericEndpoint.java:65)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.request(GenericEndpoint.java:120)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.handleRequest(RemoteEndpoint.java:261)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.consume(RemoteEndpoint.java:190)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.handleMessage(StreamMessageProducer.java:194)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.listen(StreamMessageProducer.java:94)
+	at org.eclipse.lsp4j.jsonrpc.json.ConcurrentMessageProcessor.run(ConcurrentMessageProcessor.java:113)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:539)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	... 3 more
+
+2024.05.06 14:51:28 WARN  no build target for: G:\Projects\Bachelor-Thesis\Ikaros\out\Scala\Unreduced\Unreachable\prog_4.scala
+2024.05.06 14:51:28 WARN  no build target for: G:\Projects\Bachelor-Thesis\Ikaros\out\Scala\Unreduced\Unreachable\prog_4.scala
+2024.05.06 17:45:55 WARN  no build target for: G:\Projects\Bachelor-Thesis\Ikaros\out\Scala\Unreduced\Unreachable\prog_5.scala.scala
+2024.05.06 17:45:55 WARN  Could not find semantic tokens for: file:///G:/Projects/Bachelor-Thesis/Ikaros/out/Scala/Unreduced/Unreachable/prog_5.scala.scala
+2024.05.06 17:45:57 WARN  no build target for: G:\Projects\Bachelor-Thesis\Ikaros\out\Scala\Unreduced\Unreachable\prog_5.scala.scala
+2024.05.06 17:46:15 WARN  no build target for: G:\Projects\Bachelor-Thesis\Ikaros\out\Scala\Unreduced\Unreachable\prog_5.scala
+2024.05.06 17:48:41 WARN  no build target for: G:\Projects\Bachelor-Thesis\Ikaros\out\Scala\Unreduced\Unreachable\prog_6.scala
+2024.05.06 17:48:41 WARN  Could not find semantic tokens for: file:///G:/Projects/Bachelor-Thesis/Ikaros/out/Scala/Unreduced/Unreachable/prog_6.scala
+2024.05.06 17:48:42 WARN  no build target for: G:\Projects\Bachelor-Thesis\Ikaros\out\Scala\Unreduced\Unreachable\prog_6.scala
+2024.05.06 17:48:46 WARN  no build target for: G:\Projects\Bachelor-Thesis\Ikaros\out\Scala\Unreduced\Unreachable\prog_6.scala
+2024.05.06 19:55:13 INFO  Shutting down server
+2024.05.06 19:55:13 INFO  shutting down Metals
+2024.05.06 19:55:13 INFO  Exiting server

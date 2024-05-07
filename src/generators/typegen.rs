@@ -5,6 +5,7 @@ use std::{collections::HashMap, fmt::Display};
 use rand::Rng;
 use rand_chacha::ChaCha8Rng;
 
+use crate::types::type_graph::graph::Graph;
 use crate::types::{languages::scala::variance::Variance, template::Template, type_trait::Type};
 
 use super::typegen_args::TypeContextArgs;
@@ -90,8 +91,17 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> TypeGenerator<Lang
             bases.push(base.clone());
             self.add_type(&base, true);
         }
+        let mut added_case = false;
         for base in bases {
-            let num_cases = self.rng.gen_range(0..(self.typgen_args.max_num_base_cases));
+            let min_num_cases = if added_case {
+                0
+            } else {
+                added_case = true;
+                1
+            };
+            let num_cases = self
+                .rng
+                .gen_range(min_num_cases..(self.typgen_args.max_num_base_cases));
             for _ in 0..num_cases {
                 let mut cur_base = base.clone();
                 if cur_base.allows_base_instantiation() {
@@ -105,21 +115,34 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> TypeGenerator<Lang
                         let inst_ind = self.rng.gen_range(0..(existing_instantiations.len()));
                         cur_base = existing_instantiations.get(inst_ind).unwrap().clone();
                     }
-                    if let Some(typargs) = cur_base.get_typargs_mut() {
-                        let mut generics = Vec::new();
-                        for typarg in typargs {
-                            if !typarg.is_generic() {
-                                // don't replace non generics
-                                continue;
-                            }
-                            if self.rng.gen_bool(self.typgen_args.base_instantiation_prob) {
-                                let new_typ = self.generate_type(&generics, 0);
-                                *typarg = new_typ;
-                            } else {
-                                generics.push(typarg.clone());
-                            }
+                    let mut changed = false;
+                    let mut new_typarg_generics = Vec::new();
+                    let mut generic_map = HashMap::new();
+                    for generic in Self::get_generics(&cur_base) {
+                        if self.rng.gen_bool(self.typgen_args.base_instantiation_prob) {
+                            let new_typ = self.generate_type(&new_typarg_generics, 0);
+                            generic_map.insert(generic, new_typ);
+                            changed = true;
+                        } else {
+                            let new_typ = self.generate_generic();
+                            generic_map.insert(generic, new_typ.clone());
+                            new_typarg_generics.push(new_typ);
                         }
                     }
+                    for (generic, new_typ) in generic_map {
+                        Graph::substitute(&mut cur_base, &generic, &new_typ);
+                    }
+                    if changed {
+                        if self.base_instantiations.get(base.get_name()).is_none() {
+                            self.base_instantiations
+                                .insert(base.get_name().to_string(), Vec::new());
+                        }
+                        self.base_instantiations
+                            .get_mut(base.get_name())
+                            .unwrap()
+                            .push(cur_base.clone());
+                    }
+                    self.add_type(&cur_base, false);
                 }
                 let templates = base
                     .get_case_templates()
@@ -140,8 +163,15 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> TypeGenerator<Lang
                     typargs.push(self.generate_generic());
                 }
                 // add the typargs to this cases typargs
+                let mut num_typargs = 0;
                 if let Some(case_typargs) = template.0.get_typargs_mut() {
                     case_typargs.append(&mut typargs);
+                    num_typargs = case_typargs.len();
+                }
+                if let Some(variances) = template.0.get_variances_mut() {
+                    for _ in 0..num_typargs {
+                        variances.push(Variance::Invariant);
+                    }
                 }
                 // Store this base with the case (if we want to)
                 if let Some(bases) = template.0.get_bases_mut() {
@@ -180,6 +210,9 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> TypeGenerator<Lang
     }
 
     fn add_type(&mut self, t: &LangTyp, declaration: bool) {
+        if self.all_types.contains(t) {
+            return;
+        }
         self.all_types.push(t.clone());
         let index = self.all_types.len() - 1;
         if !t.is_local() {
@@ -251,24 +284,17 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> TypeGenerator<Lang
                     }
                 }
             }
-            // This might have added new type arguments we need to add to the case
-            let generics = Self::get_generics(&typ);
-            for generic in generics {
-                if let Some(typargs) = typ.get_typargs_mut() {
-                    if !typargs.contains(&generic) {
-                        typargs.push(generic);
-                    }
-                }
-            }
-            self.add_type(&typ, false);
             typ
         }
         //TODO: Generate other types, such as type unions etc. here
     }
 
-    fn substitute(typ: &mut LangTyp, orig: &LangTyp, new_typ: &LangTyp) {
+    pub fn substitute(typ: &mut LangTyp, orig: &LangTyp, new_typ: &LangTyp) {
         if typ == orig {
             *typ = new_typ.clone();
+        }
+        if orig == new_typ {
+            return;
         }
         if let Some(params) = typ.get_params_mut() {
             params
@@ -287,7 +313,7 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> TypeGenerator<Lang
         }
     }
 
-    fn get_generics(typ: &LangTyp) -> HashSet<LangTyp> {
+    pub fn get_generics(typ: &LangTyp) -> HashSet<LangTyp> {
         let mut generics = Vec::new();
         if typ.is_generic() {
             generics.push(typ.clone());
