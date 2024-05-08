@@ -40,5 +40,6 @@ fn main() {
         program_generator.generate_types();
         program_generator.generate_match();
         println!("{}", program_generator.output_prog());
+        break;
     }
 }

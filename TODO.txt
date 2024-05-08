@@ -4,7 +4,7 @@
 
 - In type generation check the type depth of an available concrete type
 
-- Add typ <: GENERIC case to Graph::is_satisfiable
+- Add typ <: GENERIC case to Graph::is_satisfiable, Can still generate unreachable types (not a problem just not interesting,I think)
 
 - In get_base, before returning, check if the type is concrete. If it is not and there is an equality constraint for that generic
   substitute it with that. Otherwise if there are subtype constraints, try to find all the possible types that could be used. 

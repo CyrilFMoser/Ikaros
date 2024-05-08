@@ -169,7 +169,7 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> Constraint<LangTyp
                 actual_equality.push(flipped);
             }
         }
-        println!("current constraints: {}", self);
+        //println!("current constraints: {}", self);
         let mut remove_subtyp = Vec::new();
         for pair in &self.equality {
             if self.subtypes.contains(pair) {
@@ -223,7 +223,7 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> Constraint<LangTyp
             });
             if let (Some(t1_2), Some(t2_1)) = (t1_2_opt, t2_1_opt) {
                 if t1_2 != t2_1 {
-                    //println!("Pairs didn't match, {t1_2} != {t2_1}");
+                    println!("Pairs didn't match, {t1_2} != {t2_1}");
                     return Err(());
                 }
                 remove_eq.push(pair.clone());

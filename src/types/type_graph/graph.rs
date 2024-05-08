@@ -272,7 +272,7 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> Graph<LangTyp> {
         }
         let node_index = self.rng.gen_range(0..(no_children.len()));
         let node_id = no_children.get(node_index).unwrap();
-        let mut cur_node = self.nodes.get(node_id).unwrap();
+        let mut cur_node = self.nodes.get(node_id).unwrap().clone();
         //println!("Starting node: {}", cur_node.typ);
         let mut cur_constraints = Constraint::<LangTyp>::new_empty();
 
@@ -317,7 +317,7 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> Graph<LangTyp> {
                     cur_constraints = new_edge_constraints;
                 }
 
-                cur_node = self.nodes.get(parent_id).unwrap();
+                cur_node = self.nodes.get(parent_id).unwrap().clone();
                 break;
             }
         }
@@ -370,16 +370,15 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> Graph<LangTyp> {
                 checked.push(t2.clone());
             }
         }
-        // This checks that if A is a generic and t1,t2 isn't, A <: t1 AND A <: t2 such an A exists
+        // This checks that if A is a generic and t1,t2 aren't, A <: t1 AND A <: t2 such an A exists
         let mut sub_map: HashMap<LangTyp, HashSet<LangTyp>> = HashMap::new();
         for (t1, t2) in constraints
             .subtypes
             .iter()
             .filter(|(a, b)| a.is_generic() && !b.is_generic())
         {
-            println!("Getting reachable of {t2}");
-            let reachable = graph.get_reachable(t2).into_iter().collect();
-            println!("Finished");
+            let reachable_vec = graph.get_reachable(t2);
+            let reachable = reachable_vec.into_iter().collect();
             if !sub_map.contains_key(t1) {
                 sub_map.insert(t1.clone(), reachable);
             } else {
@@ -395,20 +394,47 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> Graph<LangTyp> {
                 }
             }
         }
-        // now if certain generics can only be of one type, we remove the subtype constraints and simply add an equality constraint
-        let subtypes: HashSet<LangTyp> = constraints
+        // Now we check if A is a generic and t1,t2 aren't: t1 <: A AND t2 <: A is satisfiable
+        for (t1, t2) in constraints
             .subtypes
-            .clone()
-            .into_iter()
+            .iter()
+            .filter(|(a, b)| !a.is_generic() && b.is_generic())
+        {
+            if !sub_map.contains_key(t2) {
+                // we don't have other subtype constraints for this generic, all possible types could reach it, add them
+                sub_map.insert(
+                    t2.clone(),
+                    self.nodes.values().map(|n| n.typ.clone()).collect(),
+                );
+            }
+            let previous_set = sub_map.get(t2).unwrap().clone(); // The types that were possible before for generic t2
+            let cur_set = sub_map.get_mut(t2).unwrap();
+            for typ in previous_set {
+                let reachable = graph.get_reachable(&typ);
+                if !reachable.iter().any(|t| Constraint::is_alpha_equiv(t, t1)) {
+                    cur_set.remove(&typ);
+                }
+                if cur_set.is_empty() {
+                    return false;
+                }
+            }
+        }
+        // now if certain generics can only be of one type, we remove the subtype constraints and simply add an equality constraint
+        // For this we only need to consider typevariables that are constrained by a "non typevar type"
+        let typevars: HashSet<LangTyp> = constraints
+            .subtypes
+            .iter()
             .filter_map(|(a, b)| {
                 if a.is_generic() && !b.is_generic() {
-                    Some(a)
+                    Some(a.clone())
+                } else if !a.is_generic() && b.is_generic() {
+                    Some(b.clone())
                 } else {
                     None
                 }
             })
             .collect();
-        for t1 in subtypes {
+        for t1 in typevars {
             let cur_set = sub_map.get(&t1).unwrap();
             if cur_set.len() != 1 {
                 continue;
@@ -416,14 +442,14 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> Graph<LangTyp> {
             let typ = cur_set.iter().next().unwrap();
             constraints
                 .subtypes
-                .retain(|(a, b)| a != &t1 || b.is_generic());
+                .retain(|(a, b)| (b != &t1 || a.is_generic()) && (a != &t1 || b.is_generic()));
             constraints.add_equality(&t1, typ)
         }
         println!("Finished satisfiability");
         true
     }
 
-    pub fn get_reachable(&mut self, typ: &LangTyp) -> Vec<LangTyp> {
+    pub fn get_reachable(&self, typ: &LangTyp) -> Vec<LangTyp> {
         let name = typ.get_name();
         let start_node_opt = self.nodes.values().find(|n| {
             n.typ.get_name() == name
