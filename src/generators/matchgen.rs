@@ -5,6 +5,7 @@ use std::collections::{HashSet, VecDeque};
 use std::fmt::Display;
 use std::hash::Hash;
 
+use super::matchgen_args::MatchArgs;
 use crate::generators::typegen::TypeGenerator;
 use crate::matches::expression::{Expression, MatchExp};
 use crate::matches::pattern::{Pattern, Variant, WildCard};
@@ -12,8 +13,7 @@ use crate::matches::statements::{Declaration, Statement, VarDecl};
 use crate::types::constraints::Constraint;
 use crate::types::type_graph::graph::Graph;
 use crate::types::type_trait::Type;
-
-use super::matchgen_args::MatchArgs;
+use core::fmt::Debug;
 
 pub struct MatchGenerator<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> {
     pub rng: ChaCha8Rng,
@@ -21,7 +21,7 @@ pub struct MatchGenerator<LangTyp: Type + Clone + PartialEq + Eq + Hash + Displa
     pub args: MatchArgs,
 }
 
-impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> MatchGenerator<LangTyp> {
+impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display> MatchGenerator<LangTyp> {
     pub fn new(rng: ChaCha8Rng, graph: Graph<LangTyp>, args: MatchArgs) -> Self {
         MatchGenerator { rng, graph, args }
     }
@@ -60,8 +60,8 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> MatchGenerator<Lan
                 orig_constraints, constraints
             )
         }
-        println!("refined constraints: {}", constraints);
-        println!("Now instantiating type: {}", node.typ);
+        //println!("refined constraints: {}", constraints);
+        //println!("Now instantiating type: {}", node.typ);
         let mut to_match_type = node.typ.clone();
         for (t1, t2) in &constraints.equality {
             if t1.is_generic() && !t2.is_generic() {
@@ -70,7 +70,7 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> MatchGenerator<Lan
                 Graph::substitute(&mut to_match_type, t2, t1)
             }
         }
-        println!("Finished instantiating");
+        //println!("Finished instantiating");
         let remaining_generics = TypeGenerator::get_generics(&to_match_type);
         for generic in remaining_generics {
             let num = self.rng.gen_range(0..(self.graph.concrete_types.len()));
@@ -174,7 +174,11 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> MatchGenerator<Lan
         if !Constraint::is_concrete(typ) {
             return vec![Pattern::WildCard(wild)];
         }
-        let reachable = self.graph.get_reachable(typ);
+        let reachable = self.graph.get_reachable(typ, true, None);
+        /*println!("Reachable from {typ} is :-------------------------------");
+        for r in &reachable {
+            println!("{r}");
+        }*/
         let reachable_variants: Vec<Variant<LangTyp>> = reachable
             .into_iter()
             .filter_map(|t| {

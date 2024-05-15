@@ -1,15 +1,16 @@
+use core::fmt::Debug;
+use rand::Rng;
+use rand_chacha::ChaCha8Rng;
 use std::collections::HashSet;
 use std::hash::Hash;
 use std::{collections::HashMap, fmt::Display};
 
-use rand::Rng;
-use rand_chacha::ChaCha8Rng;
-
 use crate::types::type_graph::graph::Graph;
-use crate::types::{languages::scala::variance::Variance, template::Template, type_trait::Type};
+use crate::types::variance::Variance;
+use crate::types::{template::Template, type_trait::Type};
 
 use super::typegen_args::TypeContextArgs;
-
+#[derive(Clone)]
 pub struct TypeGenerator<LangTyp: Type> {
     pub all_types: Vec<LangTyp>,
     pub available_types: Vec<usize>,
@@ -22,7 +23,7 @@ pub struct TypeGenerator<LangTyp: Type> {
     pub rng: ChaCha8Rng,
 }
 
-impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> TypeGenerator<LangTyp> {
+impl<LangTyp: Type + Debug + Clone + PartialEq + Eq + Hash + Display> TypeGenerator<LangTyp> {
     pub fn new(typgen_args: TypeContextArgs, rng: ChaCha8Rng) -> Self {
         let types = LangTyp::get_types();
         let all_types: Vec<LangTyp> = types
@@ -39,7 +40,13 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> TypeGenerator<Lang
         let complex_types = all_types
             .iter()
             .enumerate()
-            .filter_map(|(i, t)| if t.is_complex() { Some(i) } else { None })
+            .filter_map(|(i, t)| {
+                if t.is_complex() && !t.is_local() {
+                    Some(i)
+                } else {
+                    None
+                }
+            })
             .collect();
         let available_types = (0..(all_types.len())).collect();
         TypeGenerator {
@@ -94,7 +101,7 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> TypeGenerator<Lang
         let mut added_case = false;
         for base in bases {
             let min_num_cases = if added_case {
-                0
+                base.get_min_num_cases()
             } else {
                 added_case = true;
                 1
@@ -197,9 +204,17 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> TypeGenerator<Lang
                         } else {
                             Vec::new()
                         };
+
                         let params = template.0.get_params_mut().unwrap();
                         for _ in 0..num_params {
-                            let param = self.generate_type(typargs.as_slice(), 0);
+                            let param = if num_typargs > 0
+                                && self.rng.gen_bool(self.typgen_args.typarg_parameter_prob)
+                            {
+                                let num = self.rng.gen_range(0..(num_typargs));
+                                typargs.get(num).unwrap().clone()
+                            } else {
+                                self.generate_type(typargs.as_slice(), 0)
+                            };
                             params.push(param);
                         }
                     }
@@ -217,9 +232,9 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> TypeGenerator<Lang
         let index = self.all_types.len() - 1;
         if !t.is_local() {
             self.available_types.push(index);
-        }
-        if t.is_complex() {
-            self.complex_types.push(index);
+            if t.is_complex() {
+                self.complex_types.push(index);
+            }
         }
         if declaration {
             self.declarations.push(index);
@@ -336,9 +351,8 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> TypeGenerator<Lang
         generics.into_iter().collect()
     }
 
-    fn generate_generic(&mut self) -> LangTyp {
+    pub fn generate_generic(&mut self) -> LangTyp {
         let mut template = LangTyp::get_generic_template();
-        template.0.set_id(self.generic_count);
         self.generic_count += 1;
         template.0.generate_name(&mut self.names);
         template.0

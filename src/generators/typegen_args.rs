@@ -7,6 +7,7 @@
 /// * `max_num_params` : Maximal number of parameters a type can take
 /// * `contravariance_prob` : Probability to use a contravariant type argument in languages that support them
 /// * `covariance_prob` : Probability to use a covariant type argument in languages that support them if we don't use a contravariant type argument
+/// * `typarg_parameter_prob` : Probability to use a type variable of the type arguments as parameter of a variant
 /// * `base_instantiation_prob` : Probability to instantiate a typarg of a base upon declaration
 /// * `use_same_instantiation_prob` : Probability to use the same instantiation of a base as an already existing one
 /// * `use_prelude_type` : Probability to use a "prelude type"
@@ -21,6 +22,7 @@ pub struct TypeContextArgs {
     pub max_num_params: u32,
     pub contravariance_prob: f64,
     pub covariance_prob: f64,
+    pub typarg_parameter_prob: f64,
     pub base_instantiation_prob: f64,
     pub use_same_instantiation_prob: f64,
     pub use_prelude_type_prob: f64,

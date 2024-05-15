@@ -1,17 +1,17 @@
+use super::{
+    matchgen::MatchGenerator, matchgen_args::MatchArgs, typegen::TypeGenerator,
+    typegen_args::TypeContextArgs,
+};
 use crate::{
     matches::statements::Statement,
     types::{type_graph::graph::Graph, type_trait::Type},
 };
+use core::fmt::Debug;
 use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
 use std::{
     fmt::{format, Display},
     hash::Hash,
-};
-
-use super::{
-    matchgen::MatchGenerator, matchgen_args::MatchArgs, typegen::TypeGenerator,
-    typegen_args::TypeContextArgs,
 };
 
 pub struct ProgramGenerator<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> {
@@ -22,7 +22,7 @@ pub struct ProgramGenerator<LangTyp: Type + Clone + PartialEq + Eq + Hash + Disp
     match_statements: Vec<Statement<LangTyp>>,
 }
 
-impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> ProgramGenerator<LangTyp> {
+impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display> ProgramGenerator<LangTyp> {
     pub fn new(typctxt_args: &TypeContextArgs, rng: ChaCha8Rng, match_gen_args: MatchArgs) -> Self {
         ProgramGenerator {
             typ_gen: TypeGenerator::new(
@@ -42,8 +42,9 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> ProgramGenerator<L
             &self.typ_gen.all_types,
             &self.typ_gen.declarations,
             ChaCha8Rng::from_seed(self.typ_gen.rng.get_seed()),
+            self.typ_gen.clone(),
         );
-        //graph.output_graph_viz();
+        graph.output_graph_viz();
         self.graph = Some(graph)
     }
 

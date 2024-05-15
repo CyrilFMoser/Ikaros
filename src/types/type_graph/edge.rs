@@ -3,7 +3,7 @@ use std::fmt::Display;
 use std::hash::Hash;
 
 use super::node::NodeId;
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct Edge<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> {
     pub id: EdgeId,
     pub u: NodeId,

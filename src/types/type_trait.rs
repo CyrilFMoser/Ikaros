@@ -1,6 +1,6 @@
 use crate::matches::statements::Statement;
 
-use super::{languages::scala::variance::Variance, template::Template};
+use super::{template::Template, variance::Variance};
 
 pub trait Type {
     fn is_subtype(&self, other: &Self) -> bool;
@@ -106,6 +106,6 @@ pub trait Type {
     fn declarations_to_string(types: &[&Self]) -> String
     where
         Self: Sized;
-    /// Sets the id of the type (if available). Mostly used for generics
-    fn set_id(&mut self, id: u32);
+
+    fn get_min_num_cases(&self) -> u32;
 }

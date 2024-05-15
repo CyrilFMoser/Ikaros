@@ -1,10 +1,10 @@
 use std::fmt::Display;
 
-use crate::types::type_trait::Type;
+use crate::types::{type_trait::Type, variance::Variance};
 
-use super::{scala_type::ScalaType, variance::Variance};
-
-#[derive(Clone, Hash, Default, PartialEq, Eq, PartialOrd, Ord)]
+use super::scala_type::ScalaType;
+use core::fmt::Debug;
+#[derive(Clone, Hash, Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Trait {
     pub name: String,
     pub variances: Vec<Variance>,

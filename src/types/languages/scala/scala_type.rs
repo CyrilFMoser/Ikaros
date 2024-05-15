@@ -1,17 +1,17 @@
 use std::{fmt::Display, hash::Hash};
 
+use super::{case_class::CaseClass, generic::Generic, traits::Trait};
 use crate::{
     matches::{
         expression::{Expression, MatchExp},
         pattern::{Pattern, Variant},
         statements::{Declaration, Statement, VarDecl},
     },
-    types::{template::Template, type_trait::Type},
+    types::{template::Template, type_trait::Type, variance::Variance},
 };
+use core::fmt::Debug;
 
-use super::{case_class::CaseClass, generic::Generic, traits::Trait, variance::Variance};
-
-#[derive(Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum ScalaType {
     Trait(Trait),
     CaseClass(CaseClass),
@@ -355,10 +355,8 @@ impl Type for ScalaType {
         }
     }
 
-    fn set_id(&mut self, id: u32) {
-        if let ScalaType::Generic(g) = self {
-            g.id = id
-        }
+    fn get_min_num_cases(&self) -> u32 {
+        0
     }
 }
 
@@ -419,8 +417,8 @@ impl Display for ScalaType {
             ST::Char => write!(f, "Char"),
             ST::Int => write!(f, "Int"),
             ST::Byte => write!(f, "Byte"),
-            ST::Trait(tr) => tr.fmt(f),
-            ST::CaseClass(cc) => cc.fmt(f),
+            ST::Trait(tr) => write!(f, "{tr}"),
+            ST::CaseClass(cc) => write!(f, "{cc}"),
             ST::Generic(g) => write!(f, "{}", g.name),
         }
     }

@@ -1,10 +1,10 @@
 use std::{collections::HashSet, fmt::Display};
 
-use crate::types::type_trait::Type;
+use super::scala_type::ScalaType;
+use crate::types::{type_trait::Type, variance::Variance};
+use core::fmt::Debug;
 
-use super::{scala_type::ScalaType, variance::Variance};
-
-#[derive(Clone, Hash, Default, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Hash, Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
 pub struct CaseClass {
     pub name: String,
     pub typargs: Vec<ScalaType>,

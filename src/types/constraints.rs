@@ -1,20 +1,20 @@
-use crate::generators::typegen::TypeGenerator;
-
-use super::languages::scala::variance::Variance;
 use super::type_graph::graph::Graph;
 use super::type_trait::Type;
+use super::variance::Variance;
+use crate::generators::typegen::TypeGenerator;
+use core::fmt::Debug;
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::fmt::Display;
 use std::hash::Hash;
 /// We need subtypes and supertypes, because we want to keep track to which original type the unwrapped constraints
 /// belong to.
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct Constraint<LangTyp: PartialEq + Eq + Hash> {
     pub subtypes: HashSet<(LangTyp, LangTyp)>, // (t1,t2) => t1 <: t2
     pub equality: HashSet<(LangTyp, LangTyp)>, // (t1,t2) => t1 == t2
 }
 
-impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> Constraint<LangTyp> {
+impl<LangTyp: Type + Clone + Debug + PartialEq + Eq + Hash + Display> Constraint<LangTyp> {
     pub fn new_empty() -> Constraint<LangTyp> {
         Constraint {
             subtypes: HashSet::new(),
@@ -40,6 +40,8 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> Constraint<LangTyp
     pub fn is_alpha_equiv(t1: &LangTyp, t2: &LangTyp) -> bool {
         if t1 == t2 {
             return true;
+        } else if t1.get_name() == t2.get_name() && t1.get_name() == "CC_D" {
+            dbg!(t1, t2);
         }
         if t1.get_name() != t2.get_name() {
             return false;
@@ -90,7 +92,7 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> Constraint<LangTyp
     }
 
     pub fn refine(&mut self) -> Result<bool, ()> {
-        println!("Refining {}", self);
+        //println!("Refining {}", self);
 
         let original = self.clone();
 
@@ -101,7 +103,7 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> Constraint<LangTyp
             if t1.get_name() == t2.get_name() {
                 if let (Some(typargs_1), Some(typargs_2)) = (t1.get_typargs(), t2.get_typargs()) {
                     if let Some(variances) = t1.get_variances() {
-                        println!("Unpacking {t1} and {t2}");
+                        //println!("Unpacking {t1} and {t2}");
                         for i in 0..(variances.len()) {
                             let variance = variances.get(i).unwrap();
                             let typarg_1 = typargs_1.get(i).unwrap().clone();
@@ -139,13 +141,8 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> Constraint<LangTyp
             }
         }
 
-        let mut no_concrete = |pair: &(LangTyp, LangTyp)| {
-            if !Self::is_concrete(&pair.0) || !Self::is_concrete(&pair.1) {
-                true
-            } else {
-                false
-            }
-        };
+        let mut no_concrete =
+            |pair: &(LangTyp, LangTyp)| !Self::is_concrete(&pair.0) || !Self::is_concrete(&pair.1);
         self.equality.retain(&mut no_concrete);
         self.subtypes.retain(&mut no_concrete);
 
@@ -156,6 +153,25 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> Constraint<LangTyp
                 if t2 == t3 {
                     subtypes_to_add.insert((t1.clone(), t4.clone()));
                 }
+            }
+        }
+        // Add subtype constraints through equality constraints of generics
+        for (t1, t2) in self
+            .equality
+            .iter()
+            .filter(|(a, b)| a.is_generic() && b.is_generic())
+        {
+            for (_, t2_sub) in self.subtypes.iter().filter(|(a, _)| a == t1) {
+                subtypes_to_add.insert((t2.clone(), t2_sub.clone()));
+            }
+            for (t1_sub, _) in self.subtypes.iter().filter(|(_, b)| b == t1) {
+                subtypes_to_add.insert((t1_sub.clone(), t2.clone()));
+            }
+            for (_, t2_sub) in self.subtypes.iter().filter(|(a, _)| a == t2) {
+                subtypes_to_add.insert((t1.clone(), t2_sub.clone()));
+            }
+            for (t1_sub, _) in self.subtypes.iter().filter(|(_, b)| b == t2) {
+                subtypes_to_add.insert((t1_sub.clone(), t1.clone()));
             }
         }
         for pair in subtypes_to_add {
@@ -223,15 +239,59 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> Constraint<LangTyp
             });
             if let (Some(t1_2), Some(t2_1)) = (t1_2_opt, t2_1_opt) {
                 if t1_2 != t2_1 {
-                    println!("Pairs didn't match, {t1_2} != {t2_1}");
+                    //println!("Pairs didn't match, {t1_2} != {t2_1}");
                     return Err(());
                 }
                 remove_eq.push(pair.clone());
             }
         }
         for pair in remove_eq {
-            println!("Removing {},{}", pair.0, pair.1);
+            //println!("Removing {},{}", pair.0, pair.1);
             self.equality.remove(&pair);
+        }
+        // if generics are constrained through some constraint by each other, this limits how they can otherwise appear due to
+        // infinite type substitutions happening otherwise
+        let mut constrained: HashMap<LangTyp, HashSet<LangTyp>> = HashMap::new();
+        for it in [&self.equality, &self.subtypes] {
+            for (t1, t2) in it
+                .iter()
+                .filter(|(a, b)| a.is_generic() && !b.is_generic())
+                .cloned()
+                .chain(it.iter().filter_map(|(a, b)| {
+                    if b.is_generic() {
+                        Some((b.clone(), a.clone()))
+                    } else {
+                        None
+                    }
+                }))
+            {
+                let generics = TypeGenerator::get_generics(&t2);
+                if let Some(set) = constrained.get_mut(&t1) {
+                    for generic in &generics {
+                        if !set.insert(generic.clone()) {
+                            // was already present
+                            return Err(());
+                        }
+                    }
+                } else {
+                    constrained.insert(t1.clone(), HashSet::new());
+                    let cur_set = constrained.get_mut(&t1).unwrap();
+                    for generic in TypeGenerator::get_generics(&t2) {
+                        cur_set.insert(generic);
+                    }
+                }
+                for generic in generics {
+                    if let Some(set) = constrained.get_mut(&generic) {
+                        if !set.insert(t1.clone()) {
+                            // was already present
+                            /*println!(
+                                "Constraints {self} are not valid because of {t1} and {generic}"
+                            );*/
+                            return Err(());
+                        }
+                    }
+                }
+            }
         }
 
         // recursive constraints
@@ -293,9 +353,9 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> Constraint<LangTyp
                     for (typ_1, typ_2) in t1_typargs.iter().zip(t2_typargs) {
                         let prev_len = new_eq.len();
                         new_eq.insert((typ_1.clone(), typ_2.clone()));
-                        if prev_len < new_eq.len() {
-                            println!("Added {typ_1} == {typ_2}");
-                        }
+                        /*if prev_len < new_eq.len() {
+                            //println!("Added {typ_1} == {typ_2}");
+                        } */
                     }
                 }
             } else {
@@ -324,19 +384,50 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> Constraint<LangTyp
             }
             self.equality = new_eq;
         }
+
+        // add equality constraints with remapped generics
+        let generic_mappings: HashSet<(LangTyp, LangTyp)> = self
+            .equality
+            .iter()
+            .filter_map(|(a, b)| {
+                if a.is_generic() && !b.is_generic() {
+                    Some((a.clone(), b.clone()))
+                } else if b.is_generic() && !a.is_generic() {
+                    Some((b.clone(), a.clone()))
+                } else {
+                    None
+                }
+            })
+            .collect();
+        let old_eq = self.equality.clone();
+        for (generic, sub) in &generic_mappings {
+            for (t1, t2) in old_eq.clone() {
+                let mut new_t1 = t1;
+                let mut new_t2 = t2;
+                if !new_t1.is_generic() {
+                    Graph::substitute(&mut new_t1, generic, sub);
+                }
+                if !new_t2.is_generic() {
+                    Graph::substitute(&mut new_t2, generic, sub);
+                }
+                self.equality.insert((new_t1, new_t2));
+            }
+        }
+
         let changed = *self != original;
         if changed {
-            println!("Changed {} to \n{}", original, self);
+            //println!("Changed {} to \n{}", original, self);
         }
         Ok(changed)
     }
 
     pub fn is_satisfiable(&mut self) -> bool {
         while let Ok(b) = self.refine() {
+            //println!("refined");
             if !b {
                 return true;
             }
-            println!("{self}");
+            //println!("{self}");
         }
         false
     }
