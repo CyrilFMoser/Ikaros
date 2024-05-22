@@ -137,7 +137,7 @@ impl Type for ScalaType {
     }
 
     fn is_local(&self) -> bool {
-        !matches!(self, ScalaType::Generic(_))
+        matches!(self, ScalaType::Generic(_))
     }
 
     fn is_sealed(&self) -> bool {
@@ -282,6 +282,7 @@ impl Type for ScalaType {
         Self: Sized,
     {
         let mut out = String::new();
+        out.push_str("object Test {\n");
         let traits = types.iter().filter(|t| matches!(t, Self::Trait(_)));
         for tr in traits {
             out.push_str("sealed trait ");
@@ -333,7 +334,6 @@ impl Type for ScalaType {
             }
             out.push('\n');
         }
-
         out
     }
 
@@ -358,6 +358,76 @@ impl Type for ScalaType {
     fn get_min_num_cases(&self) -> u32 {
         0
     }
+
+    fn get_compiler_name() -> String {
+        "scalac".to_string()
+    }
+
+    fn get_compiler_path() -> String {
+        "scalac".to_string()
+        //"C:/Users/cyril/AppData/Local/Coursier/data/bin/scalac.bat".to_string()
+    }
+
+    fn get_compiler_args() -> Option<Box<[String]>> {
+        None
+    }
+
+    fn get_suffix() -> String {
+        "scala".to_string()
+    }
+
+    fn get_test_script() -> String {
+        "testscript_unreachable_scala.sh".to_string()
+    }
+
+    fn pattern_to_string(p: &Pattern<ScalaType>) -> String {
+        match p {
+            Pattern::Constant(c) => exp_to_string(&c.exp),
+            Pattern::WildCard(w) => {
+                if w.annotate {
+                    format!("_:{}", w.typ)
+                } else {
+                    "_".to_string()
+                }
+            }
+            Pattern::Variant(Variant { typ, parameters }) => {
+                let mut out = format!("{}(", typ.get_name());
+                for p in parameters {
+                    out.push_str(format!("{}, ", ScalaType::pattern_to_string(p)).as_str());
+                }
+                if !parameters.is_empty() {
+                    out.pop(); // comma
+                    out.pop(); // space
+                }
+                out.push(')');
+                out
+            }
+        }
+    }
+
+    fn get_comment() -> String {
+        "//".to_string()
+    }
+
+    fn is_bool(&self) -> bool {
+        matches!(self, ScalaType::Bool)
+    }
+
+    fn is_primitive(&self) -> bool {
+        matches!(
+            self,
+            ScalaType::Bool | ScalaType::Byte | ScalaType::Char | ScalaType::Int
+        )
+    }
+
+    fn get_const_exp(&self) -> Expression<ScalaType> {
+        match self {
+            ScalaType::Byte => Expression::Byte(0),
+            ScalaType::Int => Expression::Byte(12),
+            ScalaType::Char => Expression::Char('x'),
+            _ => panic!("Called on a non const exp"),
+        }
+    }
 }
 
 fn exp_to_string(e: &Expression<ScalaType>) -> String {
@@ -366,6 +436,15 @@ fn exp_to_string(e: &Expression<ScalaType>) -> String {
         Expression::Var(v) => v.name.clone(),
         Expression::BottomType => "null".to_string(),
         Expression::Int(i) => i.to_string(),
+        Expression::Bool(b) => {
+            if *b {
+                "true".to_string()
+            } else {
+                "false".to_string()
+            }
+        }
+        Expression::Byte(b) => b.to_string(),
+        Expression::Char(b) => format!("\'{b}\'"),
     }
 }
 
@@ -375,38 +454,14 @@ fn match_to_string(m: &MatchExp<ScalaType>) -> String {
         out.push_str(
             format!(
                 "  case {} => {} \n",
-                pattern_to_string(p),
+                ScalaType::pattern_to_string(p),
                 exp_to_string(arm)
             )
             .as_str(),
         );
     }
-    out.push('}');
+    out.push_str("}\n}"); // because of the object Test {, only works if we have exactly one match statement of course
     out
-}
-
-fn pattern_to_string(p: &Pattern<ScalaType>) -> String {
-    match p {
-        Pattern::WildCard(w) => {
-            if w.annotate {
-                format!("_:{}", w.typ)
-            } else {
-                "_".to_string()
-            }
-        }
-        Pattern::Variant(Variant { typ, parameters }) => {
-            let mut out = format!("{}(", typ.get_name());
-            for p in parameters {
-                out.push_str(format!("{}, ", pattern_to_string(p)).as_str());
-            }
-            if !parameters.is_empty() {
-                out.pop(); // comma
-                out.pop(); // space
-            }
-            out.push(')');
-            out
-        }
-    }
 }
 
 impl Display for ScalaType {

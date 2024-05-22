@@ -308,6 +308,7 @@ impl Type for HaskellType {
             case_map.get_mut(base).unwrap().push(typ);
         }
         let mut out = String::new();
+        out.push_str("main = print $ show v_b\n");
         for (base, cases) in case_map {
             out.push_str(format!("data {}", base.get_name()).as_str());
             for typarg in base.get_typargs().unwrap_or(&Vec::new()) {
@@ -329,6 +330,80 @@ impl Type for HaskellType {
     fn get_min_num_cases(&self) -> u32 {
         1
     }
+
+    fn get_compiler_name() -> String {
+        "ghc".to_string()
+    }
+
+    fn get_compiler_path() -> String {
+        "ghc".to_string()
+    }
+
+    fn get_compiler_args() -> Option<Box<[String]>> {
+        Some(Box::new([
+            "-fwarn-incomplete-patterns".to_string(),
+            "-Woverlapping-patterns".to_string(),
+            "-fmax-pmcheck-models=10000".to_string(),
+        ]))
+    }
+
+    fn get_suffix() -> String {
+        "hs".to_string()
+    }
+
+    fn get_test_script() -> String {
+        todo!()
+    }
+
+    fn pattern_to_string(p: &Pattern<HaskellType>) -> String {
+        match p {
+            Pattern::Constant(c) => exp_to_string(&*c.exp),
+            Pattern::WildCard(_) => "_".to_string(),
+            Pattern::Variant(Variant { typ, parameters }) => {
+                let mut out = typ.get_name().to_string();
+                for p in parameters {
+                    match p {
+                        Pattern::WildCard(_) | Pattern::Constant(_) => {
+                            out.push_str(format!(" {}", Self::pattern_to_string(p)).as_str());
+                        }
+                        Pattern::Variant(v) => {
+                            if v.typ.get_params().is_some_and(|t| !t.is_empty())
+                                || v.typ.get_typargs().is_some_and(|t| !t.is_empty())
+                            {
+                                out.push_str(format!(" ({})", Self::pattern_to_string(p)).as_str());
+                            } else {
+                                out.push_str(format!(" {}", Self::pattern_to_string(p)).as_str());
+                            }
+                        }
+                    }
+                }
+                out
+            }
+        }
+    }
+
+    fn get_comment() -> String {
+        "-- ".to_string()
+    }
+
+    fn is_bool(&self) -> bool {
+        matches!(self, HaskellType::Bool)
+    }
+
+    fn is_primitive(&self) -> bool {
+        matches!(
+            self,
+            HaskellType::Bool | HaskellType::Char | HaskellType::Int
+        )
+    }
+
+    fn get_const_exp(&self) -> Expression<HaskellType> {
+        match self {
+            HaskellType::Int => Expression::Byte(12),
+            HaskellType::Char => Expression::Char('x'),
+            _ => panic!("Called on a non const exp"),
+        }
+    }
 }
 
 fn exp_to_string(e: &Expression<HaskellType>) -> String {
@@ -337,32 +412,31 @@ fn exp_to_string(e: &Expression<HaskellType>) -> String {
         Expression::Var(v) => v.name.clone(),
         Expression::BottomType => "undefined".to_string(),
         Expression::Int(i) => i.to_string(),
+        Expression::Bool(b) => {
+            if *b {
+                "True".to_string()
+            } else {
+                "False".to_string()
+            }
+        }
+        Expression::Byte(b) => b.to_string(),
+        Expression::Char(b) => format!("\'{b}\'"),
     }
 }
 
 fn match_to_string(m: &MatchExp<HaskellType>) -> String {
     let mut out = format!("case {} of \n", exp_to_string(&m.to_match));
     for (p, arm) in m.cases.iter().zip(&m.arms) {
-        out.push_str(format!("  {} -> {} \n", pattern_to_string(p), exp_to_string(arm)).as_str());
+        out.push_str(
+            format!(
+                "  {} -> {} \n",
+                HaskellType::pattern_to_string(p),
+                exp_to_string(arm)
+            )
+            .as_str(),
+        );
     }
     out
-}
-
-fn pattern_to_string(p: &Pattern<HaskellType>) -> String {
-    match p {
-        Pattern::WildCard(_) => "_".to_string(),
-        Pattern::Variant(Variant { typ, parameters }) => {
-            let mut out = format!("({} ", typ.get_name());
-            for p in parameters {
-                out.push_str(format!("{} ", pattern_to_string(p)).as_str());
-            }
-            if !parameters.is_empty() {
-                out.pop(); // space
-            }
-            out.push(')');
-            out
-        }
-    }
 }
 
 impl Display for HaskellType {

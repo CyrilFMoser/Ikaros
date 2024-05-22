@@ -1,14 +1,23 @@
 use crate::types::type_trait::Type;
 
+use super::expression::Expression;
+
 #[derive(Clone)]
 pub enum Pattern<T> {
     WildCard(WildCard<T>),
     Variant(Variant<T>),
+    Constant(Constant<T>),
 }
 #[derive(Clone)]
 pub struct WildCard<T> {
     pub typ: T,
     pub annotate: bool,
+}
+#[derive(Clone)]
+
+pub struct Constant<T> {
+    pub typ: T,
+    pub exp: Box<Expression<T>>,
 }
 
 #[derive(Clone)]

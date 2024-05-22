@@ -40,8 +40,6 @@ impl<LangTyp: Type + Clone + Debug + PartialEq + Eq + Hash + Display> Constraint
     pub fn is_alpha_equiv(t1: &LangTyp, t2: &LangTyp) -> bool {
         if t1 == t2 {
             return true;
-        } else if t1.get_name() == t2.get_name() && t1.get_name() == "CC_D" {
-            dbg!(t1, t2);
         }
         if t1.get_name() != t2.get_name() {
             return false;
@@ -57,7 +55,7 @@ impl<LangTyp: Type + Clone + Debug + PartialEq + Eq + Hash + Display> Constraint
             {
                 return false;
             } else if let (Some(l_typargs), Some(r_typargs)) = (l.get_typargs(), r.get_typargs()) {
-                if l_typargs.len() != r_typargs.len() {
+                if l_typargs.len() != r_typargs.len() || l.get_name() != r.get_name() {
                     return false;
                 }
                 for (l_t, r_t) in l_typargs.iter().zip(r_typargs) {
@@ -309,7 +307,7 @@ impl<LangTyp: Type + Clone + Debug + PartialEq + Eq + Hash + Display> Constraint
             }
         }
 
-        //println!("Made it to here with constraints {}", self);
+        println!("Made it to here with constraints {}", self);
         let mut new_eq = HashSet::new();
         let mut final_mappings = HashSet::new();
         for (t1, t2) in &self.equality {
@@ -346,16 +344,12 @@ impl<LangTyp: Type + Clone + Debug + PartialEq + Eq + Hash + Display> Constraint
                 continue;
             }
             if let (Some(t1_typargs), Some(t2_typargs)) = (t1.get_typargs(), t2.get_typargs()) {
-                if t1_typargs.len() != t2_typargs.len() {
+                if t1_typargs.len() != t2_typargs.len() || t1.get_name() != t2.get_name() {
                     return Err(());
                 }
                 if !t1_typargs.is_empty() {
                     for (typ_1, typ_2) in t1_typargs.iter().zip(t2_typargs) {
-                        let prev_len = new_eq.len();
                         new_eq.insert((typ_1.clone(), typ_2.clone()));
-                        /*if prev_len < new_eq.len() {
-                            //println!("Added {typ_1} == {typ_2}");
-                        } */
                     }
                 }
             } else {
@@ -416,7 +410,7 @@ impl<LangTyp: Type + Clone + Debug + PartialEq + Eq + Hash + Display> Constraint
 
         let changed = *self != original;
         if changed {
-            //println!("Changed {} to \n{}", original, self);
+            println!("Changed {} to \n{}", original, self);
         }
         Ok(changed)
     }

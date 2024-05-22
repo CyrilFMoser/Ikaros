@@ -8,7 +8,7 @@ use std::hash::Hash;
 use super::matchgen_args::MatchArgs;
 use crate::generators::typegen::TypeGenerator;
 use crate::matches::expression::{Expression, MatchExp};
-use crate::matches::pattern::{Pattern, Variant, WildCard};
+use crate::matches::pattern::{Constant, Pattern, Variant, WildCard};
 use crate::matches::statements::{Declaration, Statement, VarDecl};
 use crate::types::constraints::Constraint;
 use crate::types::type_graph::graph::Graph;
@@ -19,14 +19,20 @@ pub struct MatchGenerator<LangTyp: Type + Clone + PartialEq + Eq + Hash + Displa
     pub rng: ChaCha8Rng,
     pub graph: Graph<LangTyp>,
     pub args: MatchArgs,
+    pub correct: bool,
 }
 
 impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display> MatchGenerator<LangTyp> {
-    pub fn new(rng: ChaCha8Rng, graph: Graph<LangTyp>, args: MatchArgs) -> Self {
-        MatchGenerator { rng, graph, args }
+    pub fn new(rng: ChaCha8Rng, graph: Graph<LangTyp>, args: MatchArgs, correct: bool) -> Self {
+        MatchGenerator {
+            rng,
+            graph,
+            args,
+            correct,
+        }
     }
 
-    pub fn generate(&mut self) -> Vec<Statement<LangTyp>> {
+    pub fn generate(&mut self) -> (Vec<Statement<LangTyp>>, Option<Pattern<LangTyp>>) {
         let (node, orig_constraints) = self.graph.get_base(self.args.level_prob);
         let mut constraints = orig_constraints.clone();
         for (t1, t2) in &orig_constraints.equality {
@@ -92,7 +98,16 @@ impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display> MatchGener
             typ: to_match_type,
             annotate: false,
         });
-        let cases = self.refine(w, 0);
+        let mut cases = self.refine(w, 0);
+        let removed_pattern = if !self.correct && cases.len() > 1 {
+            let ind = self.rng.gen_range(0..cases.len());
+            Some(cases.remove(ind))
+        } else {
+            None
+        };
+        if let Some(rp) = &removed_pattern {
+            println!("Removed: {}", LangTyp::pattern_to_string(rp));
+        }
 
         let mut arms = Vec::new();
         for i in 0..cases.len() {
@@ -102,7 +117,7 @@ impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display> MatchGener
             to_match,
             cases,
             arms,
-            removed_pattern: None,
+            removed_pattern: removed_pattern.clone(),
         };
 
         let match_var_decl = VarDecl::new(
@@ -111,7 +126,7 @@ impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display> MatchGener
             Expression::Match(match_exp),
         );
         statements.push(Statement::Decl(Declaration::Var(match_var_decl)));
-        statements
+        (statements, removed_pattern)
     }
 
     fn refine(&mut self, p: Pattern<LangTyp>, depth: u32) -> Vec<Pattern<LangTyp>> {
@@ -121,6 +136,7 @@ impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display> MatchGener
         match p {
             Pattern::WildCard(w) => self.refine_wild(w, depth),
             Pattern::Variant(v) => self.refine_variant(v, depth),
+            Pattern::Constant(_) => vec![p],
         }
     }
 
@@ -142,12 +158,14 @@ impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display> MatchGener
         }
         for p_ind in pattern_indices {
             let param_pattern = base_var.parameters.get(p_ind).unwrap();
-            let refined_patterns: Vec<Pattern<LangTyp>> = self
-                .refine(param_pattern.clone(), depth + 1)
-                .into_iter()
-                .filter(|p| !matches!(p, Pattern::WildCard(_)))
-                .collect();
-            if refined_patterns.is_empty() {
+            let refined_patterns: Vec<Pattern<LangTyp>> =
+                self.refine(param_pattern.clone(), depth + 1);
+            /* .into_iter()
+            .filter(|p| !matches!(p, Pattern::WildCard(_)))
+            .collect();*/
+            if refined_patterns.is_empty()
+                || matches!(refined_patterns.first().unwrap(), Pattern::WildCard(_))
+            {
                 continue;
             }
             while let Some(queue_var) = queue.pop_front() {
@@ -174,11 +192,35 @@ impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display> MatchGener
         if !Constraint::is_concrete(typ) {
             return vec![Pattern::WildCard(wild)];
         }
+        if wild.typ.is_primitive() && self.rng.gen_bool(self.args.const_refine_prob) {
+            if wild.typ.is_bool() {
+                let t = Box::new(Expression::Bool(true));
+                let f = Box::new(Expression::Bool(false));
+                let t = Constant {
+                    typ: wild.typ.clone(),
+                    exp: t,
+                };
+                let f = Constant {
+                    typ: wild.typ,
+                    exp: f,
+                };
+                return vec![Pattern::Constant(t), Pattern::Constant(f)];
+            } else {
+                let e = Box::new(wild.typ.get_const_exp());
+                let p = Constant {
+                    typ: wild.typ.clone(),
+                    exp: e,
+                };
+                return vec![Pattern::Constant(p), Pattern::WildCard(wild)];
+            }
+        }
+
         let reachable = self.graph.get_reachable(typ, true, None);
-        /*println!("Reachable from {typ} is :-------------------------------");
+        /*println!("From {typ} can reach: ");
         for r in &reachable {
-            println!("{r}");
-        }*/
+            print!("{r}, ");
+        }
+        println!("----------------------------------");*/
         let reachable_variants: Vec<Variant<LangTyp>> = reachable
             .into_iter()
             .filter_map(|t| {

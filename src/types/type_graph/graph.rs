@@ -4,12 +4,11 @@ use crate::types::type_trait::Type;
 use crate::types::variance::Variance;
 use core::fmt::Debug;
 use dot_generator::{graph, id};
-use graphviz_rust::attributes::constraint;
 use graphviz_rust::printer::{DotPrinter, PrinterContext};
 use rand::Rng;
 use rand_chacha::ChaCha8Rng;
 use std::cell::RefCell;
-use std::collections::{HashSet, VecDeque};
+use std::collections::HashSet;
 use std::fs::{remove_file, File};
 use std::hash::Hash;
 use std::io::Write;
@@ -18,7 +17,6 @@ use std::path::Path;
 use std::process::Command;
 use std::{collections::HashMap, fmt::Display};
 
-use super::edge;
 use super::node::NodeType;
 use super::{
     edge::{Edge, EdgeId},
@@ -218,6 +216,11 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Debug + Hash + Display> Graph<Lang
             if constraints.is_empty() {
                 self.add_edge(new_id, id, None);
             } else {
+                println!(
+                    "Adding edge from {} to {}",
+                    node.typ,
+                    self.nodes.get(&id).unwrap().typ
+                );
                 self.add_edge(new_id, id, Some(constraints));
             }
         }
@@ -262,7 +265,9 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Debug + Hash + Display> Graph<Lang
     }
 
     fn get_constraints(&self, t1: &LangTyp, t2: &LangTyp) -> Result<Constraint<LangTyp>, ()> {
-        //println!("Getting constraints for {} to {}", t1, t2);
+        if t1.get_name() == "I_B" && t2.get_name() == "I_B" {
+            println!("Getting constraints for {} to {}", t1, t2);
+        }
 
         if t1 == t2 {
             return Ok(Constraint::new_empty());
@@ -287,6 +292,7 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Debug + Hash + Display> Graph<Lang
         if t1_typargs_opt.is_none() && t2_typargs_opt.is_none() {
             return Ok(Constraint::new_empty());
         }
+        println!("Got to here");
         if let (Some(t1_typargs), Some(t2_typargs)) = (t1_typargs_opt, t2_typargs_opt) {
             if t1_typargs.len() == t2_typargs.len() {
                 let t1_variances = t1
@@ -317,9 +323,15 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Debug + Hash + Display> Graph<Lang
                         Variance::Invariant => constraints.add_equality(typ_1, typ_2),
                     }
                 }
+                if t1.get_name() == "I_B" && t2.get_name() == "I_B" {
+                    println!("Old constraints: {constraints}");
+                }
                 while let Ok(changed) = constraints.refine() {
                     //println!("Refined to {}", constraints);
                     if !changed {
+                        if t1.get_name() == "I_B" && t2.get_name() == "I_B" {
+                            println!("New constraints: {constraints}");
+                        }
                         return Ok(constraints);
                     }
                 }
@@ -355,8 +367,20 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Debug + Hash + Display> Graph<Lang
         //println!("Starting node: {}", cur_node.typ);
         let mut cur_constraints = Constraint::<LangTyp>::new_empty();
         for generic in TypeGenerator::get_generics(&cur_node.typ) {
-            let num = self.rng.gen_range(0..(self.concrete_types.len()));
-            let t = self.concrete_types.get(num).unwrap();
+            let mut non_local_types: Vec<LangTyp> = self
+                .concrete_types
+                .clone()
+                .into_iter()
+                .filter(|t| !t.is_local())
+                .collect();
+            for typ in LangTyp::get_prelude_types() {
+                if !non_local_types.contains(&typ.0) {
+                    non_local_types.push(typ.0);
+                }
+            }
+            let num = self.rng.gen_range(0..(non_local_types.len()));
+
+            let t = non_local_types.get(num).unwrap();
             cur_constraints.add_equality(&generic, t);
         }
         let mut visited = vec![cur_node.id];
@@ -567,7 +591,7 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Debug + Hash + Display> Graph<Lang
                     concrete = true;
                 }
             }
-            let mut typ = if concrete {
+            let typ = if concrete {
                 cur_set
                     .iter()
                     .find(|t| Constraint::is_concrete(*t))

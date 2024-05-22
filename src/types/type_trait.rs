@@ -1,4 +1,4 @@
-use crate::matches::statements::Statement;
+use crate::matches::{expression::Expression, pattern::Pattern, statements::Statement};
 
 use super::{template::Template, variance::Variance};
 
@@ -108,4 +108,28 @@ pub trait Type {
         Self: Sized;
 
     fn get_min_num_cases(&self) -> u32;
+
+    fn get_compiler_name() -> String;
+
+    fn get_compiler_args() -> Option<Box<[String]>>;
+
+    fn get_suffix() -> String;
+
+    fn get_test_script() -> String;
+
+    fn pattern_to_string(p: &Pattern<Self>) -> String
+    where
+        Self: Sized;
+
+    fn get_comment() -> String;
+
+    fn get_compiler_path() -> String;
+
+    fn is_bool(&self) -> bool;
+
+    fn is_primitive(&self) -> bool;
+
+    fn get_const_exp(&self) -> Expression<Self>
+    where
+        Self: Sized;
 }

@@ -85,11 +85,9 @@ impl<LangTyp: Type + Debug + Clone + PartialEq + Eq + Hash + Display> TypeGenera
                     for _ in 0..num_typargs {
                         typargs.push(self.generate_generic());
                     }
-                    if LangTyp::can_declare_variance() {
-                        if let Some(variances) = base.get_variances_mut() {
-                            for _ in 0..num_typargs {
-                                variances.push(self.generate_variance());
-                            }
+                    if let Some(variances) = base.get_variances_mut() {
+                        for _ in 0..num_typargs {
+                            variances.push(self.generate_variance());
                         }
                     }
                 }
@@ -242,16 +240,25 @@ impl<LangTyp: Type + Debug + Clone + PartialEq + Eq + Hash + Display> TypeGenera
     }
     fn generate_type(&mut self, typargs: &[LangTyp], depth: u32) -> LangTyp {
         if depth >= self.typgen_args.max_type_depth
+            || self.complex_types.is_empty()
             || self.rng.gen_bool(self.typgen_args.use_prelude_type_prob)
         {
             let types = LangTyp::get_prelude_types();
             let typ_ind = self.rng.gen_range(0..types.len());
             types.get(typ_ind).unwrap().clone().0
         } else {
-            let typ_ind = self.rng.gen_range(0..self.complex_types.len());
+            let available_types: Vec<&usize> = self
+                .complex_types
+                .iter()
+                .filter(|t| {
+                    Self::get_type_depth(self.all_types.get(**t).unwrap()) + depth
+                        < self.typgen_args.max_type_depth
+                })
+                .collect();
+            let typ_ind = self.rng.gen_range(0..self.available_types.len());
             let mut typ = self
                 .all_types
-                .get(*self.complex_types.get(typ_ind).unwrap())
+                .get(*self.available_types.get(typ_ind).unwrap())
                 .unwrap()
                 .clone();
             // collect all the substitutions and apply them
@@ -359,9 +366,13 @@ impl<LangTyp: Type + Debug + Clone + PartialEq + Eq + Hash + Display> TypeGenera
     }
 
     fn generate_variance(&mut self) -> Variance {
-        if self.rng.gen_bool(self.typgen_args.contravariance_prob) {
+        if LangTyp::can_declare_variance()
+            && self.rng.gen_bool(self.typgen_args.contravariance_prob)
+        {
             Variance::Contravariant
-        } else if self.rng.gen_bool(self.typgen_args.covariance_prob) {
+        } else if LangTyp::can_declare_variance()
+            && self.rng.gen_bool(self.typgen_args.covariance_prob)
+        {
             Variance::Covariant
         } else {
             Variance::Invariant
@@ -374,5 +385,20 @@ impl<LangTyp: Type + Debug + Clone + PartialEq + Eq + Hash + Display> TypeGenera
             types.push(self.all_types.get(*id).unwrap());
         }
         LangTyp::declarations_to_string(&types)
+    }
+
+    pub fn get_type_depth(typ: &LangTyp) -> u32 {
+        let mut depth = 1;
+        if let Some(typargs) = typ.get_typargs() {
+            if !typargs.is_empty() {
+                depth = depth.max(typargs.iter().map(Self::get_type_depth).max().unwrap() + 1);
+            }
+        }
+        if let Some(params) = typ.get_params() {
+            if !params.is_empty() {
+                depth = depth.max(params.iter().map(Self::get_type_depth).max().unwrap() + 1);
+            }
+        }
+        depth
     }
 }

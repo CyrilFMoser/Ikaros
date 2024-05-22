@@ -1,0 +1,40 @@
+tempprog.java:20: error: incompatible types: I_B<R_B<Integer,Integer>,Integer> cannot be converted to R_E<Integer>
+  case R_E<Integer>() -> 3; 
+       ^
+tempprog.java:21: error: incompatible types: I_B<I_B<Integer,Integer>,Integer> cannot be converted to R_C<Integer>
+  case R_F<Integer>(R_C<Integer>(var a, var b), var c, R_D<Boolean, Integer>(var d, var e, var f)) -> 4; 
+                    ^
+tempprog.java:21: error: incompatible types: I_B<R_B<Integer,Integer>,Integer> cannot be converted to R_F<Integer>
+  case R_F<Integer>(R_C<Integer>(var a, var b), var c, R_D<Boolean, Integer>(var d, var e, var f)) -> 4; 
+       ^
+tempprog.java:22: error: incompatible types: I_B<I_B<Integer,Integer>,Integer> cannot be converted to R_D<Integer,R_B<Integer,Integer>>
+  case R_F<Integer>(R_D<Integer, R_B<Integer, Integer>>(var a, var b, var c), var d, R_D<Boolean, Integer>(var e, var f, var g)) -> 5; 
+                    ^
+tempprog.java:22: error: incompatible types: I_B<R_B<Integer,Integer>,Integer> cannot be converted to R_F<Integer>
+  case R_F<Integer>(R_D<Integer, R_B<Integer, Integer>>(var a, var b, var c), var d, R_D<Boolean, Integer>(var e, var f, var g)) -> 5; 
+       ^
+tempprog.java:23: error: incompatible types: I_B<R_B<Integer,Integer>,Integer> cannot be converted to R_F<Integer>
+  case R_F<Integer>(R_E<Integer>(), var a, R_D<Boolean, Integer>(var b, var c, var d)) -> 6; 
+       ^
+tempprog.java:24: error: incompatible types: I_B<R_B<Integer,Integer>,Integer> cannot be converted to R_F<Integer>
+  case R_F<Integer>(R_F<Integer>(var a, var b, var c), var d, R_D<Boolean, Integer>(var e, var f, var g)) -> 7; 
+       ^
+tempprog.java:25: error: incompatible types: I_B<R_B<Integer,Integer>,Integer> cannot be converted to R_F<Integer>
+  case R_F<Integer>(R_H<Integer>(var a, var b), var c, R_D<Boolean, Integer>(var d, var e, var f)) -> 8; 
+       ^
+tempprog.java:26: error: incompatible types: I_B<I_B<Integer,Integer>,Integer> cannot be converted to R_I<Integer>
+  case R_F<Integer>(R_I<Integer>(), var a, R_D<Boolean, Integer>(var b, var c, var d)) -> 9; 
+                    ^
+tempprog.java:26: error: incompatible types: I_B<R_B<Integer,Integer>,Integer> cannot be converted to R_F<Integer>
+  case R_F<Integer>(R_I<Integer>(), var a, R_D<Boolean, Integer>(var b, var c, var d)) -> 9; 
+       ^
+tempprog.java:27: error: incompatible types: I_B<I_B<Integer,Integer>,Integer> cannot be converted to R_J<Integer>
+  case R_F<Integer>(R_J<Integer>(var a, var b), var c, R_D<Boolean, Integer>(var d, var e, var f)) -> 10; 
+                    ^
+tempprog.java:27: error: incompatible types: I_B<R_B<Integer,Integer>,Integer> cannot be converted to R_F<Integer>
+  case R_F<Integer>(R_J<Integer>(var a, var b), var c, R_D<Boolean, Integer>(var d, var e, var f)) -> 10; 
+       ^
+tempprog.java:28: error: incompatible types: I_B<R_B<Integer,Integer>,Integer> cannot be converted to R_H<Integer>
+  case R_H<Integer>(var a, var b) -> 11; 
+       ^
+13 errors

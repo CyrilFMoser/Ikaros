@@ -6,7 +6,10 @@ pub enum Expression<T> {
     Match(MatchExp<T>),
     Var(Var<T>),
     BottomType, // represents for example null, undefined
+    Bool(bool),
+    Byte(u8),
     Int(u32),
+    Char(char),
 }
 #[derive(Clone)]
 
