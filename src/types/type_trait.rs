@@ -132,4 +132,10 @@ pub trait Type {
     fn get_const_exp(&self) -> Expression<Self>
     where
         Self: Sized;
+
+    fn is_tuple(&self) -> bool;
+
+    fn get_tuple_template() -> Option<Template<Self>>
+    where
+        Self: Sized;
 }

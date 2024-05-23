@@ -13,6 +13,7 @@
 /// * `use_prelude_type` : Probability to use a "prelude type"
 /// * `instantiate_existing_complex_type_prob` : Probability to instantiate a type argument of an existing complex type when generating a new type
 /// * `add_additional_typarg_case_prob` : Probability to add an additional type argument to a case
+/// * `tuple_prob` : Probability to generate a tuple as a type
 #[derive(Clone)]
 pub struct TypeContextArgs {
     pub max_num_bases: u32,
@@ -28,4 +29,5 @@ pub struct TypeContextArgs {
     pub use_prelude_type_prob: f64,
     pub instantiate_existing_complex_type_prob: f64,
     pub add_additional_typarg_case_prob: f64,
+    pub tuple_prob: f64,
 }

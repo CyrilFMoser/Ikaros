@@ -10,13 +10,14 @@ use crate::{
 };
 use core::fmt::Debug;
 
-use super::{base::Base, case::Case, generic::Generic};
+use super::{base::Base, case::Case, generic::Generic, tuple::Tuple};
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum HaskellType {
     Base(Base),
     Case(Case),
     Generic(Generic),
+    Tuple(Tuple),
     Int,
     Char,
     Bool,
@@ -51,6 +52,7 @@ impl Type for HaskellType {
     fn get_name(&self) -> &str {
         use HaskellType as H;
         match self {
+            H::Tuple(t) => &t.name,
             H::Base(b) => b.name.as_str(),
             H::Case(c) => c.name.as_str(),
             H::Generic(g) => g.name.as_str(),
@@ -61,6 +63,14 @@ impl Type for HaskellType {
     }
 
     fn generate_name(&mut self, names: &mut Vec<String>) {
+        if let HaskellType::Tuple(t) = self {
+            t.name = format!(
+                "({},{})",
+                t.params.first().unwrap(),
+                t.params.get(1).unwrap()
+            );
+            return;
+        }
         let mut prefix = String::from(match self {
             HaskellType::Base(_) => "B_",
             HaskellType::Case(_) => "C_",
@@ -120,12 +130,18 @@ impl Type for HaskellType {
     }
 
     fn get_min_params(&self) -> Option<u32> {
-        None
+        if matches!(self, HaskellType::Tuple(_)) {
+            Some(2)
+        } else {
+            None
+        }
     }
 
     fn get_max_params(&self) -> Option<u32> {
         if matches!(self, HaskellType::Case(_)) {
             None
+        } else if matches!(self, HaskellType::Tuple(_)) {
+            Some(2)
         } else {
             Some(0)
         }
@@ -137,6 +153,7 @@ impl Type for HaskellType {
     {
         match self {
             HaskellType::Case(c) => Some(&c.parameters),
+            HaskellType::Tuple(t) => Some(&t.params),
             _ => None,
         }
     }
@@ -147,6 +164,7 @@ impl Type for HaskellType {
     {
         match self {
             HaskellType::Case(c) => Some(&mut c.parameters),
+            HaskellType::Tuple(t) => Some(&mut t.params),
             _ => None,
         }
     }
@@ -274,15 +292,30 @@ impl Type for HaskellType {
     }
 
     fn is_local(&self) -> bool {
-        matches!(self, HaskellType::Case(_) | HaskellType::Generic(_))
+        match self {
+            HaskellType::Case(_) | HaskellType::Generic(_) => true,
+            HaskellType::Tuple(t) => {
+                t.params.first().unwrap().is_local() || t.params.get(1).unwrap().is_local()
+            }
+            _ => false,
+        }
     }
 
     fn is_sealed(&self) -> bool {
-        matches!(self, HaskellType::Base(_) | HaskellType::Case(_))
+        match self {
+            HaskellType::Case(_) | HaskellType::Base(_) => true,
+            HaskellType::Tuple(t) => {
+                t.params.first().unwrap().is_sealed() || t.params.get(1).unwrap().is_sealed()
+            }
+            _ => false,
+        }
     }
 
     fn is_complex(&self) -> bool {
-        matches!(self, HaskellType::Base(_) | HaskellType::Case(_))
+        matches!(
+            self,
+            HaskellType::Base(_) | HaskellType::Case(_) | HaskellType::Tuple(_)
+        )
     }
 
     fn needs_declaration(&self) -> bool {
@@ -357,6 +390,11 @@ impl Type for HaskellType {
 
     fn pattern_to_string(p: &Pattern<HaskellType>) -> String {
         match p {
+            Pattern::Tuple(p1, p2) => format!(
+                "({},{})",
+                HaskellType::pattern_to_string(p1),
+                HaskellType::pattern_to_string(p2)
+            ),
             Pattern::Constant(c) => exp_to_string(&*c.exp),
             Pattern::WildCard(_) => "_".to_string(),
             Pattern::Variant(Variant { typ, parameters }) => {
@@ -374,6 +412,9 @@ impl Type for HaskellType {
                             } else {
                                 out.push_str(format!(" {}", Self::pattern_to_string(p)).as_str());
                             }
+                        }
+                        Pattern::Tuple(_, _) => {
+                            out.push_str(format!(" ({})", Self::pattern_to_string(p)).as_str());
                         }
                     }
                 }
@@ -403,6 +444,13 @@ impl Type for HaskellType {
             HaskellType::Char => Expression::Char('x'),
             _ => panic!("Called on a non const exp"),
         }
+    }
+
+    fn is_tuple(&self) -> bool {
+        matches!(self, HaskellType::Tuple(_))
+    }
+    fn get_tuple_template() -> Option<Template<Self>> {
+        Some(Template(HaskellType::Tuple(Tuple::default())))
     }
 }
 
@@ -443,6 +491,7 @@ impl Display for HaskellType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         use HaskellType as H;
         match self {
+            H::Tuple(t) => write!(f, "{}", t.name),
             H::Bool => write!(f, "Bool"),
             H::Char => write!(f, "Char"),
             H::Int => write!(f, "Int"),

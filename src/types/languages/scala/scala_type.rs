@@ -1,6 +1,6 @@
 use std::{fmt::Display, hash::Hash};
 
-use super::{case_class::CaseClass, generic::Generic, traits::Trait};
+use super::{case_class::CaseClass, generic::Generic, traits::Trait, tuple::Tuple};
 use crate::{
     matches::{
         expression::{Expression, MatchExp},
@@ -16,6 +16,7 @@ pub enum ScalaType {
     Trait(Trait),
     CaseClass(CaseClass),
     Generic(Generic),
+    Tuple(Tuple),
     Int,
     Char,
     Bool,
@@ -49,6 +50,7 @@ impl Type for ScalaType {
     {
         match self {
             ScalaType::CaseClass(cc) => Some(&cc.parameters),
+            ScalaType::Tuple(t) => Some(&t.params),
             _ => None,
         }
     }
@@ -59,6 +61,8 @@ impl Type for ScalaType {
     {
         match self {
             ScalaType::CaseClass(cc) => Some(&mut cc.parameters),
+            ScalaType::Tuple(t) => Some(&mut t.params),
+
             _ => None,
         }
     }
@@ -124,6 +128,10 @@ impl Type for ScalaType {
         }
     }
 
+    fn get_tuple_template() -> Option<Template<Self>> {
+        Some(Template(ScalaType::Tuple(Tuple::default())))
+    }
+
     fn allows_base_instantiation(&self) -> bool {
         matches!(self, ScalaType::Trait(_))
     }
@@ -166,6 +174,7 @@ impl Type for ScalaType {
 
     fn get_name(&self) -> &str {
         match self {
+            ScalaType::Tuple(t1) => &t1.name,
             ScalaType::Trait(tr) => &tr.name,
             ScalaType::CaseClass(cc) => &cc.name,
             ScalaType::Generic(g) => &g.name,
@@ -177,6 +186,14 @@ impl Type for ScalaType {
     }
 
     fn generate_name(&mut self, names: &mut Vec<String>) {
+        if let ScalaType::Tuple(t) = self {
+            t.name = format!(
+                "({},{})",
+                t.params.first().unwrap(),
+                t.params.get(1).unwrap()
+            );
+            return;
+        }
         let mut prefix = String::from(match self {
             ScalaType::Trait(_) => "T_",
             ScalaType::CaseClass(_) => "CC_",
@@ -262,11 +279,16 @@ impl Type for ScalaType {
     }
 
     fn get_min_params(&self) -> Option<u32> {
-        None
+        if matches!(self, ScalaType::Tuple(_)) {
+            Some(2)
+        } else {
+            None
+        }
     }
 
     fn get_max_params(&self) -> Option<u32> {
         match self {
+            ScalaType::Tuple(_) => Some(2),
             ScalaType::CaseClass(_) => None,
             ScalaType::Trait(_)
             | ScalaType::Generic(_)
@@ -382,6 +404,11 @@ impl Type for ScalaType {
 
     fn pattern_to_string(p: &Pattern<ScalaType>) -> String {
         match p {
+            Pattern::Tuple(p1, p2) => format!(
+                "({},{})",
+                ScalaType::pattern_to_string(p1),
+                ScalaType::pattern_to_string(p2)
+            ),
             Pattern::Constant(c) => exp_to_string(&c.exp),
             Pattern::WildCard(w) => {
                 if w.annotate {
@@ -427,6 +454,10 @@ impl Type for ScalaType {
             ScalaType::Char => Expression::Char('x'),
             _ => panic!("Called on a non const exp"),
         }
+    }
+
+    fn is_tuple(&self) -> bool {
+        matches!(self, ScalaType::Tuple(_))
     }
 }
 
@@ -475,6 +506,7 @@ impl Display for ScalaType {
             ST::Trait(tr) => write!(f, "{tr}"),
             ST::CaseClass(cc) => write!(f, "{cc}"),
             ST::Generic(g) => write!(f, "{}", g.name),
+            ST::Tuple(t) => write!(f, "{}", t.name),
         }
     }
 }

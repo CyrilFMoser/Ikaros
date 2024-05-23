@@ -7,6 +7,7 @@ pub enum Pattern<T> {
     WildCard(WildCard<T>),
     Variant(Variant<T>),
     Constant(Constant<T>),
+    Tuple(Box<Pattern<T>>, Box<Pattern<T>>),
 }
 #[derive(Clone)]
 pub struct WildCard<T> {

@@ -239,23 +239,38 @@ impl<LangTyp: Type + Debug + Clone + PartialEq + Eq + Hash + Display> TypeGenera
         }
     }
     fn generate_type(&mut self, typargs: &[LangTyp], depth: u32) -> LangTyp {
+        if depth < self.typgen_args.max_type_depth {
+            if let Some(tuple_template) = LangTyp::get_tuple_template() {
+                if self.rng.gen_bool(self.typgen_args.tuple_prob) {
+                    let mut typ = tuple_template.0;
+                    // no typargs, as otherwise it will get really clunky and annoying to deal with
+                    let typ1 = self.generate_type(&[], depth + 1);
+                    let typ2 = self.generate_type(&[], depth + 1);
+                    let params = typ.get_params_mut().unwrap();
+                    params.push(typ1);
+                    params.push(typ2);
+                    typ.generate_name(&mut self.names);
+                    return typ;
+                }
+            }
+        }
+        let available_types: Vec<&usize> = self
+            .complex_types
+            .iter()
+            .filter(|t| {
+                Self::get_type_depth(self.all_types.get(**t).unwrap()) + depth
+                    <= self.typgen_args.max_type_depth
+            })
+            .collect();
         if depth >= self.typgen_args.max_type_depth
-            || self.complex_types.is_empty()
+            || available_types.is_empty()
             || self.rng.gen_bool(self.typgen_args.use_prelude_type_prob)
         {
             let types = LangTyp::get_prelude_types();
             let typ_ind = self.rng.gen_range(0..types.len());
             types.get(typ_ind).unwrap().clone().0
         } else {
-            let available_types: Vec<&usize> = self
-                .complex_types
-                .iter()
-                .filter(|t| {
-                    Self::get_type_depth(self.all_types.get(**t).unwrap()) + depth
-                        < self.typgen_args.max_type_depth
-                })
-                .collect();
-            let typ_ind = self.rng.gen_range(0..self.available_types.len());
+            let typ_ind = self.rng.gen_range(0..available_types.len());
             let mut typ = self
                 .all_types
                 .get(*self.available_types.get(typ_ind).unwrap())
