@@ -1,10 +1,10 @@
 use super::{
     matchgen::MatchGenerator, matchgen_args::MatchArgs, typegen::TypeGenerator,
-    typegen_args::TypeContextArgs,
+    typegen_args::TypeContextArgs, z3checker::Z3Checker,
 };
 use crate::{
     matches::{
-        expression::Var,
+        expression::{Expression, Var},
         pattern::Pattern,
         statements::{Declaration, Statement, VarDecl},
     },
@@ -87,6 +87,22 @@ impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display> ProgramGen
                 format!("{}\n{}", current, LangTyp::statement_to_string(s))
             });
         format!("{}{}", self.typ_gen.declarations_to_string(), ms)
+    }
+
+    pub fn check_z3(&self) {
+        let match_statement = self.match_statements.get(1).unwrap();
+        let Statement::Decl(Declaration::Var(VarDecl {
+            name: _,
+            typ_annotation: _,
+            typ: _,
+            exp,
+        })) = match_statement;
+
+        let matchexp = exp.clone();
+        if let Expression::Match(matchexp) = matchexp {
+            let mut checker = Z3Checker { matchexp };
+            checker.check(&self.typ_gen.declarations, &self.typ_gen.all_types)
+        }
     }
 
     pub fn process(&mut self) {

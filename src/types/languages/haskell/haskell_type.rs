@@ -390,6 +390,10 @@ impl Type for HaskellType {
         matches!(self, HaskellType::Bool)
     }
 
+    fn is_variant(&self) -> bool {
+        matches!(self, HaskellType::Case(_))
+    }
+
     fn is_primitive(&self) -> bool {
         matches!(
             self,

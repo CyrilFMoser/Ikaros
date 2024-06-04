@@ -1,116 +1,90 @@
 strict digraph Type_Graph {
-  13[label="R_I<P>
-Generics: P"]
-  13[color= "blue"]
-  5[label="R_C<I>
-Generics: I"]
-  5[color= "blue"]
-  6[label="R_D<K, J>
-Generics: J ,K"]
-  6[color= "blue"]
-  0[label="I_A<A, B>
+  0[label="T_A[A, B]
 Generics: A ,B"]
   0[color= "blue"]
-  8[label="R_E<L>
-Generics: L"]
-  8[color= "blue"]
-  1[label="I_B<C, D>
-Generics: C ,D"]
-  1[color= "blue"]
-  4[label="I_B<I, R_B<I, I>>
-Generics: I"]
-  4[color= "tomato"]
-  2[label="R_A<E, F>
-Generics: E ,F"]
-  2[color= "blue"]
-  7[label="I_B<L, I_B<L, L>>
-Generics: L"]
-  7[color= "tomato"]
-  3[label="R_B<G, H>
-Generics: G ,H"]
-  3[color= "blue"]
-  9[label="R_F<M>
-Generics: M"]
+  6[label="CC_E[L, K]
+Generics: K ,L"]
+  6[color= "blue"]
+  7[label="CC_F[N, M]
+Generics: M ,N"]
+  7[color= "blue"]
+  9[label="CC_H[Q, R, S]
+Generics: Q ,R ,S"]
   9[color= "blue"]
-  14[label="R_J<Q>
-Generics: Q"]
+  13[label="CC_K[T]
+Generics: T"]
+  13[color= "blue"]
+  14[label="CC_L"]
   14[color= "blue"]
-  11[label="R_G<N>
-Generics: N"]
-  11[color= "blue"]
-  12[label="R_H<O>
-Generics: O"]
+  12[label="CC_J"]
   12[color= "blue"]
-  10[label="I_B<Character, N>
-Generics: N"]
+  10[label="T_A[CC_E[T_A[Byte, Char], CC_G[Int, Int]], T_A[T_A[Int, Boolean], Boolean]]"]
   10[color= "tomato"]
-  1 -> 12 [label= "{D == I_B<O, O>, C == O}
+  3[label="CC_B[F, E]
+Generics: E ,F"]
+  3[color= "blue"]
+  5[label="CC_D[J, I]
+Generics: I ,J"]
+  5[color= "blue"]
+  4[label="CC_C[H, G]
+Generics: G ,H"]
+  4[color= "blue"]
+  2[label="CC_A[D, C]
+Generics: C ,D"]
+  2[color= "blue"]
+  8[label="CC_G[P, O]
+Generics: O ,P"]
+  8[color= "blue"]
+  11[label="CC_I"]
+  11[color= "blue"]
+  1[label="T_B"]
+  1[color= "blue"]
+  0 -> 2 [label= "{B == D, A == C}
 "]
-  7 -> 8
-  1 -> 8 [label= "{C == L, D == I_B<L, L>}
+  0 -> 10 [label= "{B == T_A[T_A[Int, Boolean], Boolean], A == CC_E[T_A[Byte, Char], CC_G[Int, Int]]}
 "]
-  1 -> 10 [label= "{C == Character, D == N}
-"]
-  0 -> 2 [label= "{B == F, A == E}
-"]
-  1 -> 4 [label= "{C == I, D == R_B<I, I>}
-"]
-  1 -> 14 [label= "{D == R_B<Q, Q>, C == Q}
-"]
-  4 -> 5
-  7 -> 9 [label= "{L == M}
-"]
-  1 -> 9 [label= "{D == I_B<M, M>, C == M}
-"]
-  10 -> 11
-  0 -> 3 [label= "{A == G, B == H}
-"]
-  4 -> 11 [label= "{N == R_B<Character, Character>, I == Character, R_B<Character, Character> == N, R_B<Character, Character> == N}
-"]
-  1 -> 7 [label= "{C == L, D == I_B<L, L>}
-"]
-  7 -> 12 [label= "{L == O}
-"]
-  1 -> 13 [label= "{C == P, D == R_B<P, P>}
-"]
-  10 -> 14 [label= "{Q == Character, N == R_B<Character, Character>, N == R_B<Character, Character>}
+  1 -> 12
+  1 -> 14
+  1 -> 14
+  0 -> 4 [label= "{A == H, B == G}
 "]
   10 -> 11
-  7 -> 11 [label= "{L == Character, N == I_B<Character, Character>}
+  0 -> 8 [label= "{A == O, B == P}
 "]
-  1 -> 6 [label= "{D == K, C == J}
-"]
-  7 -> 9 [label= "{L == M}
-"]
-  1 -> 6 [label= "{C == J, D == K}
-"]
-  4 -> 13 [label= "{I == P}
-"]
-  1 -> 5 [label= "{C == I, D == R_B<I, I>}
-"]
-  10 -> 13 [label= "{P == Character, N == R_B<Character, Character>, N == R_B<Character, Character>}
-"]
-  4 -> 14 [label= "{I == Q}
-"]
-  4 -> 14 [label= "{I == Q}
-"]
-  1 -> 11 [label= "{D == N, C == Character}
-"]
-  4 -> 6 [label= "{R_B<I, I> == K, I == J}
-"]
-  10 -> 12 [label= "{N == I_B<Character, Character>, O == Character}
-"]
-  7 -> 8
-  7 -> 12 [label= "{L == O}
-"]
-  7 -> 8
-  4 -> 5
-  0 -> 3 [label= "{A == G, B == H}
-"]
-  0 -> 2 [label= "{A == E, B == F}
+  0 -> 5 [label= "{B == I, A == J}
 "]
   10 -> 11
-  4 -> 13 [label= "{I == P}
+  1 -> 13
+  0 -> 6 [label= "{B == L, A == K}
 "]
-  4 -> 5
+  0 -> 11 [label= "{B == T_A[T_A[Int, Boolean], Boolean], A == CC_E[T_A[Byte, Char], CC_G[Int, Int]]}
+"]
+  1 -> 13
+  1 -> 12
+  0 -> 8 [label= "{A == O, B == P}
+"]
+  1 -> 14
+  1 -> 13
+  0 -> 7 [label= "{A == M, B == N}
+"]
+  0 -> 2 [label= "{B == D, A == C}
+"]
+  0 -> 3 [label= "{A == F, B == E}
+"]
+  1 -> 12
+  0 -> 7 [label= "{B == N, A == M}
+"]
+  0 -> 9 [label= "{B == Q, A == R}
+"]
+  10 -> 11
+  0 -> 6 [label= "{A == K, B == L}
+"]
+  0 -> 5 [label= "{B == I, A == J}
+"]
+  0 -> 3 [label= "{B == E, A == F}
+"]
+  0 -> 9 [label= "{B == Q, A == R}
+"]
+  0 -> 4 [label= "{A == H, B == G}
+"]
 }

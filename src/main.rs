@@ -83,7 +83,7 @@ fn main() {
         max_to_match_depth: 0,
         const_refine_prob: 0.,
     };
-    let language = Language::Java;
+    let language = Language::Scala;
     match language {
         Language::Haskell => loop {
             run_prog::<HaskellType>(&haskell_args, &haskell_match_args);
@@ -119,5 +119,6 @@ fn run_prog<T: Type + Clone + PartialEq + Eq + Debug + Hash + Display>(
     program_generator.generate_types();
     program_generator.generate_match();
     println!("{}", program_generator.output_prog());
-    program_generator.process();
+    //program_generator.process();
+    program_generator.check_z3();
 }

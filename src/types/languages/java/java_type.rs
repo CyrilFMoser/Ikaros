@@ -234,6 +234,10 @@ impl Type for JavaType {
         matches!(self, JavaType::Generic(_))
     }
 
+    fn is_variant(&self) -> bool {
+        matches!(self, JavaType::Record(_))
+    }
+
     fn get_number_type() -> Self {
         JavaType::Int
     }

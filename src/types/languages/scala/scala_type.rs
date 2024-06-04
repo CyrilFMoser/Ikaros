@@ -428,6 +428,10 @@ impl Type for ScalaType {
             _ => panic!("Called on a non const exp"),
         }
     }
+
+    fn is_variant(&self) -> bool {
+        matches!(self, ScalaType::CaseClass(_))
+    }
 }
 
 fn exp_to_string(e: &Expression<ScalaType>) -> String {

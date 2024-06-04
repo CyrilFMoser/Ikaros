@@ -21,6 +21,8 @@ pub trait Type {
 
     fn is_generic(&self) -> bool;
 
+    fn is_variant(&self) -> bool;
+
     fn get_generic_template() -> Template<Self>
     where
         Self: Sized;

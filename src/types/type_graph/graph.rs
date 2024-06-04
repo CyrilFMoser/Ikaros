@@ -216,11 +216,11 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Debug + Hash + Display> Graph<Lang
             if constraints.is_empty() {
                 self.add_edge(new_id, id, None);
             } else {
-                println!(
+                /*println!(
                     "Adding edge from {} to {}",
                     node.typ,
                     self.nodes.get(&id).unwrap().typ
-                );
+                );*/
                 self.add_edge(new_id, id, Some(constraints));
             }
         }
@@ -292,7 +292,7 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Debug + Hash + Display> Graph<Lang
         if t1_typargs_opt.is_none() && t2_typargs_opt.is_none() {
             return Ok(Constraint::new_empty());
         }
-        println!("Got to here");
+        //println!("Got to here");
         if let (Some(t1_typargs), Some(t2_typargs)) = (t1_typargs_opt, t2_typargs_opt) {
             if t1_typargs.len() == t2_typargs.len() {
                 let t1_variances = t1
