@@ -1,4 +1,5 @@
 strict digraph Type_Graph {
+<<<<<<< HEAD
   0[label="T_A[A, B]
 Generics: A ,B"]
   0[color= "blue"]
@@ -86,5 +87,116 @@ Generics: O ,P"]
   0 -> 9 [label= "{B == Q, A == R}
 "]
   0 -> 4 [label= "{A == H, B == G}
+=======
+  12[label="R_H<J, K>
+Generics: J ,K"]
+  12[color= "blue"]
+  14[label="R_J<L>
+Generics: L"]
+  14[color= "blue"]
+  0[label="I_A<A, B>
+Generics: A ,B"]
+  0[color= "blue"]
+  8[label="R_E"]
+  8[color= "blue"]
+  13[label="R_I"]
+  13[color= "blue"]
+  6[label="I_B<Integer, Byte>"]
+  6[color= "tomato"]
+  7[label="R_D"]
+  7[color= "blue"]
+  1[label="I_B<C, D>
+Generics: C ,D"]
+  1[color= "blue"]
+  2[label="R_A<E, F>
+Generics: E ,F"]
+  2[color= "blue"]
+  9[label="I_B<Integer, Boolean>"]
+  9[color= "tomato"]
+  5[label="R_C<I>
+Generics: I"]
+  5[color= "blue"]
+  4[label="I_B<I, Byte>
+Generics: I"]
+  4[color= "tomato"]
+  11[label="R_G"]
+  11[color= "blue"]
+  10[label="R_F"]
+  10[color= "blue"]
+  3[label="R_B<G, H>
+Generics: G ,H"]
+  3[color= "blue"]
+  6 -> 14 [label= "{L == Integer}
+"]
+  6 -> 13
+  4 -> 13 [label= "{I == Integer}
+"]
+  6 -> 11
+  6 -> 8
+  6 -> 11
+  6 -> 8
+  0 -> 3 [label= "{B == G, A == H}
+"]
+  4 -> 12 [label= "{J == Byte, I == K}
+"]
+  6 -> 7
+  4 -> 5
+  9 -> 12 [label= "{K == Integer, J == Boolean}
+"]
+  4 -> 14 [label= "{I == L}
+"]
+  9 -> 10
+  6 -> 11
+  4 -> 7 [label= "{I == Integer}
+"]
+  1 -> 8 [label= "{D == Byte, C == Integer}
+"]
+  1 -> 12 [label= "{C == K, D == J}
+"]
+  1 -> 7 [label= "{D == Byte, C == Integer}
+"]
+  9 -> 10
+  1 -> 4 [label= "{C == I, D == Byte}
+"]
+  6 -> 7
+  0 -> 2 [label= "{A == F, B == E}
+"]
+  4 -> 5
+  0 -> 3 [label= "{A == H, B == G}
+"]
+  4 -> 8 [label= "{I == Integer}
+"]
+  6 -> 12 [label= "{K == Integer, J == Byte}
+"]
+  1 -> 6 [label= "{C == Integer, D == Byte}
+"]
+  1 -> 9 [label= "{C == Integer, D == Boolean}
+"]
+  6 -> 13
+  4 -> 14 [label= "{I == L}
+"]
+  1 -> 14 [label= "{D == Byte, C == L}
+"]
+  4 -> 11 [label= "{I == Integer}
+"]
+  1 -> 13 [label= "{D == Byte, C == Integer}
+"]
+  6 -> 8
+  4 -> 5
+  6 -> 13
+  9 -> 10
+  0 -> 2 [label= "{B == E, A == F}
+"]
+  4 -> 6 [label= "{I == Integer}
+"]
+  1 -> 5 [label= "{D == Byte, C == I}
+"]
+  6 -> 7
+  1 -> 11 [label= "{C == Integer, D == Byte}
+"]
+  1 -> 10 [label= "{D == Boolean, C == Integer}
+"]
+  1 -> 12 [label= "{C == K, D == J}
+>>>>>>> af482720b51d6daddde5708f6d00e63d04e87680
 "]
 }

@@ -265,10 +265,6 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Debug + Hash + Display> Graph<Lang
     }
 
     fn get_constraints(&self, t1: &LangTyp, t2: &LangTyp) -> Result<Constraint<LangTyp>, ()> {
-        if t1.get_name() == "I_B" && t2.get_name() == "I_B" {
-            println!("Getting constraints for {} to {}", t1, t2);
-        }
-
         if t1 == t2 {
             return Ok(Constraint::new_empty());
         }
@@ -292,7 +288,6 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Debug + Hash + Display> Graph<Lang
         if t1_typargs_opt.is_none() && t2_typargs_opt.is_none() {
             return Ok(Constraint::new_empty());
         }
-        //println!("Got to here");
         if let (Some(t1_typargs), Some(t2_typargs)) = (t1_typargs_opt, t2_typargs_opt) {
             if t1_typargs.len() == t2_typargs.len() {
                 let t1_variances = t1
@@ -323,15 +318,9 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Debug + Hash + Display> Graph<Lang
                         Variance::Invariant => constraints.add_equality(typ_1, typ_2),
                     }
                 }
-                if t1.get_name() == "I_B" && t2.get_name() == "I_B" {
-                    println!("Old constraints: {constraints}");
-                }
                 while let Ok(changed) = constraints.refine() {
                     //println!("Refined to {}", constraints);
                     if !changed {
-                        if t1.get_name() == "I_B" && t2.get_name() == "I_B" {
-                            println!("New constraints: {constraints}");
-                        }
                         return Ok(constraints);
                     }
                 }
@@ -553,7 +542,7 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Debug + Hash + Display> Graph<Lang
                 }
                 println!(" ");*/
                 if !reachable.iter().any(|t| Constraint::is_alpha_equiv(t, t1)) {
-                    println!("None of them are alpha equivalent to {t1}");
+                    //println!("None of them are alpha equivalent to {t1}");
                     cur_set.remove(&typ);
                 }
                 if cur_set.is_empty() {

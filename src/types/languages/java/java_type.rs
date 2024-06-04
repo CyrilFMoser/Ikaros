@@ -372,6 +372,7 @@ impl Type for JavaType {
     fn pattern_to_string(p: &Pattern<JavaType>) -> String {
         match p {
             Pattern::Constant(c) => exp_to_string(&c.exp),
+            Pattern::Tuple(_, _) => panic!("No tuples in java"),
             Pattern::WildCard(_) => "var x".to_string(),
             Pattern::Variant(Variant { typ, parameters }) => {
                 let mut out = typ.get_name().to_string();
@@ -423,6 +424,13 @@ impl Type for JavaType {
             JavaType::Char => Expression::Char('x'),
             _ => panic!("Called on a non const exp"),
         }
+    }
+
+    fn get_tuple_template() -> Option<Template<Self>> {
+        None
+    }
+    fn is_tuple(&self) -> bool {
+        false
     }
 }
 

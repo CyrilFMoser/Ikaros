@@ -308,6 +308,7 @@ impl<LangTyp: Type + Clone + Debug + PartialEq + Eq + Hash + Display> Constraint
         }
 
         //println!("Made it to here with constraints {}", self);
+        //println!("Made it to here with constraints {}", self);
         let mut new_eq = HashSet::new();
         let mut final_mappings = HashSet::new();
         for (t1, t2) in &self.equality {

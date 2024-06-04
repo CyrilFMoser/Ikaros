@@ -18,7 +18,7 @@ fn main() {
         max_num_bases: 2,
         max_num_base_cases: 10,
         max_num_base_typargs: 2,
-        max_type_depth: 2,
+        max_type_depth: 3,
         max_num_params: 4,
         contravariance_prob: 0., // 1
         covariance_prob: 0.,     // 0.2
@@ -28,12 +28,13 @@ fn main() {
         use_prelude_type_prob: 0.2,
         instantiate_existing_complex_type_prob: 0.1,
         add_additional_typarg_case_prob: 0.05,
+        tuple_prob: 0.2,
     };
     let scala_match_args = MatchArgs {
         level_prob: 1.,
         refine_prob: 1.,
         primitive_prob: 0.1,
-        max_refine_depth: 3,
+        max_refine_depth: 4,
         max_to_match_depth: 0,
         const_refine_prob: 0.3,
     };
@@ -51,6 +52,7 @@ fn main() {
         use_prelude_type_prob: 0.2,
         instantiate_existing_complex_type_prob: 0.1,
         add_additional_typarg_case_prob: 0.05,
+        tuple_prob: 0.2,
     };
     let haskell_match_args = MatchArgs {
         level_prob: 1.,
@@ -74,6 +76,7 @@ fn main() {
         use_prelude_type_prob: 0.2,
         instantiate_existing_complex_type_prob: 0.1,
         add_additional_typarg_case_prob: 0.,
+        tuple_prob: 0.,
     };
     let java_match_args = MatchArgs {
         level_prob: 1.,
@@ -83,6 +86,7 @@ fn main() {
         max_to_match_depth: 0,
         const_refine_prob: 0.,
     };
+    let language = Language::Scala;
     let language = Language::Scala;
     match language {
         Language::Haskell => loop {
@@ -111,7 +115,7 @@ fn run_prog<T: Type + Clone + PartialEq + Eq + Debug + Hash + Display>(
     //seed = 12107106770540003153;
     //seed = 3605882667415640841;
     let mut seed = thread_rng().gen();
-    seed = 5566234122338145180;
+    //seed = 5566234122338145180;
     println!("using seed: {}", seed);
     let rng = ChaCha8Rng::seed_from_u64(seed);
     let mut program_generator: ProgramGenerator<T> =

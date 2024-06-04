@@ -130,14 +130,35 @@ impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display> MatchGener
     }
 
     fn refine(&mut self, p: Pattern<LangTyp>, depth: u32) -> Vec<Pattern<LangTyp>> {
-        if depth >= self.args.max_refine_depth {
+        if depth > self.args.max_refine_depth {
             return vec![p];
         }
         match p {
             Pattern::WildCard(w) => self.refine_wild(w, depth),
             Pattern::Variant(v) => self.refine_variant(v, depth),
             Pattern::Constant(_) => vec![p],
+            Pattern::Tuple(p1, p2) => self.refine_tuple(p1, p2, depth),
         }
+    }
+
+    fn refine_tuple(
+        &mut self,
+        p1: Box<Pattern<LangTyp>>,
+        p2: Box<Pattern<LangTyp>>,
+        depth: u32,
+    ) -> Vec<Pattern<LangTyp>> {
+        let refined_p1 = self.refine(*p1, depth + 1);
+        let refined_p2 = self.refine(*p2, depth + 1);
+        let mut out = Vec::new();
+        for pt_1 in refined_p1 {
+            for pt_2 in &refined_p2 {
+                out.push(Pattern::Tuple(
+                    Box::new(pt_1.clone()),
+                    Box::new(pt_2.clone()),
+                ));
+            }
+        }
+        out
     }
 
     fn refine_variant(&mut self, var: Variant<LangTyp>, depth: u32) -> Vec<Pattern<LangTyp>> {
@@ -191,6 +212,20 @@ impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display> MatchGener
         let typ = &wild.typ;
         if !Constraint::is_concrete(typ) {
             return vec![Pattern::WildCard(wild)];
+        }
+        if typ.is_tuple() {
+            let params = typ.get_params().unwrap();
+            let p1 = params.first().unwrap().clone();
+            let p1_pattern = Box::new(Pattern::WildCard(WildCard {
+                typ: p1,
+                annotate: false,
+            }));
+            let p2 = params.get(1).unwrap().clone();
+            let p2_pattern = Box::new(Pattern::WildCard(WildCard {
+                typ: p2,
+                annotate: false,
+            }));
+            return self.refine_tuple(p1_pattern, p2_pattern, depth + 1);
         }
         if wild.typ.is_primitive() && self.rng.gen_bool(self.args.const_refine_prob) {
             if wild.typ.is_bool() {

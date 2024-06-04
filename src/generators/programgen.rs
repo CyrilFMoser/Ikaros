@@ -61,7 +61,7 @@ impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display> ProgramGen
             ChaCha8Rng::from_seed(self.typ_gen.rng.get_seed()),
             self.typ_gen.clone(),
         );
-        graph.output_graph_viz();
+        //graph.output_graph_viz();
         self.graph = Some(graph)
     }
 
