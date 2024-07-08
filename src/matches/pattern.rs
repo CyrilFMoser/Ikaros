@@ -2,31 +2,125 @@ use crate::types::type_trait::Type;
 
 use super::expression::Expression;
 
-#[derive(Clone)]
-pub enum Pattern<T> {
+#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+pub enum Pattern<T: PartialOrd> {
     WildCard(WildCard<T>),
     Variant(Variant<T>),
     Constant(Constant<T>),
     Tuple(Box<Pattern<T>>, Box<Pattern<T>>),
 }
-#[derive(Clone)]
+
+impl<LangTyp: Type + Clone + PartialOrd> Pattern<LangTyp> {
+    pub fn depth(&self) -> u32 {
+        match self {
+            Pattern::WildCard(_) => 1,
+            Pattern::Variant(v) => 1 + v.parameters.iter().map(|p| p.depth()).max().unwrap_or(0),
+            Pattern::Constant(_) => 1,
+            Pattern::Tuple(p1, p2) => 1 + p1.depth().max(p2.depth()),
+        }
+    }
+
+    pub fn match_same(&self, other: &Pattern<LangTyp>) -> bool {
+        if self == other {
+            return true;
+        }
+        match (&self, other) {
+            (Pattern::WildCard(_), Pattern::WildCard(_)) => true,
+            (Pattern::Variant(v1), Pattern::Variant(v2)) => {
+                if v1.typ.get_name() == v2.typ.get_name()
+                    && v1.parameters.len() == v2.parameters.len()
+                {
+                    for (p1, p2) in v1.parameters.iter().zip(v2.parameters.iter()) {
+                        if !p1.match_same(p2) {
+                            return false;
+                        }
+                    }
+                }
+                false
+            }
+            (Pattern::Tuple(p1_first, p1_second), Pattern::Tuple(p2_first, p2_second)) => {
+                p1_first.match_same(p2_first) && p1_second.match_same(p2_second)
+            }
+            (Pattern::Constant(c1), Pattern::Constant(c2)) => c1 == c2,
+            _ => false,
+        }
+    }
+
+    pub fn get_type(&self) -> LangTyp {
+        match self {
+            Pattern::WildCard(_) => {
+                let mut generic = LangTyp::get_generic_template().0;
+                generic.set_name("WILDCARD".to_string());
+                generic
+            }
+            Pattern::Constant(c) => c.typ.clone(),
+            Pattern::Variant(v) => {
+                let mut new_typ = v.typ.clone();
+                for (i, param) in new_typ.get_params_mut().unwrap().iter_mut().enumerate() {
+                    let pattern_typ = v.parameters.get(i).unwrap().get_type();
+                    *param = pattern_typ;
+                }
+                new_typ
+            }
+            Pattern::Tuple(p1, p2) => {
+                let mut tuple = LangTyp::get_tuple_template().unwrap();
+                let params = tuple.0.get_params_mut().unwrap();
+                params.push(p1.get_type());
+                params.push(p2.get_type());
+                tuple.0
+            }
+        }
+    }
+
+    pub fn get_actual_type(&self) -> LangTyp {
+        match self {
+            Pattern::WildCard(w) => w.typ.clone(),
+            Pattern::Constant(c) => c.typ.clone(),
+            Pattern::Variant(v) => {
+                let mut new_typ = v.typ.clone();
+                for (i, param) in new_typ.get_params_mut().unwrap().iter_mut().enumerate() {
+                    let pattern_typ = v.parameters.get(i).unwrap().get_actual_type();
+                    *param = pattern_typ;
+                }
+                new_typ
+            }
+            Pattern::Tuple(p1, p2) => {
+                let mut tuple = LangTyp::get_tuple_template().unwrap();
+                let params = tuple.0.get_params_mut().unwrap();
+                params.push(p1.get_actual_type());
+                params.push(p2.get_actual_type());
+                tuple.0
+            }
+        }
+    }
+
+    pub fn is_const(&self) -> bool {
+        match &self {
+            Pattern::WildCard(_) => false,
+            Pattern::Variant(v) => v.parameters.iter().any(|p| p.is_const()),
+            Pattern::Constant(_) => true,
+            Pattern::Tuple(p1, p2) => p1.is_const() || p2.is_const(),
+        }
+    }
+}
+#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct WildCard<T> {
     pub typ: T,
     pub annotate: bool,
 }
-#[derive(Clone)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 
-pub struct Constant<T> {
+pub struct Constant<T: PartialOrd> {
     pub typ: T,
     pub exp: Box<Expression<T>>,
 }
 
-#[derive(Clone)]
-pub struct Variant<T> {
+#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Variant<T: PartialOrd> {
     pub typ: T,
     pub parameters: Vec<Pattern<T>>,
 }
-impl<LangTyp: Type + Clone> Variant<LangTyp> {
+impl<LangTyp: Type + Clone + PartialOrd> Variant<LangTyp> {
     pub fn get_variant_pattern(typ: &LangTyp) -> Pattern<LangTyp> {
         let mut parameters = Vec::new();
         if let Some(params) = typ.get_params() {

@@ -1,5 +1,7 @@
 use std::fmt::Display;
 
+use regex::Regex;
+
 use crate::{
     matches::{
         expression::{Expression, MatchExp},
@@ -109,10 +111,6 @@ impl Type for JavaType {
         types.into_iter().map(Template).collect()
     }
 
-    fn match_against(&self) -> bool {
-        matches!(self, JavaType::Interface(_))
-    }
-
     fn get_case_templates(&self) -> Option<Vec<Template<Self>>>
     where
         Self: Sized,
@@ -125,10 +123,6 @@ impl Type for JavaType {
 
     fn allows_base_instantiation(&self) -> bool {
         matches!(self, JavaType::Interface(_))
-    }
-
-    fn allows_multiple_bases(&self) -> bool {
-        matches!(self, JavaType::Record(_))
     }
 
     fn can_have_own_typargs(&self) -> bool {
@@ -354,7 +348,6 @@ impl Type for JavaType {
 
     fn get_compiler_path() -> String {
         "javac".to_string()
-        //"C:/Users/cyril/AppData/Local/Coursier/data/bin/scalac.bat".to_string()
     }
 
     fn get_compiler_args() -> Option<Box<[String]>> {
@@ -373,7 +366,7 @@ impl Type for JavaType {
         match p {
             Pattern::Constant(c) => exp_to_string(&c.exp),
             Pattern::Tuple(_, _) => panic!("No tuples in java"),
-            Pattern::WildCard(_) => "var x".to_string(),
+            Pattern::WildCard(_) => "var WILDCARD".to_string(),
             Pattern::Variant(Variant { typ, parameters }) => {
                 let mut out = typ.get_name().to_string();
                 if let Some(typargs) = typ.get_typargs() {
@@ -432,6 +425,27 @@ impl Type for JavaType {
     fn is_tuple(&self) -> bool {
         false
     }
+
+    fn get_not_exhaustive() -> String {
+        "does not cover all possible input values".to_string()
+    }
+
+    fn get_unreachable() -> String {
+        "dominated".to_string()
+    }
+
+    fn get_not_exhaustive_regex() -> Regex {
+        Regex::new(
+            r"(?<inexhaustive>[a-z | _ | \d*]*.java)(:\d*: error: the switch expression does not cover all possible input values)",
+        )
+        .unwrap()
+    }
+
+    fn get_unreachable_regex() -> Regex {
+        Regex::new(
+            r"(?<unreachable>[a-z | _ | \d*]*.java)(:\d*: error: this case label is dominated by a preceding case label)",
+        ).unwrap()
+    }
 }
 
 fn exp_to_string(e: &Expression<JavaType>) -> String {
@@ -468,7 +482,8 @@ fn match_to_string(m: &MatchExp<JavaType>) -> String {
                 cur_name = format!("{}_{}", prefix.clone(), count);
             }
             names.push(cur_name.clone());
-            new_pattern = raw_pattern.replacen("var x", format!("var {cur_name}").as_str(), 1);
+            new_pattern =
+                raw_pattern.replacen("var WILDCARD", format!("var {cur_name}").as_str(), 1);
             if new_pattern != raw_pattern {
                 raw_pattern = new_pattern;
                 name_count += 1;

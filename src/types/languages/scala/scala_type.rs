@@ -1,5 +1,7 @@
 use std::{fmt::Display, hash::Hash};
 
+use regex::Regex;
+
 use super::{case_class::CaseClass, generic::Generic, traits::Trait, tuple::Tuple};
 use crate::{
     matches::{
@@ -114,10 +116,6 @@ impl Type for ScalaType {
         types.into_iter().map(Template).collect()
     }
 
-    fn match_against(&self) -> bool {
-        matches!(self, ScalaType::Trait(_))
-    }
-
     fn get_case_templates(&self) -> Option<Vec<Template<Self>>>
     where
         Self: Sized,
@@ -134,10 +132,6 @@ impl Type for ScalaType {
 
     fn allows_base_instantiation(&self) -> bool {
         matches!(self, ScalaType::Trait(_))
-    }
-
-    fn allows_multiple_bases(&self) -> bool {
-        matches!(self, ScalaType::CaseClass(_))
     }
 
     fn can_have_own_typargs(&self) -> bool {
@@ -387,11 +381,10 @@ impl Type for ScalaType {
 
     fn get_compiler_path() -> String {
         "scalac".to_string()
-        //"C:/Users/cyril/AppData/Local/Coursier/data/bin/scalac.bat".to_string()
     }
 
     fn get_compiler_args() -> Option<Box<[String]>> {
-        None
+        Some(Box::new(["-color".to_string(), "never".to_string()]))
     }
 
     fn get_suffix() -> String {
@@ -462,6 +455,24 @@ impl Type for ScalaType {
 
     fn is_variant(&self) -> bool {
         matches!(self, ScalaType::CaseClass(_))
+    }
+
+    fn get_not_exhaustive() -> String {
+        "may not be exhaustive".to_string()
+    }
+
+    fn get_unreachable() -> String {
+        "Unreachable case".to_string()
+    }
+
+    fn get_not_exhaustive_regex() -> Regex {
+        Regex::new(r"Pattern Match Exhaustivity Warning: (?<inexhaustive>[a-z | _ | \d*]*.scala)")
+            .unwrap()
+    }
+
+    fn get_unreachable_regex() -> Regex {
+        Regex::new(r"Match case Unreachable Warning: (?<unreachable>[a-z | _ | \d*]*.scala)")
+            .unwrap()
     }
 }
 

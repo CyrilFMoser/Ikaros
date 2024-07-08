@@ -1,0 +1,1 @@
+cvc5 out/Z3/prog.smt2

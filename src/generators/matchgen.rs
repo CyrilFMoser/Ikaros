@@ -22,7 +22,9 @@ pub struct MatchGenerator<LangTyp: Type + Clone + PartialEq + Eq + Hash + Displa
     pub correct: bool,
 }
 
-impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display> MatchGenerator<LangTyp> {
+impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display + Ord + PartialOrd>
+    MatchGenerator<LangTyp>
+{
     pub fn new(rng: ChaCha8Rng, graph: Graph<LangTyp>, args: MatchArgs, correct: bool) -> Self {
         MatchGenerator {
             rng,
@@ -99,9 +101,14 @@ impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display> MatchGener
             annotate: false,
         });
         let mut cases = self.refine(w, 0);
-        let removed_pattern = if !self.correct && cases.len() > 1 {
-            let ind = self.rng.gen_range(0..cases.len());
-            Some(cases.remove(ind))
+        let non_const: Vec<usize> = cases
+            .iter()
+            .enumerate()
+            .filter_map(|(i, p)| if !p.is_const() { Some(i) } else { None })
+            .collect();
+        let removed_pattern = if !self.correct && non_const.len() > 1 {
+            let ind = self.rng.gen_range(0..non_const.len());
+            Some(cases.remove(*non_const.get(ind).unwrap()))
         } else {
             None
         };
@@ -137,18 +144,18 @@ impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display> MatchGener
             Pattern::WildCard(w) => self.refine_wild(w, depth),
             Pattern::Variant(v) => self.refine_variant(v, depth),
             Pattern::Constant(_) => vec![p],
-            Pattern::Tuple(p1, p2) => self.refine_tuple(p1, p2, depth),
+            Pattern::Tuple(p1, p2) => self.refine_tuple(*p1, *p2, depth),
         }
     }
 
     fn refine_tuple(
         &mut self,
-        p1: Box<Pattern<LangTyp>>,
-        p2: Box<Pattern<LangTyp>>,
+        p1: Pattern<LangTyp>,
+        p2: Pattern<LangTyp>,
         depth: u32,
     ) -> Vec<Pattern<LangTyp>> {
-        let refined_p1 = self.refine(*p1, depth + 1);
-        let refined_p2 = self.refine(*p2, depth + 1);
+        let refined_p1 = self.refine(p1, depth + 1);
+        let refined_p2 = self.refine(p2, depth + 1);
         let mut out = Vec::new();
         for pt_1 in refined_p1 {
             for pt_2 in &refined_p2 {
@@ -216,15 +223,15 @@ impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display> MatchGener
         if typ.is_tuple() {
             let params = typ.get_params().unwrap();
             let p1 = params.first().unwrap().clone();
-            let p1_pattern = Box::new(Pattern::WildCard(WildCard {
+            let p1_pattern = Pattern::WildCard(WildCard {
                 typ: p1,
                 annotate: false,
-            }));
+            });
             let p2 = params.get(1).unwrap().clone();
-            let p2_pattern = Box::new(Pattern::WildCard(WildCard {
+            let p2_pattern = Pattern::WildCard(WildCard {
                 typ: p2,
                 annotate: false,
-            }));
+            });
             return self.refine_tuple(p1_pattern, p2_pattern, depth + 1);
         }
         if wild.typ.is_primitive() && self.rng.gen_bool(self.args.const_refine_prob) {

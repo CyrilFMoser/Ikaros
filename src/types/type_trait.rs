@@ -1,3 +1,5 @@
+use regex::Regex;
+
 use crate::matches::{expression::Expression, pattern::Pattern, statements::Statement};
 
 use super::{template::Template, variance::Variance};
@@ -57,14 +59,11 @@ pub trait Type {
     where
         Self: Sized;
 
-    /// Returns true if this type is interesting to match against
-    fn match_against(&self) -> bool;
-
     fn get_number_type() -> Self;
 
     fn statement_to_string(s: &Statement<Self>) -> String
     where
-        Self: Sized;
+        Self: Sized + Ord;
 
     /// Returns this types case types as templates
     fn get_case_templates(&self) -> Option<Vec<Template<Self>>>
@@ -74,9 +73,6 @@ pub trait Type {
     fn is_base(&self) -> bool;
     /// Returns if this (type, but intended for base) base can be instantiated to give a new base (as in scala traits)
     fn allows_base_instantiation(&self) -> bool;
-
-    /// Returns if this type is able to be a subcase of multiple bases (case classes in scala can, haskell variants can't)
-    fn allows_multiple_bases(&self) -> bool;
 
     ///  Returns if a type can add its own type arguments (Scala case classes can, haskell variants can't)
     fn can_have_own_typargs(&self) -> bool;
@@ -121,7 +117,7 @@ pub trait Type {
 
     fn pattern_to_string(p: &Pattern<Self>) -> String
     where
-        Self: Sized;
+        Self: Sized + Ord;
 
     fn get_comment() -> String;
 
@@ -133,11 +129,19 @@ pub trait Type {
 
     fn get_const_exp(&self) -> Expression<Self>
     where
-        Self: Sized;
+        Self: Sized + Ord;
 
     fn is_tuple(&self) -> bool;
 
     fn get_tuple_template() -> Option<Template<Self>>
     where
         Self: Sized;
+
+    fn get_not_exhaustive() -> String;
+
+    fn get_unreachable() -> String;
+
+    fn get_unreachable_regex() -> Regex;
+
+    fn get_not_exhaustive_regex() -> Regex;
 }

@@ -10,3 +10,4 @@ val v_b      = v_a match{
   case CC_B(CC_A      , _, _) => 5
 }
 }
+

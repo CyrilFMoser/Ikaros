@@ -30,7 +30,6 @@ pub struct Graph<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> {
     edge_count: u32,
     node_edges: HashMap<NodeId, Vec<EdgeId>>,
     rng: ChaCha8Rng,
-    typgen: RefCell<TypeGenerator<LangTyp>>,
     pub concrete_types: Vec<LangTyp>,
 }
 
@@ -49,7 +48,6 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Debug + Hash + Display> Graph<Lang
             node_edges: HashMap::new(),
             rng,
             concrete_types: Vec::new(),
-            typgen: RefCell::new(typgen),
         };
         for (i, typ) in all_types.iter().enumerate() {
             let node_type = if declarations.contains(&i) {
@@ -425,191 +423,6 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Debug + Hash + Display> Graph<Lang
         (cur_node.clone(), cur_constraints)
     }
 
-    pub fn is_satisfiable(&self, constraints: &mut Constraint<LangTyp>) -> bool {
-        let approx = false;
-        println!("checking this");
-        if !constraints.is_satisfiable() {
-            return false;
-        }
-        println!("Creating graph of constraints: {}", constraints);
-        let mut graph = self.clone();
-        for (t1, t2) in &constraints.subtypes {
-            if !t1.is_generic() {
-                graph.add_node(t1.clone(), NodeType::Parameter);
-            }
-            if !t2.is_generic() {
-                graph.add_node(t2.clone(), NodeType::Parameter);
-            }
-        }
-        // first do a simple check to see if there might be parents
-        for (t1, t2) in &constraints.subtypes {
-            if !t1.is_generic() && !t2.is_generic() {
-                let exact_match = self
-                    .nodes
-                    .values()
-                    .find(|n| Constraint::is_alpha_equiv(&n.typ, t1));
-                if let Some(exact) = exact_match {
-                    if exact.parents.is_empty() && t1 != t2 {
-                        return false;
-                    }
-                } else {
-                    println!("Found no exact match for {t1}");
-                }
-            }
-        }
-
-        // This checks if the subtyping relationship is possible if both arguments are not a generic variable
-        let mut checked = Vec::new();
-        for (t1, t2) in &constraints.subtypes {
-            if !t1.is_generic()
-                && !t2.is_generic()
-                && !checked.contains(t2)
-                && (Constraint::is_concrete(t1) || Constraint::is_concrete(t2))
-            {
-                println!("Calling this");
-                let reachable = graph.get_reachable(t2, approx, Some(&constraints.subtypes));
-                /*println!("Reachable from {t2} is: ");
-                for r in &reachable {
-                    println!("{r}");
-                }*/
-                for t1 in constraints.subtypes.iter().filter_map(|(a, b)| {
-                    if b == t2 && !a.is_generic() {
-                        Some(a)
-                    } else {
-                        None
-                    }
-                }) {
-                    if !reachable.iter().any(|r| Constraint::is_alpha_equiv(r, t1)) {
-                        println!("Invalid constraints! Can't reach {t1} from {t2}");
-                        return false;
-                    }
-                }
-                checked.push(t2.clone());
-            }
-        }
-        println!("GOT HERE {constraints}");
-        // This checks that if t1,t2 aren't generics, A <: t1 AND A <: t2 such an A exists
-        let mut sub_map: HashMap<LangTyp, HashSet<LangTyp>> = HashMap::new();
-        for (t1, t2) in constraints.subtypes.iter().filter(|(_, b)| !b.is_generic()) {
-            let reachable_vec = graph.get_reachable(t2, approx, Some(&constraints.subtypes));
-            let reachable: HashSet<LangTyp> = reachable_vec.into_iter().collect();
-            if !sub_map.contains_key(t1) {
-                sub_map.insert(t1.clone(), reachable);
-            } else {
-                let new_map = sub_map.get_mut(t1).unwrap();
-                *new_map = new_map.intersection(&reachable).cloned().collect();
-                if !t1.is_generic() && !new_map.iter().any(|t| Constraint::is_alpha_equiv(t, t1)) {
-                    // it's not possible for this t1 to be a subtype of t2
-                    println!("{t1} can't be a subtype of {t2} with constraints {constraints}");
-                    return false;
-                }
-                if new_map.is_empty() {
-                    /*graph.output_graph_viz();
-                    for r in reachable {
-                        println!("{r}");
-                    }*/
-                    println!("{t1} can't be a subtype of {t2} with constraints {constraints} because new_map is empty");
-                    return false;
-                }
-            }
-        }
-        // Now we check that for t_A,t_B not generic t_A <: C AND t_B <: C is satisfiable
-        for (t1, t2) in constraints.subtypes.iter().filter(|(a, _)| !a.is_generic()) {
-            if !sub_map.contains_key(t2) {
-                if t2.is_generic() {
-                    // we don't have other subtype constraints for this generic, all possible types could reach it, add them
-                    sub_map.insert(
-                        t2.clone(),
-                        graph.nodes.values().map(|n| n.typ.clone()).collect(),
-                    );
-                } else {
-                    sub_map.insert(
-                        t2.clone(),
-                        graph
-                            .get_reachable(t2, true, Some(&constraints.subtypes))
-                            .into_iter()
-                            .collect(),
-                    );
-                }
-            }
-            let previous_set = sub_map.get(t2).unwrap().clone(); // The types that were possible before for type t2
-            let cur_set = sub_map.get_mut(t2).unwrap();
-            for typ in previous_set {
-                let reachable = graph.get_reachable(&typ, approx, Some(&constraints.subtypes));
-                /*println!("Reachable from {typ} in satisfiable is:");
-                for r in &reachable {
-                    print!("{r}, ");
-                }
-                println!(" ");*/
-                if !reachable.iter().any(|t| Constraint::is_alpha_equiv(t, t1)) {
-                    //println!("None of them are alpha equivalent to {t1}");
-                    cur_set.remove(&typ);
-                }
-                if cur_set.is_empty() {
-                    return false;
-                }
-            }
-        }
-        // now if certain generics can only be of one type, we remove the subtype constraints and simply add an equality constraint
-        // For this we only need to consider typevariables that are constrained by a "non typevar type"
-        let typevars: HashSet<LangTyp> = constraints
-            .subtypes
-            .iter()
-            .filter_map(|(a, b)| {
-                if a.is_generic() && !b.is_generic() {
-                    Some(a.clone())
-                } else if !a.is_generic() && b.is_generic() {
-                    Some(b.clone())
-                } else {
-                    None
-                }
-            })
-            .collect();
-        for t1 in typevars {
-            let cur_set = sub_map.get(&t1).unwrap();
-            let mut concrete = false;
-            if cur_set.len() != 1 {
-                if cur_set
-                    .iter()
-                    .filter(|t| Constraint::is_concrete(*t))
-                    .count()
-                    != 1
-                {
-                    continue;
-                } else {
-                    concrete = true;
-                }
-            }
-            let typ = if concrete {
-                cur_set
-                    .iter()
-                    .find(|t| Constraint::is_concrete(*t))
-                    .unwrap()
-                    .clone()
-            } else {
-                cur_set.iter().next().unwrap().clone()
-            };
-            // replace the generics that come from the possible mappings with new ones, as they might only be alpha equivalent
-            /*for generic in TypeGenerator::get_generics(&typ) {
-                Graph::substitute(
-                    &mut typ,
-                    &generic,
-                    &self.typgen.borrow_mut().generate_generic(),
-                );
-            }*/
-            constraints
-                .subtypes
-                .retain(|(a, b)| (b != &t1 || a.is_generic()) && (a != &t1 || b.is_generic()));
-            constraints.add_equality(&t1, &typ)
-        }
-        println!("Finished satisfiability");
-        if !constraints.is_satisfiable() {
-            return false;
-        }
-        println!("Can't prove that {constraints} is not satisfiable");
-        true
-    }
-
     pub fn get_reachable(
         &self,
         typ: &LangTyp,
@@ -712,9 +525,7 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Debug + Hash + Display> Graph<Lang
                 //println!("Map starting from: {} to {neighbour_type}", node.typ);
                 //println!("{}", new_map);
 
-                if (!over_approx && self.is_satisfiable(&mut new_map))
-                    || (over_approx && new_map.is_satisfiable())
-                {
+                if over_approx && new_map.is_satisfiable() {
                     //println!("Valid with map {new_map}");
                     new_constraints = new_map;
                 } else {

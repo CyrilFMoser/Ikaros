@@ -273,7 +273,7 @@ impl<LangTyp: Type + Debug + Clone + PartialEq + Eq + Hash + Display> TypeGenera
             let typ_ind = self.rng.gen_range(0..available_types.len());
             let mut typ = self
                 .all_types
-                .get(*self.available_types.get(typ_ind).unwrap())
+                .get(**available_types.get(typ_ind).unwrap())
                 .unwrap()
                 .clone();
             // collect all the substitutions and apply them
@@ -409,9 +409,11 @@ impl<LangTyp: Type + Debug + Clone + PartialEq + Eq + Hash + Display> TypeGenera
                 depth = depth.max(typargs.iter().map(Self::get_type_depth).max().unwrap() + 1);
             }
         }
-        if let Some(params) = typ.get_params() {
-            if !params.is_empty() {
-                depth = depth.max(params.iter().map(Self::get_type_depth).max().unwrap() + 1);
+        if typ.is_tuple() {
+            if let Some(params) = typ.get_params() {
+                if !params.is_empty() {
+                    depth = depth.max(params.iter().map(Self::get_type_depth).max().unwrap() + 1);
+                }
             }
         }
         depth

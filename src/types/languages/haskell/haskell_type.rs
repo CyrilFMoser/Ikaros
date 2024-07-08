@@ -1,5 +1,7 @@
 use std::{collections::HashMap, fmt::Display, hash::Hash};
 
+use regex::Regex;
+
 use crate::{
     matches::{
         expression::{Expression, MatchExp},
@@ -215,10 +217,6 @@ impl Type for HaskellType {
         types.into_iter().map(Template).collect()
     }
 
-    fn match_against(&self) -> bool {
-        matches!(self, HaskellType::Base(_))
-    }
-
     fn get_number_type() -> Self {
         HaskellType::Int
     }
@@ -260,10 +258,6 @@ impl Type for HaskellType {
     }
 
     fn allows_base_instantiation(&self) -> bool {
-        false
-    }
-
-    fn allows_multiple_bases(&self) -> bool {
         false
     }
 
@@ -377,6 +371,7 @@ impl Type for HaskellType {
             "-fwarn-incomplete-patterns".to_string(),
             "-Woverlapping-patterns".to_string(),
             "-fmax-pmcheck-models=10000".to_string(),
+            "-fdiagnostics-color=never".to_string(),
         ]))
     }
 
@@ -455,6 +450,27 @@ impl Type for HaskellType {
     }
     fn get_tuple_template() -> Option<Template<Self>> {
         Some(Template(HaskellType::Tuple(Tuple::default())))
+    }
+
+    fn get_not_exhaustive() -> String {
+        "non-exhaustive".to_string()
+    }
+
+    fn get_unreachable() -> String {
+        "redundant".to_string()
+    }
+
+    fn get_not_exhaustive_regex() -> Regex {
+        Regex::new(
+            r"(?<inexhaustive>[a-z | _ | \d*]*.hs)(:\d*:\d*: warning: \[-Wincomplete-patterns\])",
+        )
+        .unwrap()
+    }
+    fn get_unreachable_regex() -> Regex {
+        Regex::new(
+            r"(?<unreachable>[a-z | _ | \d*]*.hs)(:\d*:\d*: warning: \[-Woverlapping-patterns\])",
+        )
+        .unwrap()
     }
 }
 

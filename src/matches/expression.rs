@@ -1,8 +1,8 @@
 use super::pattern::Pattern;
 
-#[derive(Clone)]
+#[derive(Clone, Debug, Hash, PartialEq, PartialOrd, Ord, Eq)]
 
-pub enum Expression<T> {
+pub enum Expression<T: PartialOrd> {
     Match(MatchExp<T>),
     Var(Var<T>),
     BottomType, // represents for example null, undefined
@@ -11,17 +11,17 @@ pub enum Expression<T> {
     Int(u32),
     Char(char),
 }
-#[derive(Clone)]
+#[derive(Clone, Debug, Hash, PartialEq, PartialOrd, Ord, Eq)]
 
-pub struct MatchExp<T> {
+pub struct MatchExp<T: PartialOrd> {
     pub to_match: Box<Expression<T>>,
     pub cases: Vec<Pattern<T>>,
     pub arms: Vec<Expression<T>>,
     pub removed_pattern: Option<Pattern<T>>,
 }
 
-#[derive(Clone)]
-pub struct Var<T> {
+#[derive(Clone, Debug, Hash, PartialEq, PartialOrd, Ord, Eq)]
+pub struct Var<T: PartialOrd> {
     pub name: String,
     pub typ: T,
 }

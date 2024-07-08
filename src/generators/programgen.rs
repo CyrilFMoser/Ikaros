@@ -1,6 +1,7 @@
 use super::{
-    matchgen::MatchGenerator, matchgen_args::MatchArgs, typegen::TypeGenerator,
-    typegen_args::TypeContextArgs, z3checker::Z3Checker,
+    matchgen::MatchGenerator, matchgen_args::MatchArgs, random_matchgen::RandomMatchGenerator,
+    random_matchgen_args::RandomMatchArgs, typegen::TypeGenerator, typegen_args::TypeContextArgs,
+    z3checker::Z3Checker,
 };
 use crate::{
     matches::{
@@ -9,6 +10,7 @@ use crate::{
         statements::{Declaration, Statement, VarDecl},
     },
     types::{type_graph::graph::Graph, type_trait::Type},
+    Oracle,
 };
 use core::fmt::Debug;
 use rand::SeedableRng;
@@ -21,22 +23,31 @@ use std::{
     path::Path,
     process::Command,
 };
+use z3::SatResult;
 
-pub struct ProgramGenerator<LangTyp: Type + Clone + PartialEq + Eq + Hash + Display> {
+pub struct ProgramGenerator<
+    LangTyp: Type + Clone + PartialEq + Eq + Ord + PartialOrd + Hash + Display + Sync + 'static,
+> {
     pub typ_gen: TypeGenerator<LangTyp>,
     rng: ChaCha8Rng,
     graph: Option<Graph<LangTyp>>,
-    match_gen_args: MatchArgs,
+    match_gen_args: Option<MatchArgs>,
+    random_match_gen_args: Option<RandomMatchArgs>,
     match_statements: Vec<Statement<LangTyp>>,
     removed_pattern: Option<Pattern<LangTyp>>,
+    random_match_gen: Option<RandomMatchGenerator<LangTyp>>,
     pub correct: bool, // If the generated program is correct
 }
 
-impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display> ProgramGenerator<LangTyp> {
+impl<
+        LangTyp: Type + Clone + PartialEq + Debug + Ord + PartialOrd + Eq + Hash + Display + Sync + Send,
+    > ProgramGenerator<LangTyp>
+{
     pub fn new(
         typctxt_args: &TypeContextArgs,
         rng: ChaCha8Rng,
-        match_gen_args: MatchArgs,
+        match_gen_args: Option<MatchArgs>,
+        random_match_gen_args: Option<RandomMatchArgs>,
         correct: bool,
     ) -> Self {
         ProgramGenerator {
@@ -47,8 +58,10 @@ impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display> ProgramGen
             rng: ChaCha8Rng::from_seed(rng.get_seed()),
             graph: None,
             match_gen_args,
+            random_match_gen_args,
             match_statements: Vec::new(),
             removed_pattern: None,
+            random_match_gen: None,
             correct,
         }
     }
@@ -71,7 +84,7 @@ impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display> ProgramGen
             self.graph
                 .clone()
                 .expect("Need to generate types before generating a match statement"),
-            self.match_gen_args.clone(),
+            self.match_gen_args.clone().unwrap(),
             self.correct,
         );
         let (statements, removed) = gen.generate();
@@ -89,7 +102,24 @@ impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display> ProgramGen
         format!("{}{}", self.typ_gen.declarations_to_string(), ms)
     }
 
-    pub fn check_z3(&self) {
+    pub fn generate_cases(&mut self) {
+        self.random_match_gen = Some(RandomMatchGenerator::new(
+            self.rng.clone(),
+            self.graph.clone().unwrap(),
+            self.random_match_gen_args.clone().unwrap(),
+        ));
+    }
+
+    pub fn generate_z3(&mut self) -> bool {
+        if let Some(statements) = self.random_match_gen.as_mut().unwrap().generate() {
+            self.match_statements = statements;
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn check_z3(&mut self) -> SatResult {
         let match_statement = self.match_statements.get(1).unwrap();
         let Statement::Decl(Declaration::Var(VarDecl {
             name: _,
@@ -100,12 +130,199 @@ impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display> ProgramGen
 
         let matchexp = exp.clone();
         if let Expression::Match(matchexp) = matchexp {
-            let mut checker = Z3Checker { matchexp };
+            let mut checker = Z3Checker::new(matchexp);
             checker.check(&self.typ_gen.declarations, &self.typ_gen.all_types)
+        } else {
+            SatResult::Unknown
+        }
+    }
+
+    pub fn process_batch(&mut self, exhaustive: bool, oracle: Oracle, batchsize: usize) {
+        let cur_batch_name = if exhaustive {
+            "exhaustive_batch"
+        } else {
+            "inexhaustive_batch"
+        };
+
+        let oracle_string = match oracle {
+            Oracle::Z3 => "Z3",
+            Oracle::Construction => "Construction",
+        };
+
+        let cur_folder = format!(
+            "out/Programs/{oracle_string}/{}",
+            LangTyp::get_compiler_name()
+        );
+        let cur_batch_folder = format!("{cur_folder}/batches/{cur_batch_name}");
+        //println!("{cur_batch_folder}");
+
+        self.save_for_batch(cur_batch_folder.clone());
+        let num_progs = read_dir(&cur_batch_folder).unwrap().count();
+
+        if num_progs < batchsize {
+            return;
+        }
+
+        let mut cmd = Command::new("sh");
+        cmd.arg("-c");
+        cmd.current_dir(&cur_batch_folder);
+
+        let mut actual_command = LangTyp::get_compiler_path();
+        if let Some(args) = LangTyp::get_compiler_args() {
+            for arg in args.iter() {
+                actual_command.push_str(&format!(" {arg}"));
+            }
+        }
+        actual_command.push_str(&format!(" *.{}", LangTyp::get_suffix()));
+        cmd.arg(actual_command);
+
+        let output = cmd.output().unwrap();
+        let error_message = std::str::from_utf8(&output.stderr).unwrap();
+        //println!("{error_message}");
+        let compiler_not_exhaustive = error_message.contains(&LangTyp::get_not_exhaustive());
+        let compiler_not_reachable = error_message.contains(&LangTyp::get_unreachable());
+        let look_for_unreachable = matches!(oracle, Oracle::Construction) && compiler_not_reachable;
+
+        if compiler_not_exhaustive || !exhaustive || look_for_unreachable {
+            self.process_batch_error(
+                error_message,
+                &cur_batch_folder,
+                exhaustive,
+                look_for_unreachable,
+                oracle,
+            )
+        }
+        remove_dir_all(&cur_batch_folder).unwrap();
+        create_dir(&cur_batch_folder).unwrap();
+    }
+
+    fn process_batch_error(
+        &self,
+        error_message: &str,
+        cur_batch_folder: &str,
+        exhaustive: bool,
+        look_for_unreachable: bool,
+        oracle: Oracle,
+    ) {
+        if look_for_unreachable {
+            let unreachable_regex = LangTyp::get_unreachable_regex();
+            let captures = unreachable_regex.captures_iter(error_message);
+            let file_names: Vec<&str> = captures
+                .filter_map(|c| c.name("unreachable").map(|m| m.as_str()))
+                .collect();
+            for file in file_names {
+                let old_path = format!("{cur_batch_folder}/{file}");
+                let new_folder = format!(
+                    "out/Programs/Construction/{}/unreduced/unreachable",
+                    LangTyp::get_compiler_name()
+                );
+                let num_progs = read_dir(&new_folder).unwrap().count();
+                let new_path =
+                    format!("{new_folder}/program_{num_progs}.{}", LangTyp::get_suffix());
+                rename(old_path, new_path).unwrap();
+            }
+            return;
+        }
+        if !exhaustive {
+            // compiler has to complain about every program
+            let inexhaustive_regex = LangTyp::get_not_exhaustive_regex();
+            let captures = inexhaustive_regex.captures_iter(error_message);
+            let problematic_programs: Vec<&str> = captures
+                .filter_map(|c| c.name("inexhaustive").map(|m| m.as_str()))
+                .collect();
+            let false_positives: Vec<String> = read_dir(cur_batch_folder)
+                .unwrap()
+                .filter(|f| f.as_ref().unwrap().file_type().unwrap().is_file())
+                .map(|f| f.unwrap().file_name().into_string().unwrap())
+                .filter(|name| !problematic_programs.contains(&name.as_str()))
+                .collect();
+            for file in false_positives {
+                let old_path = format!("{cur_batch_folder}/{file}");
+                //println!("Old path: {old_path}");
+                let oracle_string = match oracle {
+                    Oracle::Construction => "Construction",
+                    Oracle::Z3 => "Z3",
+                };
+                let new_folder = format!(
+                    "out/Programs/{oracle_string}/{}/inexhaustive/false_positive",
+                    LangTyp::get_compiler_name()
+                );
+                let num_progs = read_dir(&new_folder).unwrap().count();
+                let new_path =
+                    format!("{new_folder}/program_{num_progs}.{}", LangTyp::get_suffix());
+                rename(old_path, new_path).unwrap();
+            }
+            return;
+        }
+        // compiler should not complain about any program
+        let inexhaustive_regex = LangTyp::get_not_exhaustive_regex();
+        let captures = inexhaustive_regex.captures_iter(error_message);
+        let false_negatives: Vec<&str> = captures
+            .filter_map(|c| c.name("inexhaustive").map(|m| m.as_str()))
+            .collect();
+
+        for file in false_negatives {
+            let old_path = format!("{cur_batch_folder}/{file}");
+            let oracle_string = match oracle {
+                Oracle::Construction => "Construction",
+                Oracle::Z3 => "Z3",
+            };
+            let new_folder = format!(
+                "out/Programs/{oracle_string}/{}/inexhaustive/false_negative",
+                LangTyp::get_compiler_name()
+            );
+            let num_progs = read_dir(&new_folder).unwrap().count();
+            let new_path = format!("{new_folder}/program_{num_progs}.{}", LangTyp::get_suffix());
+            rename(old_path, new_path).unwrap();
+        }
+    }
+
+    fn save_for_batch(&mut self, cur_batch_folder: String) {
+        let num_progs = read_dir(&cur_batch_folder).unwrap().count();
+        //println!("{num_progs}");
+        let semicolon = if LangTyp::get_compiler_name() == "javac" {
+            ";"
+        } else {
+            ""
+        };
+
+        let program = self.output_prog();
+
+        let package_name = format!("Program_{num_progs}");
+        let package_string = if LangTyp::get_compiler_name() == "ghc" {
+            format!("module {package_name} () where")
+        } else {
+            format!("package {package_name}{semicolon}")
+        };
+        let cur_program = format!("{package_string} \n\n {program}");
+
+        let file_name = format!("batch_prog_{num_progs}.{}", LangTyp::get_suffix());
+        let cur_file_path = format!("{cur_batch_folder}/{file_name}");
+        let mut source_file = File::create(&cur_file_path).unwrap();
+
+        source_file.write_all(cur_program.as_bytes()).unwrap();
+        if LangTyp::get_compiler_name() == "javac" && source_file.metadata().unwrap().len() >= 8000
+            || source_file.metadata().unwrap().len() >= 64000
+        {
+            remove_file(cur_file_path).unwrap();
         }
     }
 
     pub fn process(&mut self) {
+        if LangTyp::get_compiler_name() == "javac" {
+            if let Some(Statement::Decl(Declaration::Var(VarDecl {
+                name: _,
+                typ_annotation: _,
+                typ: _,
+                exp: Expression::Match(e),
+            }))) = self.match_statements.get(1)
+            {
+                if e.arms.len() >= 4000 {
+                    return;
+                }
+            }
+        }
+
         let cur_folder = format!("out/Programs/{}", LangTyp::get_compiler_name());
         let mut num_progs = read_dir(format!("{}/{}", cur_folder, "inexhaustive"))
             .unwrap()
@@ -113,7 +330,7 @@ impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display> ProgramGen
         num_progs += read_dir(format!("{}/{}", cur_folder, "unreachable"))
             .unwrap()
             .count();
-        let name = format!("Program_{}", num_progs);
+        let name = format!("Program_{}", num_progs + 1);
         if Path::new("out/Programs/temp").exists() {
             remove_dir_all("out/Programs/temp").unwrap();
         }
@@ -135,6 +352,12 @@ impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display> ProgramGen
         /*if !error_message.is_empty() && self.removed_pattern.is_some() {
             println!("Detected missing pattern: {error_message}");
         } */
+
+        if LangTyp::get_compiler_name() == "javac" && error_message.contains("code too large") {
+            remove_dir_all("out/Programs/temp").unwrap();
+            return;
+        }
+
         if !error_message.is_empty() && self.removed_pattern.is_none() {
             self.handle_error(name, error_message);
             return;
@@ -162,7 +385,6 @@ impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display> ProgramGen
         let file_name = format!("tempprog.{}", LangTyp::get_suffix());
         let old_path = format!("out/Programs/temp/{file_name}");
         let mut source_file = OpenOptions::new()
-            .write(true)
             .append(true)
             .open(old_path.clone())
             .unwrap();
