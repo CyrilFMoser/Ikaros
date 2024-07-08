@@ -7,6 +7,7 @@ use generators::random_matchgen_args::RandomMatchArgs;
 use generators::typegen_args::TypeContextArgs;
 use rand::{thread_rng, Rng, SeedableRng};
 use rand_chacha::ChaCha8Rng;
+use std::env;
 use std::fmt::{Debug, Display};
 use std::fs::{remove_file, File};
 use std::hash::Hash;
@@ -19,6 +20,31 @@ mod generators;
 mod matches;
 mod types;
 fn main() {
+    let args: Vec<String> = env::args().collect();
+
+    let mut language = Language::Scala;
+    let mut oracle = Oracle::Z3;
+
+    let mut args_iter = args.into_iter();
+    while let Some(arg) = args_iter.next() {
+        if arg == "language" {
+            let next_arg = args_iter.next().unwrap();
+            language = match next_arg.as_str() {
+                "scala" => Language::Scala,
+                "haskell" => Language::Haskell,
+                "java" => Language::Java,
+                _ => panic!("Invalid language"),
+            }
+        } else if arg == "oracle" {
+            let next_arg = args_iter.next().unwrap();
+            oracle = match next_arg.as_str() {
+                "z3" => Oracle::Z3,
+                "construction" => Oracle::Construction,
+                _ => panic!("Invalid oracle"),
+            }
+        }
+    }
+
     let scala_args = TypeContextArgs {
         max_num_bases: 2,
         max_num_base_cases: 4,
@@ -59,17 +85,9 @@ fn main() {
         add_additional_typarg_case_prob: 0.,
         tuple_prob: 0.1,
     };
-    let scala_random_match_args = RandomMatchArgs {
+    let random_match_args = RandomMatchArgs {
         level_prob: 1.,
         max_refine_depth: 5,
-    };
-    let scala_match_args_z3 = MatchArgs {
-        level_prob: 1.,
-        refine_prob: 1.,
-        primitive_prob: 0.1,
-        max_refine_depth: 5,
-        max_to_match_depth: 0,
-        const_refine_prob: 0.,
     };
     let haskell_args = TypeContextArgs {
         max_num_bases: 4,
@@ -95,6 +113,38 @@ fn main() {
         max_to_match_depth: 0,
         const_refine_prob: 0.1,
     };
+    let haskell_args_z3 = TypeContextArgs {
+        max_num_bases: 2,
+        max_num_base_cases: 5,
+        max_num_base_typargs: 2,
+        max_type_depth: 2,
+        max_num_params: 3,
+        contravariance_prob: 0., // 1
+        covariance_prob: 0.,     // 0.2
+        base_instantiation_prob: 0.3,
+        typarg_parameter_prob: 0.2,
+        use_same_instantiation_prob: 0.7,
+        use_prelude_type_prob: 0.2,
+        instantiate_existing_complex_type_prob: 0.1,
+        add_additional_typarg_case_prob: 0.,
+        tuple_prob: 0.2,
+    };
+    let java_args_z3 = TypeContextArgs {
+        max_num_bases: 2,
+        max_num_base_cases: 4,
+        max_num_base_typargs: 2,
+        max_type_depth: 2,
+        max_num_params: 3,
+        contravariance_prob: 0., // 1
+        covariance_prob: 0.,     // 0.2
+        base_instantiation_prob: 0.3,
+        typarg_parameter_prob: 0.2,
+        use_same_instantiation_prob: 0.7,
+        use_prelude_type_prob: 0.2,
+        instantiate_existing_complex_type_prob: 0.1,
+        add_additional_typarg_case_prob: 0.,
+        tuple_prob: 0.,
+    };
     let java_args = TypeContextArgs {
         max_num_bases: 2,
         max_num_base_cases: 4,
@@ -119,8 +169,7 @@ fn main() {
         max_to_match_depth: 0,
         const_refine_prob: 0.,
     };
-    let language = Language::Scala;
-    let oracle = Oracle::Z3;
+
     let mut unknown_count = 0;
     let mut unsat_count = 0;
     let mut sat_count = 0;
@@ -131,15 +180,28 @@ fn main() {
         println!("ROUND {prog_count}");
         match language {
             Language::Haskell => {
-                run_prog::<HaskellType>(&haskell_args, &haskell_match_args);
+                if matches!(oracle, Oracle::Construction) {
+                    run_prog::<HaskellType>(&haskell_args, &haskell_match_args);
+                    prog_count += 1;
+                } else {
+                    run_prog_z3::<HaskellType>(
+                        &haskell_args_z3,
+                        &random_match_args,
+                        &mut unknown_count,
+                        &mut prog_count,
+                        &mut unsat_count,
+                        &mut sat_count,
+                    );
+                }
             }
             Language::Scala => {
                 if matches!(oracle, Oracle::Construction) {
                     run_prog::<ScalaType>(&scala_args, &scala_match_args);
+                    prog_count += 1;
                 } else {
                     run_prog_z3::<ScalaType>(
                         &scala_args_z3,
-                        &scala_random_match_args,
+                        &random_match_args,
                         &mut unknown_count,
                         &mut prog_count,
                         &mut unsat_count,
@@ -148,7 +210,19 @@ fn main() {
                 }
             }
             Language::Java => {
-                run_prog::<JavaType>(&java_args, &java_match_args);
+                if matches!(oracle, Oracle::Construction) {
+                    run_prog::<JavaType>(&java_args, &java_match_args);
+                    prog_count += 1;
+                } else {
+                    run_prog_z3::<JavaType>(
+                        &java_args_z3,
+                        &random_match_args,
+                        &mut unknown_count,
+                        &mut prog_count,
+                        &mut unsat_count,
+                        &mut sat_count,
+                    );
+                }
             }
         }
         if matches!(oracle, Oracle::Z3) {
@@ -295,5 +369,5 @@ fn run_prog<
     program_generator.generate_types();
     program_generator.generate_match();
     println!("{}", program_generator.output_prog());
-    program_generator.process();
+    program_generator.process_batch(program_generator.correct, Oracle::Construction, 32);
 }

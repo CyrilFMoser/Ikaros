@@ -472,6 +472,10 @@ impl Type for HaskellType {
         )
         .unwrap()
     }
+
+    fn get_crash_regex() -> Regex {
+        Regex::new(r"panic! \(the 'impossible' happened\)").unwrap()
+    }
 }
 
 fn exp_to_string(e: &Expression<HaskellType>) -> String {

@@ -474,6 +474,10 @@ impl Type for ScalaType {
         Regex::new(r"Match case Unreachable Warning: (?<unreachable>[a-z | _ | \d*]*.scala)")
             .unwrap()
     }
+
+    fn get_crash_regex() -> Regex {
+        Regex::new(r".*at dotty(.*)").unwrap()
+    }
 }
 
 fn exp_to_string(e: &Expression<ScalaType>) -> String {

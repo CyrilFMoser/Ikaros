@@ -16,6 +16,7 @@ use core::fmt::Debug;
 use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
 use std::{
+    error,
     fmt::{format, Display},
     fs::{copy, create_dir, read_dir, remove_dir_all, remove_file, rename, File, OpenOptions},
     hash::Hash,
@@ -179,6 +180,22 @@ impl<
         let output = cmd.output().unwrap();
         let error_message = std::str::from_utf8(&output.stderr).unwrap();
         //println!("{error_message}");
+        let crash_regex = LangTyp::get_crash_regex();
+        if crash_regex.is_match(error_message) {
+            let crash_folder = format!("{cur_folder}/crash");
+            let num_batches = read_dir(&crash_folder).unwrap().count();
+            let cur_crash_folder = format!("{crash_folder}/batch_{num_batches}");
+            create_dir(&cur_crash_folder).unwrap();
+            for file in read_dir(&cur_batch_folder).unwrap() {
+                let file_name = file.unwrap().file_name().into_string().unwrap();
+                if file_name.ends_with(&format!(".{}", LangTyp::get_suffix())) {
+                    let old_path = format!("{cur_batch_folder}/{file_name}");
+                    let new_path = format!("{cur_crash_folder}/{file_name}");
+                    rename(old_path, new_path).unwrap();
+                }
+            }
+        }
+
         let compiler_not_exhaustive = error_message.contains(&LangTyp::get_not_exhaustive());
         let compiler_not_reachable = error_message.contains(&LangTyp::get_unreachable());
         let look_for_unreachable = matches!(oracle, Oracle::Construction) && compiler_not_reachable;
@@ -294,7 +311,7 @@ impl<
         } else {
             format!("package {package_name}{semicolon}")
         };
-        let cur_program = format!("{package_string} \n\n {program}");
+        let cur_program = format!("{package_string} \n\n{program}");
 
         let file_name = format!("batch_prog_{num_progs}.{}", LangTyp::get_suffix());
         let cur_file_path = format!("{cur_batch_folder}/{file_name}");

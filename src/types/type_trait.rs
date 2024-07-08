@@ -144,4 +144,6 @@ pub trait Type {
     fn get_unreachable_regex() -> Regex;
 
     fn get_not_exhaustive_regex() -> Regex;
+
+    fn get_crash_regex() -> Regex;
 }

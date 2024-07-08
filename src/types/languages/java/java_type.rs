@@ -446,6 +446,10 @@ impl Type for JavaType {
             r"(?<unreachable>[a-z | _ | \d*]*.java)(:\d*: error: this case label is dominated by a preceding case label)",
         ).unwrap()
     }
+
+    fn get_crash_regex() -> Regex {
+        Regex::new(r"(.*(at jdk\.)(.*))").unwrap()
+    }
 }
 
 fn exp_to_string(e: &Expression<JavaType>) -> String {
