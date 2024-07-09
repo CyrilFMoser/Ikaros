@@ -15,14 +15,17 @@ use crate::{
 use core::fmt::Debug;
 use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
+use regex::Regex;
 use std::{
     error,
     fmt::{format, Display},
     fs::{copy, create_dir, read_dir, remove_dir_all, remove_file, rename, File, OpenOptions},
     hash::Hash,
-    io::Write,
+    io::{BufRead, BufReader, BufWriter, Write},
     path::Path,
     process::Command,
+    thread::sleep,
+    time::Duration,
 };
 use z3::SatResult;
 
@@ -35,7 +38,7 @@ pub struct ProgramGenerator<
     match_gen_args: Option<MatchArgs>,
     random_match_gen_args: Option<RandomMatchArgs>,
     match_statements: Vec<Statement<LangTyp>>,
-    removed_pattern: Option<Pattern<LangTyp>>,
+    removed_pattern: Option<String>,
     random_match_gen: Option<RandomMatchGenerator<LangTyp>>,
     pub correct: bool, // If the generated program is correct
 }
@@ -90,7 +93,7 @@ impl<
         );
         let (statements, removed) = gen.generate();
         self.match_statements = statements;
-        self.removed_pattern = removed;
+        self.removed_pattern = removed.map(|t| LangTyp::pattern_to_string(&t));
     }
 
     pub fn output_prog(&self) -> String {
@@ -132,7 +135,10 @@ impl<
         let matchexp = exp.clone();
         if let Expression::Match(matchexp) = matchexp {
             let mut checker = Z3Checker::new(matchexp);
-            checker.check(&self.typ_gen.declarations, &self.typ_gen.all_types)
+            let (result, missing_opt) =
+                checker.check(&self.typ_gen.declarations, &self.typ_gen.all_types);
+            self.removed_pattern = missing_opt;
+            result
         } else {
             SatResult::Unknown
         }
@@ -160,13 +166,13 @@ impl<
         self.save_for_batch(cur_batch_folder.clone());
         let num_progs = read_dir(&cur_batch_folder).unwrap().count();
 
-        if num_progs < batchsize {
+        if matches!(oracle, Oracle::Z3) && LangTyp::get_compiler_name() == "javac" {
+            Self::remove_unreachable(&cur_batch_folder);
+        } else if num_progs < batchsize {
             return;
         }
-
         let mut cmd = Command::new("sh");
         cmd.arg("-c");
-        cmd.current_dir(&cur_batch_folder);
 
         let mut actual_command = LangTyp::get_compiler_path();
         if let Some(args) = LangTyp::get_compiler_args() {
@@ -176,6 +182,7 @@ impl<
         }
         actual_command.push_str(&format!(" *.{}", LangTyp::get_suffix()));
         cmd.arg(actual_command);
+        cmd.current_dir(&cur_batch_folder);
 
         let output = cmd.output().unwrap();
         let error_message = std::str::from_utf8(&output.stderr).unwrap();
@@ -250,6 +257,14 @@ impl<
             let false_positives: Vec<String> = read_dir(cur_batch_folder)
                 .unwrap()
                 .filter(|f| f.as_ref().unwrap().file_type().unwrap().is_file())
+                .filter(|f| {
+                    f.as_ref()
+                        .unwrap()
+                        .file_name()
+                        .to_str()
+                        .unwrap()
+                        .ends_with(&LangTyp::get_suffix())
+                })
                 .map(|f| f.unwrap().file_name().into_string().unwrap())
                 .filter(|name| !problematic_programs.contains(&name.as_str()))
                 .collect();
@@ -268,6 +283,7 @@ impl<
                 let new_path =
                     format!("{new_folder}/program_{num_progs}.{}", LangTyp::get_suffix());
                 rename(old_path, new_path).unwrap();
+                //panic!("{error_message}")
             }
             return;
         }
@@ -311,7 +327,14 @@ impl<
         } else {
             format!("package {package_name}{semicolon}")
         };
-        let cur_program = format!("{package_string} \n\n{program}");
+        let mut cur_program = format!("{package_string} \n\n{program}");
+
+        if let Some(removed) = &self.removed_pattern {
+            let new = removed.replace('\n', &format!("\n{}", LangTyp::get_comment()));
+            cur_program.push_str(
+                format!("\n{} This is not matched: {new}", LangTyp::get_comment()).as_str(),
+            );
+        }
 
         let file_name = format!("batch_prog_{num_progs}.{}", LangTyp::get_suffix());
         let cur_file_path = format!("{cur_batch_folder}/{file_name}");
@@ -322,6 +345,64 @@ impl<
             || source_file.metadata().unwrap().len() >= 64000
         {
             remove_file(cur_file_path).unwrap();
+        }
+    }
+
+    fn remove_unreachable(cur_batch_folder: &str) {
+        let mut cmd = Command::new("sh");
+        cmd.arg("-c");
+
+        let mut actual_command = LangTyp::get_compiler_path();
+        if let Some(args) = LangTyp::get_compiler_args() {
+            for arg in args.iter() {
+                actual_command.push_str(&format!(" {arg}"));
+            }
+        }
+        actual_command.push_str(&format!(" *.{}", LangTyp::get_suffix()));
+        cmd.arg(actual_command);
+
+        cmd.current_dir(cur_batch_folder);
+
+        let output = cmd.output().unwrap().stderr;
+        let error_message = std::str::from_utf8(&output).unwrap();
+        //println!("{error_message}");
+        for f in Path::new(cur_batch_folder).read_dir().unwrap() {
+            let file_name = f.unwrap().file_name().into_string().unwrap();
+            if !file_name.ends_with(".java") {
+                continue;
+            }
+            let line_regex = Regex::new(&format!(
+                r"{file_name}:(?<line_number>\d*): error: this case label is dominated"
+            ))
+            .unwrap();
+
+            let captures = line_regex.captures_iter(error_message);
+            let line_numbers: Vec<usize> = captures
+                .filter_map(|c| {
+                    c.name("line_number")
+                        .map(|m| m.as_str().parse::<usize>().unwrap())
+                })
+                .collect();
+
+            let cur_file_path = format!("{cur_batch_folder}/{file_name}");
+            let temp_file_path = format!("{cur_file_path}.temp");
+            //println!("opening {cur_file_path}");
+
+            let orig_file = File::open(&cur_file_path).unwrap();
+            let out_file = File::create(&temp_file_path).unwrap();
+
+            let reader = BufReader::new(&orig_file);
+            let mut writer = BufWriter::new(&out_file);
+
+            for (i, line) in reader.lines().enumerate() {
+                let line = line.as_ref().unwrap();
+                if line_numbers.contains(&(i + 1)) {
+                    writeln!(writer, "//{}", line).unwrap();
+                } else {
+                    writeln!(writer, "{}", line).unwrap();
+                }
+            }
+            rename(temp_file_path, cur_file_path).unwrap();
         }
     }
 
@@ -405,7 +486,7 @@ impl<
             .append(true)
             .open(old_path.clone())
             .unwrap();
-        let pattern_string = LangTyp::pattern_to_string(&self.removed_pattern.clone().unwrap());
+        let pattern_string = &self.removed_pattern.clone().unwrap();
         let comment = format!(
             "{} Removed this case: {}",
             LangTyp::get_comment(),

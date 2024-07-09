@@ -5,7 +5,7 @@ use super::{random_matchgen_args::RandomMatchArgs, typegen::TypeGenerator};
 use crate::{
     matches::{
         expression::{Expression, MatchExp},
-        pattern::{Pattern, Variant, WildCard},
+        pattern::{Constant, Pattern, Variant, WildCard},
         statements::{Declaration, Statement, VarDecl},
     },
     types::{type_graph::graph::Graph, type_trait::Type},
@@ -91,7 +91,7 @@ impl<
         match p {
             Pattern::WildCard(w) => self.refine_wild(w, depth),
             Pattern::Variant(v) => self.refine_variant(v, depth),
-            Pattern::Constant(_) => panic!("Z3 matches should not contain constants"),
+            Pattern::Constant(_) => vec![p.clone()],
             Pattern::Tuple(p1, p2) => self.refine_tuple(p1, p2, depth),
         }
     }
@@ -213,6 +213,17 @@ impl<
         if typ.is_base() || typ.is_variant() {
             let variants = self.get_reachable_variants(typ);
             variants.into_iter().map(|p| Pattern::Variant(p)).collect()
+        } else if typ.is_primitive() && !typ.is_bool() && LangTyp::get_compiler_name() != "javac" {
+            vec![
+                Pattern::Constant(Constant {
+                    typ: typ.clone(),
+                    exp: Box::new(typ.get_const_exp()),
+                }),
+                Pattern::WildCard(WildCard {
+                    typ: typ.clone(),
+                    annotate: false,
+                }),
+            ]
         } else {
             vec![Pattern::WildCard(WildCard {
                 typ: typ.clone(),

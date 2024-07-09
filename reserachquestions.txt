@@ -1,0 +1,8 @@
+- speed / smt solver times
+
+- various statistics of programs
+
+- code coverage analysis in compilers
+
+
+

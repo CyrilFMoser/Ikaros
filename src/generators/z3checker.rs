@@ -37,11 +37,17 @@ impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display + Ord + Par
         Z3Checker { matchexp }
     }
 
-    pub fn check(&mut self, declarations: &[usize], all_types: &[LangTyp]) -> SatResult {
+    pub fn check(
+        &mut self,
+        declarations: &[usize],
+        all_types: &[LangTyp],
+    ) -> (SatResult, Option<String>) {
         let mut cfg = Config::new();
         cfg.set_timeout_msec(500);
 
         let ctx = Context::new(&cfg);
+
+        self.matchexp.cases.retain(|p| !p.is_const());
 
         let mut typ = DatatypeBuilder::new(&ctx, "Type");
 
@@ -101,11 +107,15 @@ impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display + Ord + Par
 
         let result = s.check();
 
-        /*if matches!(result, SatResult::Sat) {
+        if matches!(result, SatResult::Sat) {
             let model = s.get_model().unwrap();
-            println!("t1: {}", model.get_const_interp(&t1).unwrap());
-        }*/
-        result
+            (
+                result,
+                Some(model.get_const_interp(&t1).unwrap().to_string()),
+            )
+        } else {
+            (result, None)
+        }
     }
 
     fn get_to_match_type_constraints<'a>(
