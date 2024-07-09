@@ -161,6 +161,9 @@ impl<
             LangTyp::get_compiler_name()
         );
         let cur_batch_folder = format!("{cur_folder}/batches/{cur_batch_name}");
+        if !Path::new(&cur_batch_folder).exists() {
+            create_dir(&cur_batch_folder).unwrap();
+        }
         //println!("{cur_batch_folder}");
 
         self.save_for_batch(cur_batch_folder.clone());
