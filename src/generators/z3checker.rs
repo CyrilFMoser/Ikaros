@@ -49,6 +49,9 @@ impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display + Ord + Par
 
         self.matchexp.cases.retain(|p| !p.is_const());
 
+        if self.matchexp.cases.is_empty(){
+            return (SatResult::Sat,Some(String::from("Pattern match is empty without constants")))
+        }
         let mut typ = DatatypeBuilder::new(&ctx, "Type");
 
         typ = Self::add_bases(typ, declarations, all_types);

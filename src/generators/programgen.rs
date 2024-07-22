@@ -11,7 +11,7 @@ use crate::{
     },
     types::{type_graph::graph::Graph, type_trait::Type},
     Oracle,
-};
+};use std::collections::HashSet;
 use core::fmt::Debug;
 use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
@@ -38,7 +38,7 @@ pub struct ProgramGenerator<
     match_gen_args: Option<MatchArgs>,
     random_match_gen_args: Option<RandomMatchArgs>,
     match_statements: Vec<Statement<LangTyp>>,
-    removed_pattern: Option<String>,
+    pub removed_pattern: Option<String>,
     random_match_gen: Option<RandomMatchGenerator<LangTyp>>,
     pub correct: bool, // If the generated program is correct
 }
@@ -169,6 +169,11 @@ impl<
         self.save_for_batch(cur_batch_folder.clone());
         let num_progs = read_dir(&cur_batch_folder).unwrap().count();
 
+        if num_progs > batchsize{
+            remove_dir_all(&cur_batch_folder).unwrap();
+            create_dir(&cur_batch_folder).unwrap();
+        }
+
         if matches!(oracle, Oracle::Z3) && LangTyp::get_compiler_name() == "javac" {
             Self::remove_unreachable(&cur_batch_folder);
         } else if num_progs < batchsize {
@@ -234,13 +239,14 @@ impl<
         if look_for_unreachable {
             let unreachable_regex = LangTyp::get_unreachable_regex();
             let captures = unreachable_regex.captures_iter(error_message);
-            let file_names: Vec<&str> = captures
+            let file_names: HashSet<&str> = captures
                 .filter_map(|c| c.name("unreachable").map(|m| m.as_str()))
                 .collect();
             for file in file_names {
                 let old_path = format!("{cur_batch_folder}/{file}");
+                //println!("{old_path}");
                 let new_folder = format!(
-                    "out/Programs/Construction/{}/unreduced/unreachable",
+                    "out/Programs/Construction/{}/unreachable/unreduced",
                     LangTyp::get_compiler_name()
                 );
                 let num_progs = read_dir(&new_folder).unwrap().count();

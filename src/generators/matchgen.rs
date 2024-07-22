@@ -112,9 +112,9 @@ impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display + Ord + Par
         } else {
             None
         };
-        if let Some(rp) = &removed_pattern {
+        /*if let Some(rp) = &removed_pattern {
             println!("Removed: {}", LangTyp::pattern_to_string(rp));
-        }
+        }*/
 
         let mut arms = Vec::new();
         for i in 0..cases.len() {

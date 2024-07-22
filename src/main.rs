@@ -86,7 +86,7 @@ fn main() {
         tuple_prob: 0.1,
     };
     let random_match_args = RandomMatchArgs {
-        level_prob: 0.7,
+        level_prob: 1.,
         max_refine_depth: 5,
     };
     let haskell_args = TypeContextArgs {
@@ -106,7 +106,7 @@ fn main() {
         tuple_prob: 0.2,
     };
     let haskell_match_args = MatchArgs {
-        level_prob: 0.7,
+        level_prob: 1.,
         refine_prob: 0.55,
         primitive_prob: 0.1,
         max_refine_depth: 5,
@@ -181,6 +181,7 @@ fn main() {
             Language::Haskell => {
                 if matches!(oracle, Oracle::Construction) {
                     run_prog::<HaskellType>(&haskell_args, &haskell_match_args);
+                    prog_count+=1;
                     1
                 } else {
                     run_prog_z3::<HaskellType>(
@@ -196,6 +197,7 @@ fn main() {
             Language::Scala => {
                 if matches!(oracle, Oracle::Construction) {
                     run_prog::<ScalaType>(&scala_args, &scala_match_args);
+                    prog_count+=1;
                     1
                 } else {
                     run_prog_z3::<ScalaType>(
@@ -211,6 +213,7 @@ fn main() {
             Language::Java => {
                 if matches!(oracle, Oracle::Construction) {
                     run_prog::<JavaType>(&java_args, &java_match_args);
+                    prog_count+=1;
                     1
                 } else {
                     run_prog_z3::<JavaType>(
@@ -386,5 +389,5 @@ fn run_prog<
     program_generator.generate_types();
     program_generator.generate_match();
     //println!("{}", program_generator.output_prog());
-    program_generator.process_batch(program_generator.correct, Oracle::Construction, batchsize);
+    program_generator.process_batch(program_generator.removed_pattern.is_none(), Oracle::Construction, batchsize);
 }

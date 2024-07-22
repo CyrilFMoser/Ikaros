@@ -351,7 +351,7 @@ impl Type for JavaType {
     }
 
     fn get_compiler_args() -> Option<Box<[String]>> {
-        None
+        Some(Box::new([String::from("-Xmaxerrs 1000")]))
     }
 
     fn get_suffix() -> String {

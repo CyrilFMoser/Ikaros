@@ -1,14 +1,17 @@
 package Program_0; 
 
 class TestClass {sealed interface I_A<A, B>{}
-sealed interface I_B{}
-record R_A<C, D>(Character a) implements I_A<C, D>{}
-record R_B(Character a, I_A<I_B, I_B> b) implements I_B{}
+record R_A<C, D>(I_A<C, D> a, I_A<D, C> b) implements I_A<C, D>{}
 public static void main(String args[]) {
 
-R_B v_a = null;
+I_A<Byte, Integer> v_a = null;
 Integer v_b = switch (v_a){
-  case R_B(var a, var b) -> 0; 
+  case R_A<Byte, Integer>(R_A<Byte, Integer>(R_A<Byte, Integer>(var a, var b), var c), var d) -> 0; 
+  case R_A<Byte, Integer>(R_A<Byte, Integer>(R_A<Byte, Integer>(var a, var b), R_A<Integer, Byte>(var c, var d)), R_A<Integer, Byte>(var e, R_A<Byte, Integer>(var f, var g))) -> 1; 
+  case R_A<Byte, Integer>(R_A<Byte, Integer>(R_A<Byte, Integer>(var a, var b), R_A<Integer, Byte>(var c, var d)), R_A<Integer, Byte>(var e, var f)) -> 2; 
+  case R_A<Byte, Integer>(var a, R_A<Integer, Byte>(var b, var c)) -> 3; 
+  case R_A<Byte, Integer>(R_A<Byte, Integer>(var a, var b), R_A<Integer, Byte>(var c, var d)) -> 4; 
+  case R_A<Byte, Integer>(R_A<Byte, Integer>(var a, R_A<Integer, Byte>(var b, var c)), R_A<Integer, Byte>(var d, var e)) -> 5; 
 };
 }
 
