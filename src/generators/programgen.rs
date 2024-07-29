@@ -9,13 +9,15 @@ use crate::{
         pattern::Pattern,
         statements::{Declaration, Statement, VarDecl},
     },
+    statistics::matchstats::MatchStatistics,
     types::{type_graph::graph::Graph, type_trait::Type},
     Oracle,
-};use std::collections::HashSet;
+};
 use core::fmt::Debug;
 use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
 use regex::Regex;
+use std::{collections::HashSet, time::Instant};
 use std::{
     error,
     fmt::{format, Display},
@@ -96,6 +98,45 @@ impl<
         self.removed_pattern = removed.map(|t| LangTyp::pattern_to_string(&t));
     }
 
+    pub fn get_match_statistics<T>(&self, stats: &mut T)
+    where
+        T: MatchStatistics,
+    {
+        let Statement::Decl(Declaration::Var(VarDecl {
+            name: _,
+            typ_annotation: _,
+            typ: _,
+            exp,
+        })) = self.match_statements.get(1).unwrap();
+
+        if let Expression::Match(matchexp) = exp {
+            let n = matchexp.cases.len() as u32;
+            stats.set_num_patterns(n);
+            let mut pattern_depths = Vec::new();
+
+            for case in &matchexp.cases {
+                pattern_depths.push(case.depth());
+            }
+
+            let average_depth = pattern_depths.iter().sum::<u32>() as f32 / n as f32;
+            stats.set_average_pattern_depth(average_depth);
+
+            let variance = pattern_depths
+                .iter()
+                .map(|d| (*d as f32 - average_depth).powf(2.))
+                .sum::<f32>()
+                / n as f32;
+
+            stats.set_variance_pattern_depth(variance);
+
+            let max = pattern_depths.iter().max().unwrap();
+            stats.set_max_pattern_depth(*max);
+
+            let min = pattern_depths.iter().min().unwrap();
+            stats.set_min_pattern_depth(*min);
+        }
+    }
+
     pub fn output_prog(&self) -> String {
         let ms = self
             .match_statements
@@ -114,16 +155,17 @@ impl<
         ));
     }
 
-    pub fn generate_z3(&mut self) -> bool {
+    pub fn generate_z3(&mut self) -> Option<Duration> {
+        let time = Instant::now();
         if let Some(statements) = self.random_match_gen.as_mut().unwrap().generate() {
             self.match_statements = statements;
-            true
+            Some(time.elapsed())
         } else {
-            false
+            None
         }
     }
 
-    pub fn check_z3(&mut self) -> SatResult {
+    pub fn check_z3(&mut self) -> (SatResult, Duration) {
         let match_statement = self.match_statements.get(1).unwrap();
         let Statement::Decl(Declaration::Var(VarDecl {
             name: _,
@@ -135,12 +177,12 @@ impl<
         let matchexp = exp.clone();
         if let Expression::Match(matchexp) = matchexp {
             let mut checker = Z3Checker::new(matchexp);
-            let (result, missing_opt) =
+            let (result, missing_opt, duration) =
                 checker.check(&self.typ_gen.declarations, &self.typ_gen.all_types);
             self.removed_pattern = missing_opt;
-            result
+            (result, duration)
         } else {
-            SatResult::Unknown
+            (SatResult::Unknown, Duration::default())
         }
     }
 
@@ -169,7 +211,7 @@ impl<
         self.save_for_batch(cur_batch_folder.clone());
         let num_progs = read_dir(&cur_batch_folder).unwrap().count();
 
-        if num_progs > batchsize{
+        if num_progs > batchsize {
             remove_dir_all(&cur_batch_folder).unwrap();
             create_dir(&cur_batch_folder).unwrap();
         }

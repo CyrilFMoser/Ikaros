@@ -7,17 +7,22 @@ use generators::random_matchgen_args::RandomMatchArgs;
 use generators::typegen_args::TypeContextArgs;
 use rand::{thread_rng, Rng, SeedableRng};
 use rand_chacha::ChaCha8Rng;
+use serde::Serialize;
+use statistics::constructionstats::ConstructionStatistics;
+use statistics::z3stats::Z3Statistics;
 use std::env;
 use std::fmt::{Debug, Display};
 use std::fs::{remove_file, File, OpenOptions};
 use std::hash::Hash;
 use std::io::{Read, Write};
 use std::path::Path;
+use std::time::Instant;
 use types::languages::java::java_type::JavaType;
 use types::languages::scala::scala_type::ScalaType;
 use z3::SatResult;
 mod generators;
 mod matches;
+mod statistics;
 mod types;
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -87,7 +92,7 @@ fn main() {
     };
     let random_match_args = RandomMatchArgs {
         level_prob: 1.,
-        max_refine_depth: 5,
+        max_refine_depth: 5, //5
     };
     let haskell_args = TypeContextArgs {
         max_num_bases: 4,
@@ -175,13 +180,19 @@ fn main() {
     let mut sat_count = 0;
     let mut prog_count = 0;
 
-    loop {
+    let mut z3_stats = Vec::new();
+    let mut construction_stats = Vec::new();
+    while prog_count <= 1000 {
         println!("ROUND {prog_count}");
         let cur_count = match language {
             Language::Haskell => {
                 if matches!(oracle, Oracle::Construction) {
-                    run_prog::<HaskellType>(&haskell_args, &haskell_match_args);
-                    prog_count+=1;
+                    run_prog::<HaskellType>(
+                        &haskell_args,
+                        &haskell_match_args,
+                        &mut construction_stats,
+                    );
+                    prog_count += 1;
                     1
                 } else {
                     run_prog_z3::<HaskellType>(
@@ -191,13 +202,14 @@ fn main() {
                         &mut prog_count,
                         &mut unsat_count,
                         &mut sat_count,
+                        &mut z3_stats,
                     )
                 }
             }
             Language::Scala => {
                 if matches!(oracle, Oracle::Construction) {
-                    run_prog::<ScalaType>(&scala_args, &scala_match_args);
-                    prog_count+=1;
+                    run_prog::<ScalaType>(&scala_args, &scala_match_args, &mut construction_stats);
+                    prog_count += 1;
                     1
                 } else {
                     run_prog_z3::<ScalaType>(
@@ -207,13 +219,14 @@ fn main() {
                         &mut prog_count,
                         &mut unsat_count,
                         &mut sat_count,
+                        &mut z3_stats,
                     )
                 }
             }
             Language::Java => {
                 if matches!(oracle, Oracle::Construction) {
-                    run_prog::<JavaType>(&java_args, &java_match_args);
-                    prog_count+=1;
+                    run_prog::<JavaType>(&java_args, &java_match_args, &mut construction_stats);
+                    prog_count += 1;
                     1
                 } else {
                     run_prog_z3::<JavaType>(
@@ -223,6 +236,7 @@ fn main() {
                         &mut prog_count,
                         &mut unsat_count,
                         &mut sat_count,
+                        &mut z3_stats,
                     )
                 }
             }
@@ -244,6 +258,30 @@ fn main() {
             );
         }
     }
+    let oracle_string = match oracle {
+        Oracle::Construction => "Construction",
+        Oracle::Z3 => "Z3",
+    };
+    let compiler_string = match language {
+        Language::Haskell => "ghc",
+        Language::Java => "javac",
+        Language::Scala => "scalac",
+    };
+    let stats_file = format!("out/Programs/{oracle_string}/{compiler_string}/more_stats.csv");
+    if !Path::new(&stats_file).exists() {
+        File::create(&stats_file).unwrap();
+    }
+    let mut writer = csv::Writer::from_path(stats_file).unwrap();
+    if matches!(oracle, Oracle::Z3) {
+        for stat in z3_stats {
+            writer.serialize(stat).unwrap();
+        }
+    } else {
+        for stat in construction_stats {
+            writer.serialize(stat).unwrap();
+        }
+    }
+    writer.flush().unwrap();
 }
 
 fn stats(oracle: &Oracle, language: &Language, prog_count: &u32) {
@@ -317,31 +355,49 @@ fn run_prog_z3<
     prog_count: &mut u32,
     unsat_count: &mut u32,
     sat_count: &mut u32,
+    z3stats: &mut Vec<Z3Statistics>,
 ) -> u32 {
     let seed = thread_rng().gen();
     //println!("using seed: {}", seed);
     let rng = ChaCha8Rng::seed_from_u64(seed);
     let mut program_generator: ProgramGenerator<T> =
         ProgramGenerator::new(args, rng, None, Some(match_args.clone()), false);
+
+    let type_gen_start = Instant::now();
     program_generator.generate_types();
+    let type_gen_time = type_gen_start.elapsed();
+
+    let enumeration_start = Instant::now();
     program_generator.generate_cases();
+    let enumeration_time = enumeration_start.elapsed();
+
     let batchsize = if T::get_compiler_name() == "javac" {
         1
     } else {
         32
     };
     let mut cur_count = 0;
-    while program_generator.generate_z3() {
-        //println!("{}", program_generator.output_prog());
-        let result = program_generator.check_z3();
+    while let Some(gen_duration) = program_generator.generate_z3() {
+        println!("{}", program_generator.output_prog());
+        let total = Instant::now();
+        let (result, duration) = program_generator.check_z3();
         match result {
             SatResult::Sat => *sat_count += 1,
             SatResult::Unknown => *unknown_count += 1,
             SatResult::Unsat => *unsat_count += 1,
         }
 
+        let mut cur_stats = Z3Statistics::new();
+        cur_stats.enumeration_time = Some(enumeration_time.as_micros());
+        cur_stats.solver_time = Some(duration.as_micros());
+        cur_stats.typegen_time = Some(type_gen_time.as_micros());
+        cur_stats.result = Some(format!("{:?}", result));
+        cur_stats.program_gen_time = Some(type_gen_time.as_micros() + gen_duration.as_micros());
+
         *prog_count += 1;
         cur_count += 1;
+
+        let processing_start = Instant::now();
         if !matches!(result, SatResult::Unknown) {
             program_generator.process_batch(
                 matches!(result, SatResult::Unsat),
@@ -349,6 +405,14 @@ fn run_prog_z3<
                 batchsize,
             );
         }
+        let processing_time = processing_start.elapsed();
+        cur_stats.processing_time = Some(processing_time.as_micros());
+
+        let total_time = total.elapsed() + gen_duration;
+        cur_stats.total_time = Some(total_time.as_micros());
+        program_generator.get_match_statistics(&mut cur_stats);
+
+        z3stats.push(cur_stats);
     }
     cur_count
 }
@@ -369,25 +433,49 @@ fn run_prog<
 >(
     args: &TypeContextArgs,
     match_args: &MatchArgs,
+    stats: &mut Vec<ConstructionStatistics>,
 ) {
+    let total_time = Instant::now();
     let seed = thread_rng().gen();
     //println!("using seed: {}", seed);
     let rng = ChaCha8Rng::seed_from_u64(seed);
     let mut correct_rng = ChaCha8Rng::seed_from_u64(seed);
-    let mut program_generator: ProgramGenerator<T> = ProgramGenerator::new(
-        args,
-        rng,
-        Some(match_args.clone()),
-        None,
-        correct_rng.gen_bool(0.5),
-    );
+    let correct = correct_rng.gen_bool(0.5);
+    let mut program_generator: ProgramGenerator<T> =
+        ProgramGenerator::new(args, rng, Some(match_args.clone()), None, correct);
     let batchsize = if T::get_compiler_name() == "javac" {
         1
     } else {
         32
     };
+
+    let mut cur_stats = ConstructionStatistics::new();
+
+    let type_gen_start = Instant::now();
     program_generator.generate_types();
+    let type_gen_time = type_gen_start.elapsed();
+
+    let match_start = Instant::now();
     program_generator.generate_match();
+    let match_time = match_start.elapsed();
+
+    cur_stats.typegen_time = Some(type_gen_time.as_micros());
+    cur_stats.match_gen_time = Some(match_time.as_micros());
+    cur_stats.correct = Some(correct);
+    cur_stats.program_gen_time = Some(type_gen_time.as_micros() + match_time.as_micros());
+
     //println!("{}", program_generator.output_prog());
-    program_generator.process_batch(program_generator.removed_pattern.is_none(), Oracle::Construction, batchsize);
+    let processing_start = Instant::now();
+    program_generator.process_batch(
+        program_generator.removed_pattern.is_none(),
+        Oracle::Construction,
+        batchsize,
+    );
+    let processing_time = processing_start.elapsed();
+    cur_stats.processing_time = Some(processing_time.as_micros());
+
+    let total = total_time.elapsed();
+    cur_stats.total_time = Some(total.as_micros());
+    program_generator.get_match_statistics(&mut cur_stats);
+    stats.push(cur_stats);
 }
