@@ -102,6 +102,21 @@ impl<LangTyp: Type + Clone + PartialOrd> Pattern<LangTyp> {
             Pattern::Tuple(p1, p2) => p1.is_const() || p2.is_const(),
         }
     }
+
+    /// Checks if a pattern has no more non-wildcards as children
+    pub fn is_leaf(&self) -> bool {
+        match &self {
+            Pattern::WildCard(_) => false,
+            Pattern::Variant(v) => v
+                .parameters
+                .iter()
+                .all(|p| matches!(p, Pattern::WildCard(_))),
+            Pattern::Constant(_) => true,
+            Pattern::Tuple(p1, p2) => {
+                matches!(**p1, Pattern::WildCard(_)) && matches!(**p2, Pattern::WildCard(_))
+            }
+        }
+    }
 }
 #[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct WildCard<T> {

@@ -715,3 +715,603 @@ SCHWERWIEGEND: A severe compiler error occurred, full details of the error can b
 2024.05.21 20:46:17 INFO  Shutting down server
 2024.05.21 20:46:17 INFO  shutting down Metals
 2024.05.21 20:46:17 INFO  Exiting server
+2024.08.05 15:45:29 INFO  Started: Metals version 1.3.5 in folders 'G:\Projects\Bachelor-Thesis\Ikaros' for client Visual Studio Code 1.92.0.
+SLF4J(W): Class path contains multiple SLF4J providers.
+SLF4J(W): Found provider [scribe.slf4j.ScribeServiceProvider@493fb545]
+SLF4J(W): Found provider [ch.qos.logback.classic.spi.LogbackServiceProvider@7bb6dec2]
+SLF4J(W): See https://www.slf4j.org/codes.html#multiple_bindings for an explanation.
+SLF4J(I): Actual provider is of type [scribe.slf4j.ScribeServiceProvider@493fb545]
+2024.08.05 15:45:29 WARN  Flyway upgrade recommended: H2 2.3.230 is newer than this version of Flyway and support has not been tested. The latest supported version of H2 is 2.2.220.
+2024.08.05 15:45:30 INFO  no build target found for G:\Projects\Bachelor-Thesis\Possible Bugs\Inexhaustive\3.3.0\program_1.scala. Using presentation compiler with project's scala-library version: 3.3.3
+2024.08.05 15:45:31 WARN  Flyway upgrade recommended: H2 2.3.230 is newer than this version of Flyway and support has not been tested. The latest supported version of H2 is 2.2.220.
+2024.08.05 15:45:32 INFO  Running List(C:\Users\cyril\AppData\Local\Coursier\data\bin\scala-cli.BAT, setup-ide, G:\Projects\Bachelor-Thesis\Ikaros)
+2024.08.05 15:45:32 INFO  Running List(C:\Users\cyril\AppData\Local\Coursier\data\bin\scala-cli.BAT, bsp, --workspace, G:\Projects\Bachelor-Thesis\Possible Bugs\Inexhaustive\3.3.0\.metals-scala-cli, G:\Projects\Bachelor-Thesis\Possible Bugs\Inexhaustive\3.3.0\program_1.scala)
+2024.08.05 15:45:32 INFO  tracing is disabled for protocol BSP, to enable tracing of incoming and outgoing JSON messages create an empty file at G:\Projects\Bachelor-Thesis\Possible Bugs\Inexhaustive\3.3.0\.metals\bsp.trace.json or C:\Users\cyril\AppData\Local\scalameta\metals\cache\bsp.trace.json
+2024.08.05 15:45:33 INFO  Attempting to connect to the build server...
+2024.08.05 15:45:33 INFO  Running BSP server List(C:\Users\cyril\AppData\Local\Coursier\data\bin\.scala-cli.aux.exe, bsp, --json-options, G:\Projects\Bachelor-Thesis\Ikaros\.scala-build\ide-options-v2.json, G:\Projects\Bachelor-Thesis\Ikaros)
+2024.08.05 15:45:33 INFO  tracing is disabled for protocol BSP, to enable tracing of incoming and outgoing JSON messages create an empty file at G:\Projects\Bachelor-Thesis\Ikaros\.metals\bsp.trace.json or C:\Users\cyril\AppData\Local\scalameta\metals\cache\bsp.trace.json
+2024.08.05 15:45:33 INFO  time: code lens generation in 2.29s
+2024.08.05 15:45:37 INFO  Connected to Scala CLI server v1.1.0
+2024.08.05 15:45:37 INFO  compiling _bd2c96d2de-e52d018355 (1 scala source)
+2024.08.05 15:45:39 WARN  Flyway upgrade recommended: H2 2.3.230 is newer than this version of Flyway and support has not been tested. The latest supported version of H2 is 2.2.220.
+2024.08.05 15:45:39 INFO  time: compiled _bd2c96d2de-e52d018355 in 1.54s
+2024.08.05 15:45:39 INFO  time: compiled _bd2c96d2de-e52d018355 in 29ms
+2024.08.05 15:45:40 INFO  time: Connected to build server in 7.14s
+2024.08.05 15:45:40 INFO  Connected to Build server: scala-cli v1.1.0
+2024.08.05 15:45:40 INFO  time: indexed workspace in 2.98s
+2024.08.05 15:45:40 INFO  time: Imported build in 0.15s
+2024.08.05 15:45:41 INFO  running doctor check
+2024.08.05 15:45:41 INFO  java targets: Ikaros_bd2c96d2de-test, Ikaros_bd2c96d2de
+2024.08.05 15:45:41 INFO  time: compiled _bd2c96d2de-e52d018355 in 35ms
+2024.08.05 15:45:41 INFO  Scala CLI started for G:\Projects\Bachelor-Thesis\Possible Bugs\Inexhaustive\3.3.0\program_1.scala
+2024.08.05 15:45:41 INFO  compiling ikaros_bd2c96d2de (259 scala sources and 4 java sources)
+2024.08.05 15:45:41 INFO  time: compiled _bd2c96d2de-e52d018355 in 3ms
+2024.08.05 15:45:45 WARN  Flyway upgrade recommended: H2 2.3.230 is newer than this version of Flyway and support has not been tested. The latest supported version of H2 is 2.2.220.
+2024.08.05 15:45:47 INFO  time: indexed workspace in 6.54s
+2024.08.05 15:45:47 WARN  no build target for: G:\Projects\Bachelor-Thesis\Possible Bugs\Inexhaustive\3.3.0\program_1.scala
+2024.08.05 15:45:48 INFO  time: code lens generation in 2.92s
+2024.08.05 15:45:49 INFO  time: compiled Ikaros_bd2c96d2de in 8.37s
+2024.08.05 15:45:49 INFO  compiling ikaros_bd2c96d2de (259 scala sources and 4 java sources)
+2024.08.05 15:45:53 INFO  time: compiled Ikaros_bd2c96d2de in 3.1s
+2024.08.06 16:08:28 INFO  Started: Metals version 1.3.5 in folders 'G:\Projects\Bachelor-Thesis\Ikaros' for client Visual Studio Code 1.92.0.
+SLF4J(W): Class path contains multiple SLF4J providers.
+SLF4J(W): Found provider [scribe.slf4j.ScribeServiceProvider@65a8ba7d]
+SLF4J(W): Found provider [ch.qos.logback.classic.spi.LogbackServiceProvider@7a68be15]
+SLF4J(W): See https://www.slf4j.org/codes.html#multiple_bindings for an explanation.
+SLF4J(I): Actual provider is of type [scribe.slf4j.ScribeServiceProvider@65a8ba7d]
+2024.08.06 16:08:32 WARN  Flyway upgrade recommended: H2 2.3.230 is newer than this version of Flyway and support has not been tested. The latest supported version of H2 is 2.2.220.
+2024.08.06 16:08:33 INFO  Attempting to connect to the build server...
+2024.08.06 16:08:33 INFO  Running BSP server List(C:\Users\cyril\AppData\Local\Coursier\data\bin\.scala-cli.aux.exe, bsp, --json-options, G:\Projects\Bachelor-Thesis\Ikaros\.scala-build\ide-options-v2.json, G:\Projects\Bachelor-Thesis\Ikaros)
+2024.08.06 16:08:33 ERROR Running process 'C:\Users\cyril\AppData\Local\Coursier\data\bin\.scala-cli.aux.exe bsp --json-options G:\Projects\Bachelor-Thesis\Ikaros\.scala-build\ide-options-v2.json G:\Projects\Bachelor-Thesis\Ikaros' failed
+java.io.IOException: Cannot run program "C:\Users\cyril\AppData\Local\Coursier\data\bin\.scala-cli.aux.exe" (in directory "G:\Projects\Bachelor-Thesis\Ikaros"): CreateProcess error=2, Das System kann die angegebene Datei nicht finden
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1143)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1073)
+	at scala.meta.internal.process.SystemProcess$.run(SystemProcess.scala:48)
+	at scala.meta.internal.bsp.BspServers.newConnection$1(BspServers.scala:117)
+	at scala.meta.internal.bsp.BspServers.$anonfun$newServer$8(BspServers.scala:160)
+	at scala.meta.internal.metals.BuildServerConnection$.setupServer$1(BuildServerConnection.scala:593)
+	at scala.meta.internal.metals.BuildServerConnection$.fromSockets(BuildServerConnection.scala:661)
+	at scala.meta.internal.bsp.BspServers.newServer(BspServers.scala:155)
+	at scala.meta.internal.bsp.BspConnector.connect$1(BspConnector.scala:167)
+	at scala.meta.internal.bsp.BspConnector.connect(BspConnector.scala:214)
+	at scala.meta.internal.metals.ProjectMetalsLspService.$anonfun$autoConnectToBuildServer$4(ProjectMetalsLspService.scala:915)
+	at scala.meta.internal.metals.TimerProvider.withTimer(TimerProvider.scala:38)
+	at scala.meta.internal.metals.TimerProvider.timed(TimerProvider.scala:14)
+	at scala.meta.internal.metals.ProjectMetalsLspService.$anonfun$autoConnectToBuildServer$3(ProjectMetalsLspService.scala:915)
+	at scala.concurrent.impl.Promise$Transformation.run(Promise.scala:470)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.lang.Thread.run(Thread.java:833)
+Caused by: java.io.IOException: CreateProcess error=2, Das System kann die angegebene Datei nicht finden
+	at java.lang.ProcessImpl.create(Native Method)
+	at java.lang.ProcessImpl.<init>(ProcessImpl.java:494)
+	at java.lang.ProcessImpl.start(ProcessImpl.java:159)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1110)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1073)
+	at scala.meta.internal.process.SystemProcess$.run(SystemProcess.scala:48)
+	at scala.meta.internal.bsp.BspServers.newConnection$1(BspServers.scala:117)
+	at scala.meta.internal.bsp.BspServers.$anonfun$newServer$8(BspServers.scala:160)
+	at scala.meta.internal.metals.BuildServerConnection$.setupServer$1(BuildServerConnection.scala:593)
+	at scala.meta.internal.metals.BuildServerConnection$.fromSockets(BuildServerConnection.scala:661)
+	at scala.meta.internal.bsp.BspServers.newServer(BspServers.scala:155)
+	at scala.meta.internal.bsp.BspConnector.connect$1(BspConnector.scala:167)
+	at scala.meta.internal.bsp.BspConnector.connect(BspConnector.scala:214)
+	at scala.meta.internal.metals.ProjectMetalsLspService.$anonfun$autoConnectToBuildServer$4(ProjectMetalsLspService.scala:915)
+	at scala.meta.internal.metals.TimerProvider.withTimer(TimerProvider.scala:38)
+	at scala.meta.internal.metals.TimerProvider.timed(TimerProvider.scala:14)
+	at scala.meta.internal.metals.ProjectMetalsLspService.$anonfun$autoConnectToBuildServer$3(ProjectMetalsLspService.scala:915)
+	at scala.concurrent.impl.Promise$Transformation.run(Promise.scala:470)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.lang.Thread.run(Thread.java:833)
+
+2024.08.06 16:08:32 INFO  tracing is disabled for protocol BSP, to enable tracing of incoming and outgoing JSON messages create an empty file at G:\Projects\Bachelor-Thesis\Ikaros\.metals\bsp.trace.json or C:\Users\cyril\AppData\Local\scalameta\metals\cache\bsp.trace.json
+2024.08.06 16:09:33 ERROR Timeout waiting for 'build/initialize' response
+2024.08.06 16:09:33 WARN  Retrying connection to the build server scala-cli
+2024.08.06 16:09:33 INFO  Running BSP server List(C:\Users\cyril\AppData\Local\Coursier\data\bin\.scala-cli.aux.exe, bsp, --json-options, G:\Projects\Bachelor-Thesis\Ikaros\.scala-build\ide-options-v2.json, G:\Projects\Bachelor-Thesis\Ikaros)
+2024.08.06 16:09:33 ERROR Running process 'C:\Users\cyril\AppData\Local\Coursier\data\bin\.scala-cli.aux.exe bsp --json-options G:\Projects\Bachelor-Thesis\Ikaros\.scala-build\ide-options-v2.json G:\Projects\Bachelor-Thesis\Ikaros' failed
+java.io.IOException: Cannot run program "C:\Users\cyril\AppData\Local\Coursier\data\bin\.scala-cli.aux.exe" (in directory "G:\Projects\Bachelor-Thesis\Ikaros"): CreateProcess error=2, Das System kann die angegebene Datei nicht finden
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1143)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1073)
+	at scala.meta.internal.process.SystemProcess$.run(SystemProcess.scala:48)
+	at scala.meta.internal.bsp.BspServers.newConnection$1(BspServers.scala:117)
+	at scala.meta.internal.bsp.BspServers.$anonfun$newServer$8(BspServers.scala:160)
+	at scala.meta.internal.metals.BuildServerConnection$.setupServer$1(BuildServerConnection.scala:593)
+	at scala.meta.internal.metals.BuildServerConnection$.fromSockets(BuildServerConnection.scala:661)
+	at scala.meta.internal.metals.BuildServerConnection$$anonfun$fromSockets$17.applyOrElse(BuildServerConnection.scala:678)
+	at scala.meta.internal.metals.BuildServerConnection$$anonfun$fromSockets$17.applyOrElse(BuildServerConnection.scala:675)
+	at scala.concurrent.impl.Promise$Transformation.run(Promise.scala:490)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.lang.Thread.run(Thread.java:833)
+Caused by: java.io.IOException: CreateProcess error=2, Das System kann die angegebene Datei nicht finden
+	at java.lang.ProcessImpl.create(Native Method)
+	at java.lang.ProcessImpl.<init>(ProcessImpl.java:494)
+	at java.lang.ProcessImpl.start(ProcessImpl.java:159)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1110)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1073)
+	at scala.meta.internal.process.SystemProcess$.run(SystemProcess.scala:48)
+	at scala.meta.internal.bsp.BspServers.newConnection$1(BspServers.scala:117)
+	at scala.meta.internal.bsp.BspServers.$anonfun$newServer$8(BspServers.scala:160)
+	at scala.meta.internal.metals.BuildServerConnection$.setupServer$1(BuildServerConnection.scala:593)
+	at scala.meta.internal.metals.BuildServerConnection$.fromSockets(BuildServerConnection.scala:661)
+	at scala.meta.internal.metals.BuildServerConnection$$anonfun$fromSockets$17.applyOrElse(BuildServerConnection.scala:678)
+	at scala.meta.internal.metals.BuildServerConnection$$anonfun$fromSockets$17.applyOrElse(BuildServerConnection.scala:675)
+	at scala.concurrent.impl.Promise$Transformation.run(Promise.scala:490)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.lang.Thread.run(Thread.java:833)
+
+2024.08.06 16:09:33 INFO  tracing is disabled for protocol BSP, to enable tracing of incoming and outgoing JSON messages create an empty file at G:\Projects\Bachelor-Thesis\Ikaros\.metals\bsp.trace.json or C:\Users\cyril\AppData\Local\scalameta\metals\cache\bsp.trace.json
+2024.08.06 16:10:33 ERROR Timeout waiting for 'build/initialize' response
+2024.08.06 16:10:33 WARN  Retrying connection to the build server scala-cli
+2024.08.06 16:10:33 INFO  Running BSP server List(C:\Users\cyril\AppData\Local\Coursier\data\bin\.scala-cli.aux.exe, bsp, --json-options, G:\Projects\Bachelor-Thesis\Ikaros\.scala-build\ide-options-v2.json, G:\Projects\Bachelor-Thesis\Ikaros)
+2024.08.06 16:10:33 ERROR Running process 'C:\Users\cyril\AppData\Local\Coursier\data\bin\.scala-cli.aux.exe bsp --json-options G:\Projects\Bachelor-Thesis\Ikaros\.scala-build\ide-options-v2.json G:\Projects\Bachelor-Thesis\Ikaros' failed
+java.io.IOException: Cannot run program "C:\Users\cyril\AppData\Local\Coursier\data\bin\.scala-cli.aux.exe" (in directory "G:\Projects\Bachelor-Thesis\Ikaros"): CreateProcess error=2, Das System kann die angegebene Datei nicht finden
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1143)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1073)
+	at scala.meta.internal.process.SystemProcess$.run(SystemProcess.scala:48)
+	at scala.meta.internal.bsp.BspServers.newConnection$1(BspServers.scala:117)
+	at scala.meta.internal.bsp.BspServers.$anonfun$newServer$8(BspServers.scala:160)
+	at scala.meta.internal.metals.BuildServerConnection$.setupServer$1(BuildServerConnection.scala:593)
+	at scala.meta.internal.metals.BuildServerConnection$.fromSockets(BuildServerConnection.scala:661)
+	at scala.meta.internal.metals.BuildServerConnection$$anonfun$fromSockets$17.applyOrElse(BuildServerConnection.scala:678)
+	at scala.meta.internal.metals.BuildServerConnection$$anonfun$fromSockets$17.applyOrElse(BuildServerConnection.scala:675)
+	at scala.concurrent.impl.Promise$Transformation.run(Promise.scala:490)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.lang.Thread.run(Thread.java:833)
+Caused by: java.io.IOException: CreateProcess error=2, Das System kann die angegebene Datei nicht finden
+	at java.lang.ProcessImpl.create(Native Method)
+	at java.lang.ProcessImpl.<init>(ProcessImpl.java:494)
+	at java.lang.ProcessImpl.start(ProcessImpl.java:159)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1110)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1073)
+	at scala.meta.internal.process.SystemProcess$.run(SystemProcess.scala:48)
+	at scala.meta.internal.bsp.BspServers.newConnection$1(BspServers.scala:117)
+	at scala.meta.internal.bsp.BspServers.$anonfun$newServer$8(BspServers.scala:160)
+	at scala.meta.internal.metals.BuildServerConnection$.setupServer$1(BuildServerConnection.scala:593)
+	at scala.meta.internal.metals.BuildServerConnection$.fromSockets(BuildServerConnection.scala:661)
+	at scala.meta.internal.metals.BuildServerConnection$$anonfun$fromSockets$17.applyOrElse(BuildServerConnection.scala:678)
+	at scala.meta.internal.metals.BuildServerConnection$$anonfun$fromSockets$17.applyOrElse(BuildServerConnection.scala:675)
+	at scala.concurrent.impl.Promise$Transformation.run(Promise.scala:490)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.lang.Thread.run(Thread.java:833)
+
+2024.08.06 16:10:33 INFO  tracing is disabled for protocol BSP, to enable tracing of incoming and outgoing JSON messages create an empty file at G:\Projects\Bachelor-Thesis\Ikaros\.metals\bsp.trace.json or C:\Users\cyril\AppData\Local\scalameta\metals\cache\bsp.trace.json
+2024.08.06 16:11:33 ERROR Timeout waiting for 'build/initialize' response
+2024.08.06 16:11:33 WARN  Retrying connection to the build server scala-cli
+2024.08.06 16:11:33 INFO  Running BSP server List(C:\Users\cyril\AppData\Local\Coursier\data\bin\.scala-cli.aux.exe, bsp, --json-options, G:\Projects\Bachelor-Thesis\Ikaros\.scala-build\ide-options-v2.json, G:\Projects\Bachelor-Thesis\Ikaros)
+2024.08.06 16:11:33 ERROR Running process 'C:\Users\cyril\AppData\Local\Coursier\data\bin\.scala-cli.aux.exe bsp --json-options G:\Projects\Bachelor-Thesis\Ikaros\.scala-build\ide-options-v2.json G:\Projects\Bachelor-Thesis\Ikaros' failed
+java.io.IOException: Cannot run program "C:\Users\cyril\AppData\Local\Coursier\data\bin\.scala-cli.aux.exe" (in directory "G:\Projects\Bachelor-Thesis\Ikaros"): CreateProcess error=2, Das System kann die angegebene Datei nicht finden
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1143)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1073)
+	at scala.meta.internal.process.SystemProcess$.run(SystemProcess.scala:48)
+	at scala.meta.internal.bsp.BspServers.newConnection$1(BspServers.scala:117)
+	at scala.meta.internal.bsp.BspServers.$anonfun$newServer$8(BspServers.scala:160)
+	at scala.meta.internal.metals.BuildServerConnection$.setupServer$1(BuildServerConnection.scala:593)
+	at scala.meta.internal.metals.BuildServerConnection$.fromSockets(BuildServerConnection.scala:661)
+	at scala.meta.internal.metals.BuildServerConnection$$anonfun$fromSockets$17.applyOrElse(BuildServerConnection.scala:678)
+	at scala.meta.internal.metals.BuildServerConnection$$anonfun$fromSockets$17.applyOrElse(BuildServerConnection.scala:675)
+	at scala.concurrent.impl.Promise$Transformation.run(Promise.scala:490)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.lang.Thread.run(Thread.java:833)
+Caused by: java.io.IOException: CreateProcess error=2, Das System kann die angegebene Datei nicht finden
+	at java.lang.ProcessImpl.create(Native Method)
+	at java.lang.ProcessImpl.<init>(ProcessImpl.java:494)
+	at java.lang.ProcessImpl.start(ProcessImpl.java:159)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1110)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1073)
+	at scala.meta.internal.process.SystemProcess$.run(SystemProcess.scala:48)
+	at scala.meta.internal.bsp.BspServers.newConnection$1(BspServers.scala:117)
+	at scala.meta.internal.bsp.BspServers.$anonfun$newServer$8(BspServers.scala:160)
+	at scala.meta.internal.metals.BuildServerConnection$.setupServer$1(BuildServerConnection.scala:593)
+	at scala.meta.internal.metals.BuildServerConnection$.fromSockets(BuildServerConnection.scala:661)
+	at scala.meta.internal.metals.BuildServerConnection$$anonfun$fromSockets$17.applyOrElse(BuildServerConnection.scala:678)
+	at scala.meta.internal.metals.BuildServerConnection$$anonfun$fromSockets$17.applyOrElse(BuildServerConnection.scala:675)
+	at scala.concurrent.impl.Promise$Transformation.run(Promise.scala:490)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.lang.Thread.run(Thread.java:833)
+
+2024.08.06 16:11:33 INFO  tracing is disabled for protocol BSP, to enable tracing of incoming and outgoing JSON messages create an empty file at G:\Projects\Bachelor-Thesis\Ikaros\.metals\bsp.trace.json or C:\Users\cyril\AppData\Local\scalameta\metals\cache\bsp.trace.json
+2024.08.06 16:12:33 ERROR Timeout waiting for 'build/initialize' response
+2024.08.06 16:12:33 WARN  Retrying connection to the build server scala-cli
+2024.08.06 16:12:33 INFO  Running BSP server List(C:\Users\cyril\AppData\Local\Coursier\data\bin\.scala-cli.aux.exe, bsp, --json-options, G:\Projects\Bachelor-Thesis\Ikaros\.scala-build\ide-options-v2.json, G:\Projects\Bachelor-Thesis\Ikaros)
+2024.08.06 16:12:33 ERROR Running process 'C:\Users\cyril\AppData\Local\Coursier\data\bin\.scala-cli.aux.exe bsp --json-options G:\Projects\Bachelor-Thesis\Ikaros\.scala-build\ide-options-v2.json G:\Projects\Bachelor-Thesis\Ikaros' failed
+java.io.IOException: Cannot run program "C:\Users\cyril\AppData\Local\Coursier\data\bin\.scala-cli.aux.exe" (in directory "G:\Projects\Bachelor-Thesis\Ikaros"): CreateProcess error=2, Das System kann die angegebene Datei nicht finden
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1143)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1073)
+	at scala.meta.internal.process.SystemProcess$.run(SystemProcess.scala:48)
+	at scala.meta.internal.bsp.BspServers.newConnection$1(BspServers.scala:117)
+	at scala.meta.internal.bsp.BspServers.$anonfun$newServer$8(BspServers.scala:160)
+	at scala.meta.internal.metals.BuildServerConnection$.setupServer$1(BuildServerConnection.scala:593)
+	at scala.meta.internal.metals.BuildServerConnection$.fromSockets(BuildServerConnection.scala:661)
+	at scala.meta.internal.metals.BuildServerConnection$$anonfun$fromSockets$17.applyOrElse(BuildServerConnection.scala:678)
+	at scala.meta.internal.metals.BuildServerConnection$$anonfun$fromSockets$17.applyOrElse(BuildServerConnection.scala:675)
+	at scala.concurrent.impl.Promise$Transformation.run(Promise.scala:490)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.lang.Thread.run(Thread.java:833)
+Caused by: java.io.IOException: CreateProcess error=2, Das System kann die angegebene Datei nicht finden
+	at java.lang.ProcessImpl.create(Native Method)
+	at java.lang.ProcessImpl.<init>(ProcessImpl.java:494)
+	at java.lang.ProcessImpl.start(ProcessImpl.java:159)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1110)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1073)
+	at scala.meta.internal.process.SystemProcess$.run(SystemProcess.scala:48)
+	at scala.meta.internal.bsp.BspServers.newConnection$1(BspServers.scala:117)
+	at scala.meta.internal.bsp.BspServers.$anonfun$newServer$8(BspServers.scala:160)
+	at scala.meta.internal.metals.BuildServerConnection$.setupServer$1(BuildServerConnection.scala:593)
+	at scala.meta.internal.metals.BuildServerConnection$.fromSockets(BuildServerConnection.scala:661)
+	at scala.meta.internal.metals.BuildServerConnection$$anonfun$fromSockets$17.applyOrElse(BuildServerConnection.scala:678)
+	at scala.meta.internal.metals.BuildServerConnection$$anonfun$fromSockets$17.applyOrElse(BuildServerConnection.scala:675)
+	at scala.concurrent.impl.Promise$Transformation.run(Promise.scala:490)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.lang.Thread.run(Thread.java:833)
+
+2024.08.06 16:12:33 INFO  tracing is disabled for protocol BSP, to enable tracing of incoming and outgoing JSON messages create an empty file at G:\Projects\Bachelor-Thesis\Ikaros\.metals\bsp.trace.json or C:\Users\cyril\AppData\Local\scalameta\metals\cache\bsp.trace.json
+2024.08.06 16:13:33 ERROR Timeout waiting for 'build/initialize' response
+2024.08.06 16:13:33 WARN  Retrying connection to the build server scala-cli
+2024.08.06 16:13:33 INFO  Running BSP server List(C:\Users\cyril\AppData\Local\Coursier\data\bin\.scala-cli.aux.exe, bsp, --json-options, G:\Projects\Bachelor-Thesis\Ikaros\.scala-build\ide-options-v2.json, G:\Projects\Bachelor-Thesis\Ikaros)
+2024.08.06 16:13:33 ERROR Running process 'C:\Users\cyril\AppData\Local\Coursier\data\bin\.scala-cli.aux.exe bsp --json-options G:\Projects\Bachelor-Thesis\Ikaros\.scala-build\ide-options-v2.json G:\Projects\Bachelor-Thesis\Ikaros' failed
+java.io.IOException: Cannot run program "C:\Users\cyril\AppData\Local\Coursier\data\bin\.scala-cli.aux.exe" (in directory "G:\Projects\Bachelor-Thesis\Ikaros"): CreateProcess error=2, Das System kann die angegebene Datei nicht finden
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1143)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1073)
+	at scala.meta.internal.process.SystemProcess$.run(SystemProcess.scala:48)
+	at scala.meta.internal.bsp.BspServers.newConnection$1(BspServers.scala:117)
+	at scala.meta.internal.bsp.BspServers.$anonfun$newServer$8(BspServers.scala:160)
+	at scala.meta.internal.metals.BuildServerConnection$.setupServer$1(BuildServerConnection.scala:593)
+	at scala.meta.internal.metals.BuildServerConnection$.fromSockets(BuildServerConnection.scala:661)
+	at scala.meta.internal.metals.BuildServerConnection$$anonfun$fromSockets$17.applyOrElse(BuildServerConnection.scala:678)
+	at scala.meta.internal.metals.BuildServerConnection$$anonfun$fromSockets$17.applyOrElse(BuildServerConnection.scala:675)
+	at scala.concurrent.impl.Promise$Transformation.run(Promise.scala:490)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.lang.Thread.run(Thread.java:833)
+Caused by: java.io.IOException: CreateProcess error=2, Das System kann die angegebene Datei nicht finden
+	at java.lang.ProcessImpl.create(Native Method)
+	at java.lang.ProcessImpl.<init>(ProcessImpl.java:494)
+	at java.lang.ProcessImpl.start(ProcessImpl.java:159)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1110)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1073)
+	at scala.meta.internal.process.SystemProcess$.run(SystemProcess.scala:48)
+	at scala.meta.internal.bsp.BspServers.newConnection$1(BspServers.scala:117)
+	at scala.meta.internal.bsp.BspServers.$anonfun$newServer$8(BspServers.scala:160)
+	at scala.meta.internal.metals.BuildServerConnection$.setupServer$1(BuildServerConnection.scala:593)
+	at scala.meta.internal.metals.BuildServerConnection$.fromSockets(BuildServerConnection.scala:661)
+	at scala.meta.internal.metals.BuildServerConnection$$anonfun$fromSockets$17.applyOrElse(BuildServerConnection.scala:678)
+	at scala.meta.internal.metals.BuildServerConnection$$anonfun$fromSockets$17.applyOrElse(BuildServerConnection.scala:675)
+	at scala.concurrent.impl.Promise$Transformation.run(Promise.scala:490)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.lang.Thread.run(Thread.java:833)
+
+2024.08.06 16:13:33 INFO  tracing is disabled for protocol BSP, to enable tracing of incoming and outgoing JSON messages create an empty file at G:\Projects\Bachelor-Thesis\Ikaros\.metals\bsp.trace.json or C:\Users\cyril\AppData\Local\scalameta\metals\cache\bsp.trace.json
+2024.08.06 16:14:33 ERROR Timeout waiting for 'build/initialize' response
+2024.08.06 16:14:33 ERROR Failed to connect with build server, no functionality will work.
+java.util.concurrent.TimeoutException
+	at java.util.concurrent.CompletableFuture.timedGet(CompletableFuture.java:1960)
+	at java.util.concurrent.CompletableFuture.get(CompletableFuture.java:2095)
+	at scala.meta.internal.metals.BuildServerConnection$.initialize(BuildServerConnection.scala:745)
+	at scala.meta.internal.metals.BuildServerConnection$.$anonfun$fromSockets$1(BuildServerConnection.scala:619)
+	at scala.concurrent.impl.Promise$Transformation.run(Promise.scala:467)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.lang.Thread.run(Thread.java:833)
+
+2024.08.06 16:21:20 WARN  Flyway upgrade recommended: H2 2.3.230 is newer than this version of Flyway and support has not been tested. The latest supported version of H2 is 2.2.220.
+Aug. 06, 2024 4:21:20 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNUNG: Unmatched cancel notification for request id 1
+2024.08.06 16:21:21 WARN  Running javac-semanticdb failed for file:///G:/Projects/Bachelor-Thesis/Possible%20Bugs/Java%20Reducing/reported/program_1_reduced.java. Output:
+
+2024.08.06 16:21:23 INFO  no build target found for G:\Projects\Bachelor-Thesis\Possible Bugs\Java Reducing\reported\program_1_reduced.java. Using presentation compiler with project's scala-library version: 3.3.3
+2024.08.06 16:21:25 WARN  Running javac-semanticdb failed for file:///G:/Projects/Bachelor-Thesis/Possible%20Bugs/Java%20Reducing/reported/program_2_reduced.java. Output:
+
+2024.08.06 16:21:27 INFO  no build target found for G:\Projects\Bachelor-Thesis\Possible Bugs\Java Reducing\reported\program_2_reduced.java. Using presentation compiler with project's scala-library version: 3.3.3
+2024.08.06 16:21:32 WARN  Running javac-semanticdb failed for file:///G:/Projects/Bachelor-Thesis/Possible%20Bugs/Java%20Reducing/reduced/program_12_reduced_working.java. Output:
+
+2024.08.06 16:22:06 INFO  no build target found for G:\Projects\Bachelor-Thesis\Possible Bugs\Java Reducing\reduced\program_12_reduced_working.java. Using presentation compiler with project's scala-library version: 3.3.3
+2024.08.07 15:42:42 INFO  Started: Metals version 1.3.5 in folders 'G:\Projects\Bachelor-Thesis\Ikaros' for client Visual Studio Code 1.92.0.
+SLF4J(W): Class path contains multiple SLF4J providers.
+SLF4J(W): Found provider [scribe.slf4j.ScribeServiceProvider@52e7a931]
+SLF4J(W): Found provider [ch.qos.logback.classic.spi.LogbackServiceProvider@238ecf0c]
+SLF4J(W): See https://www.slf4j.org/codes.html#multiple_bindings for an explanation.
+SLF4J(I): Actual provider is of type [scribe.slf4j.ScribeServiceProvider@52e7a931]
+2024.08.07 15:42:47 WARN  Flyway upgrade recommended: H2 2.3.230 is newer than this version of Flyway and support has not been tested. The latest supported version of H2 is 2.2.220.
+2024.08.07 15:42:48 INFO  Attempting to connect to the build server...
+2024.08.07 15:42:48 INFO  Running BSP server List(C:\Users\cyril\AppData\Local\Coursier\data\bin\.scala-cli.aux.exe, bsp, --json-options, G:\Projects\Bachelor-Thesis\Ikaros\.scala-build\ide-options-v2.json, G:\Projects\Bachelor-Thesis\Ikaros)
+2024.08.07 15:42:48 ERROR Running process 'C:\Users\cyril\AppData\Local\Coursier\data\bin\.scala-cli.aux.exe bsp --json-options G:\Projects\Bachelor-Thesis\Ikaros\.scala-build\ide-options-v2.json G:\Projects\Bachelor-Thesis\Ikaros' failed
+java.io.IOException: Cannot run program "C:\Users\cyril\AppData\Local\Coursier\data\bin\.scala-cli.aux.exe" (in directory "G:\Projects\Bachelor-Thesis\Ikaros"): CreateProcess error=2, Das System kann die angegebene Datei nicht finden
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1143)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1073)
+	at scala.meta.internal.process.SystemProcess$.run(SystemProcess.scala:48)
+	at scala.meta.internal.bsp.BspServers.newConnection$1(BspServers.scala:117)
+	at scala.meta.internal.bsp.BspServers.$anonfun$newServer$8(BspServers.scala:160)
+	at scala.meta.internal.metals.BuildServerConnection$.setupServer$1(BuildServerConnection.scala:593)
+	at scala.meta.internal.metals.BuildServerConnection$.fromSockets(BuildServerConnection.scala:661)
+	at scala.meta.internal.bsp.BspServers.newServer(BspServers.scala:155)
+	at scala.meta.internal.bsp.BspConnector.connect$1(BspConnector.scala:167)
+	at scala.meta.internal.bsp.BspConnector.connect(BspConnector.scala:214)
+	at scala.meta.internal.metals.ProjectMetalsLspService.$anonfun$autoConnectToBuildServer$4(ProjectMetalsLspService.scala:915)
+	at scala.meta.internal.metals.TimerProvider.withTimer(TimerProvider.scala:38)
+	at scala.meta.internal.metals.TimerProvider.timed(TimerProvider.scala:14)
+	at scala.meta.internal.metals.ProjectMetalsLspService.$anonfun$autoConnectToBuildServer$3(ProjectMetalsLspService.scala:915)
+	at scala.concurrent.impl.Promise$Transformation.run(Promise.scala:470)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.lang.Thread.run(Thread.java:833)
+Caused by: java.io.IOException: CreateProcess error=2, Das System kann die angegebene Datei nicht finden
+	at java.lang.ProcessImpl.create(Native Method)
+	at java.lang.ProcessImpl.<init>(ProcessImpl.java:494)
+	at java.lang.ProcessImpl.start(ProcessImpl.java:159)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1110)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1073)
+	at scala.meta.internal.process.SystemProcess$.run(SystemProcess.scala:48)
+	at scala.meta.internal.bsp.BspServers.newConnection$1(BspServers.scala:117)
+	at scala.meta.internal.bsp.BspServers.$anonfun$newServer$8(BspServers.scala:160)
+	at scala.meta.internal.metals.BuildServerConnection$.setupServer$1(BuildServerConnection.scala:593)
+	at scala.meta.internal.metals.BuildServerConnection$.fromSockets(BuildServerConnection.scala:661)
+	at scala.meta.internal.bsp.BspServers.newServer(BspServers.scala:155)
+	at scala.meta.internal.bsp.BspConnector.connect$1(BspConnector.scala:167)
+	at scala.meta.internal.bsp.BspConnector.connect(BspConnector.scala:214)
+	at scala.meta.internal.metals.ProjectMetalsLspService.$anonfun$autoConnectToBuildServer$4(ProjectMetalsLspService.scala:915)
+	at scala.meta.internal.metals.TimerProvider.withTimer(TimerProvider.scala:38)
+	at scala.meta.internal.metals.TimerProvider.timed(TimerProvider.scala:14)
+	at scala.meta.internal.metals.ProjectMetalsLspService.$anonfun$autoConnectToBuildServer$3(ProjectMetalsLspService.scala:915)
+	at scala.concurrent.impl.Promise$Transformation.run(Promise.scala:470)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.lang.Thread.run(Thread.java:833)
+
+2024.08.07 15:42:47 INFO  tracing is disabled for protocol BSP, to enable tracing of incoming and outgoing JSON messages create an empty file at G:\Projects\Bachelor-Thesis\Ikaros\.metals\bsp.trace.json or C:\Users\cyril\AppData\Local\scalameta\metals\cache\bsp.trace.json
+2024.08.07 15:43:48 ERROR Timeout waiting for 'build/initialize' response
+2024.08.07 15:43:48 WARN  Retrying connection to the build server scala-cli
+2024.08.07 15:43:48 INFO  Running BSP server List(C:\Users\cyril\AppData\Local\Coursier\data\bin\.scala-cli.aux.exe, bsp, --json-options, G:\Projects\Bachelor-Thesis\Ikaros\.scala-build\ide-options-v2.json, G:\Projects\Bachelor-Thesis\Ikaros)
+2024.08.07 15:43:48 ERROR Running process 'C:\Users\cyril\AppData\Local\Coursier\data\bin\.scala-cli.aux.exe bsp --json-options G:\Projects\Bachelor-Thesis\Ikaros\.scala-build\ide-options-v2.json G:\Projects\Bachelor-Thesis\Ikaros' failed
+java.io.IOException: Cannot run program "C:\Users\cyril\AppData\Local\Coursier\data\bin\.scala-cli.aux.exe" (in directory "G:\Projects\Bachelor-Thesis\Ikaros"): CreateProcess error=2, Das System kann die angegebene Datei nicht finden
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1143)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1073)
+	at scala.meta.internal.process.SystemProcess$.run(SystemProcess.scala:48)
+	at scala.meta.internal.bsp.BspServers.newConnection$1(BspServers.scala:117)
+	at scala.meta.internal.bsp.BspServers.$anonfun$newServer$8(BspServers.scala:160)
+	at scala.meta.internal.metals.BuildServerConnection$.setupServer$1(BuildServerConnection.scala:593)
+	at scala.meta.internal.metals.BuildServerConnection$.fromSockets(BuildServerConnection.scala:661)
+	at scala.meta.internal.metals.BuildServerConnection$$anonfun$fromSockets$17.applyOrElse(BuildServerConnection.scala:678)
+	at scala.meta.internal.metals.BuildServerConnection$$anonfun$fromSockets$17.applyOrElse(BuildServerConnection.scala:675)
+	at scala.concurrent.impl.Promise$Transformation.run(Promise.scala:490)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.lang.Thread.run(Thread.java:833)
+Caused by: java.io.IOException: CreateProcess error=2, Das System kann die angegebene Datei nicht finden
+	at java.lang.ProcessImpl.create(Native Method)
+	at java.lang.ProcessImpl.<init>(ProcessImpl.java:494)
+	at java.lang.ProcessImpl.start(ProcessImpl.java:159)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1110)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1073)
+	at scala.meta.internal.process.SystemProcess$.run(SystemProcess.scala:48)
+	at scala.meta.internal.bsp.BspServers.newConnection$1(BspServers.scala:117)
+	at scala.meta.internal.bsp.BspServers.$anonfun$newServer$8(BspServers.scala:160)
+	at scala.meta.internal.metals.BuildServerConnection$.setupServer$1(BuildServerConnection.scala:593)
+	at scala.meta.internal.metals.BuildServerConnection$.fromSockets(BuildServerConnection.scala:661)
+	at scala.meta.internal.metals.BuildServerConnection$$anonfun$fromSockets$17.applyOrElse(BuildServerConnection.scala:678)
+	at scala.meta.internal.metals.BuildServerConnection$$anonfun$fromSockets$17.applyOrElse(BuildServerConnection.scala:675)
+	at scala.concurrent.impl.Promise$Transformation.run(Promise.scala:490)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.lang.Thread.run(Thread.java:833)
+
+2024.08.07 15:43:48 INFO  tracing is disabled for protocol BSP, to enable tracing of incoming and outgoing JSON messages create an empty file at G:\Projects\Bachelor-Thesis\Ikaros\.metals\bsp.trace.json or C:\Users\cyril\AppData\Local\scalameta\metals\cache\bsp.trace.json
+2024.08.07 15:44:04 INFO  no build target found for G:\Projects\Bachelor-Thesis\Ikaros\out\Programs\Construction\javac\batches\exhaustive_batch\batch_prog_0.java. Using presentation compiler with project's scala-library version: 3.3.1
+Aug. 07, 2024 3:44:04 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNUNG: Unmatched cancel notification for request id 8
+2024.08.07 15:44:07 INFO  no build target found for G:\Projects\Bachelor-Thesis\Ikaros\out\Programs\Construction\javac\batches\exhaustive_batch\batch_prog_0.java. Using presentation compiler with project's scala-library version: 3.3.1
+2024.08.07 15:44:16 INFO  no build target found for G:\Projects\Bachelor-Thesis\Ikaros\out\Programs\Construction\scalac\batches\exhaustive_batch\batch_prog_0.scala. Using presentation compiler with project's scala-library version: 3.3.1
+2024.08.07 15:44:16 INFO  no build target found for G:\Projects\Bachelor-Thesis\Ikaros\out\Programs\Construction\scalac\batches\exhaustive_batch\batch_prog_0.scala. Using presentation compiler with project's scala-library version: 3.3.1
+2024.08.07 15:44:16 INFO  no build target found for G:\Projects\Bachelor-Thesis\Ikaros\out\Programs\Construction\scalac\batches\exhaustive_batch\batch_prog_1.scala. Using presentation compiler with project's scala-library version: 3.3.1
+2024.08.07 15:44:16 INFO  no build target found for G:\Projects\Bachelor-Thesis\Ikaros\out\Programs\Construction\scalac\batches\exhaustive_batch\batch_prog_1.scala. Using presentation compiler with project's scala-library version: 3.3.1
+2024.08.07 15:44:17 INFO  no build target found for G:\Projects\Bachelor-Thesis\Ikaros\out\Programs\Construction\scalac\batches\exhaustive_batch\batch_prog_3.scala. Using presentation compiler with project's scala-library version: 3.3.1
+2024.08.07 15:44:16 INFO  no build target found for G:\Projects\Bachelor-Thesis\Ikaros\out\Programs\Construction\scalac\batches\exhaustive_batch\batch_prog_3.scala. Using presentation compiler with project's scala-library version: 3.3.1
+2024.08.07 15:44:17 INFO  no build target found for G:\Projects\Bachelor-Thesis\Ikaros\out\Programs\Construction\scalac\batches\exhaustive_batch\batch_prog_4.scala. Using presentation compiler with project's scala-library version: 3.3.1
+2024.08.07 15:44:18 INFO  no build target found for G:\Projects\Bachelor-Thesis\Ikaros\out\Programs\Construction\scalac\batches\exhaustive_batch\batch_prog_4.scala. Using presentation compiler with project's scala-library version: 3.3.1
+2024.08.07 15:44:19 INFO  no build target found for G:\Projects\Bachelor-Thesis\Ikaros\out\Programs\Construction\scalac\batches\exhaustive_batch\batch_prog_4.scala. Using presentation compiler with project's scala-library version: 3.3.1
+2024.08.07 15:44:19 INFO  no build target found for G:\Projects\Bachelor-Thesis\Ikaros\out\Programs\Construction\scalac\batches\exhaustive_batch\batch_prog_6.scala. Using presentation compiler with project's scala-library version: 3.3.1
+2024.08.07 15:44:19 INFO  no build target found for G:\Projects\Bachelor-Thesis\Ikaros\out\Programs\Construction\scalac\batches\exhaustive_batch\batch_prog_6.scala. Using presentation compiler with project's scala-library version: 3.3.1
+2024.08.07 15:44:20 INFO  no build target found for G:\Projects\Bachelor-Thesis\Ikaros\out\Programs\Construction\scalac\batches\exhaustive_batch\batch_prog_7.scala. Using presentation compiler with project's scala-library version: 3.3.1
+2024.08.07 15:44:19 INFO  no build target found for G:\Projects\Bachelor-Thesis\Ikaros\out\Programs\Construction\scalac\batches\exhaustive_batch\batch_prog_7.scala. Using presentation compiler with project's scala-library version: 3.3.1
+2024.08.07 15:44:20 INFO  no build target found for G:\Projects\Bachelor-Thesis\Ikaros\out\Programs\Construction\scalac\batches\exhaustive_batch\batch_prog_8.scala. Using presentation compiler with project's scala-library version: 3.3.1
+2024.08.07 15:44:21 INFO  no build target found for G:\Projects\Bachelor-Thesis\Ikaros\out\Programs\Construction\scalac\batches\exhaustive_batch\batch_prog_8.scala. Using presentation compiler with project's scala-library version: 3.3.1
+2024.08.07 15:44:21 INFO  no build target found for G:\Projects\Bachelor-Thesis\Ikaros\out\Programs\Construction\scalac\batches\exhaustive_batch\batch_prog_9.scala. Using presentation compiler with project's scala-library version: 3.3.1
+2024.08.07 15:44:21 INFO  no build target found for G:\Projects\Bachelor-Thesis\Ikaros\out\Programs\Construction\scalac\batches\exhaustive_batch\batch_prog_9.scala. Using presentation compiler with project's scala-library version: 3.3.1
+2024.08.07 15:44:21 INFO  no build target found for G:\Projects\Bachelor-Thesis\Ikaros\out\Programs\Construction\scalac\batches\exhaustive_batch\batch_prog_10.scala. Using presentation compiler with project's scala-library version: 3.3.1
+Aug. 07, 2024 3:44:24 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNUNG: Unmatched cancel notification for request id 83
+2024.08.07 15:44:24 INFO  no build target found for G:\Projects\Bachelor-Thesis\Ikaros\out\Programs\Construction\scalac\batches\exhaustive_batch\batch_prog_10.scala. Using presentation compiler with project's scala-library version: 3.3.1
+2024.08.07 15:44:26 INFO  no build target found for G:\Projects\Bachelor-Thesis\Ikaros\out\Programs\Construction\scalac\batches\exhaustive_batch\batch_prog_10.scala. Using presentation compiler with project's scala-library version: 3.3.1
+2024.08.07 15:44:48 ERROR Timeout waiting for 'build/initialize' response
+2024.08.07 15:44:48 WARN  Retrying connection to the build server scala-cli
+2024.08.07 15:44:48 INFO  Running BSP server List(C:\Users\cyril\AppData\Local\Coursier\data\bin\.scala-cli.aux.exe, bsp, --json-options, G:\Projects\Bachelor-Thesis\Ikaros\.scala-build\ide-options-v2.json, G:\Projects\Bachelor-Thesis\Ikaros)
+2024.08.07 15:44:48 ERROR Running process 'C:\Users\cyril\AppData\Local\Coursier\data\bin\.scala-cli.aux.exe bsp --json-options G:\Projects\Bachelor-Thesis\Ikaros\.scala-build\ide-options-v2.json G:\Projects\Bachelor-Thesis\Ikaros' failed
+java.io.IOException: Cannot run program "C:\Users\cyril\AppData\Local\Coursier\data\bin\.scala-cli.aux.exe" (in directory "G:\Projects\Bachelor-Thesis\Ikaros"): CreateProcess error=2, Das System kann die angegebene Datei nicht finden
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1143)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1073)
+	at scala.meta.internal.process.SystemProcess$.run(SystemProcess.scala:48)
+	at scala.meta.internal.bsp.BspServers.newConnection$1(BspServers.scala:117)
+	at scala.meta.internal.bsp.BspServers.$anonfun$newServer$8(BspServers.scala:160)
+	at scala.meta.internal.metals.BuildServerConnection$.setupServer$1(BuildServerConnection.scala:593)
+	at scala.meta.internal.metals.BuildServerConnection$.fromSockets(BuildServerConnection.scala:661)
+	at scala.meta.internal.metals.BuildServerConnection$$anonfun$fromSockets$17.applyOrElse(BuildServerConnection.scala:678)
+	at scala.meta.internal.metals.BuildServerConnection$$anonfun$fromSockets$17.applyOrElse(BuildServerConnection.scala:675)
+	at scala.concurrent.impl.Promise$Transformation.run(Promise.scala:490)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.lang.Thread.run(Thread.java:833)
+Caused by: java.io.IOException: CreateProcess error=2, Das System kann die angegebene Datei nicht finden
+	at java.lang.ProcessImpl.create(Native Method)
+	at java.lang.ProcessImpl.<init>(ProcessImpl.java:494)
+	at java.lang.ProcessImpl.start(ProcessImpl.java:159)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1110)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1073)
+	at scala.meta.internal.process.SystemProcess$.run(SystemProcess.scala:48)
+	at scala.meta.internal.bsp.BspServers.newConnection$1(BspServers.scala:117)
+	at scala.meta.internal.bsp.BspServers.$anonfun$newServer$8(BspServers.scala:160)
+	at scala.meta.internal.metals.BuildServerConnection$.setupServer$1(BuildServerConnection.scala:593)
+	at scala.meta.internal.metals.BuildServerConnection$.fromSockets(BuildServerConnection.scala:661)
+	at scala.meta.internal.metals.BuildServerConnection$$anonfun$fromSockets$17.applyOrElse(BuildServerConnection.scala:678)
+	at scala.meta.internal.metals.BuildServerConnection$$anonfun$fromSockets$17.applyOrElse(BuildServerConnection.scala:675)
+	at scala.concurrent.impl.Promise$Transformation.run(Promise.scala:490)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.lang.Thread.run(Thread.java:833)
+
+2024.08.07 15:44:48 INFO  tracing is disabled for protocol BSP, to enable tracing of incoming and outgoing JSON messages create an empty file at G:\Projects\Bachelor-Thesis\Ikaros\.metals\bsp.trace.json or C:\Users\cyril\AppData\Local\scalameta\metals\cache\bsp.trace.json
+2024.08.07 15:45:48 ERROR Timeout waiting for 'build/initialize' response
+2024.08.07 15:45:48 WARN  Retrying connection to the build server scala-cli
+2024.08.07 15:45:48 INFO  Running BSP server List(C:\Users\cyril\AppData\Local\Coursier\data\bin\.scala-cli.aux.exe, bsp, --json-options, G:\Projects\Bachelor-Thesis\Ikaros\.scala-build\ide-options-v2.json, G:\Projects\Bachelor-Thesis\Ikaros)
+2024.08.07 15:45:48 ERROR Running process 'C:\Users\cyril\AppData\Local\Coursier\data\bin\.scala-cli.aux.exe bsp --json-options G:\Projects\Bachelor-Thesis\Ikaros\.scala-build\ide-options-v2.json G:\Projects\Bachelor-Thesis\Ikaros' failed
+java.io.IOException: Cannot run program "C:\Users\cyril\AppData\Local\Coursier\data\bin\.scala-cli.aux.exe" (in directory "G:\Projects\Bachelor-Thesis\Ikaros"): CreateProcess error=2, Das System kann die angegebene Datei nicht finden
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1143)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1073)
+	at scala.meta.internal.process.SystemProcess$.run(SystemProcess.scala:48)
+	at scala.meta.internal.bsp.BspServers.newConnection$1(BspServers.scala:117)
+	at scala.meta.internal.bsp.BspServers.$anonfun$newServer$8(BspServers.scala:160)
+	at scala.meta.internal.metals.BuildServerConnection$.setupServer$1(BuildServerConnection.scala:593)
+	at scala.meta.internal.metals.BuildServerConnection$.fromSockets(BuildServerConnection.scala:661)
+	at scala.meta.internal.metals.BuildServerConnection$$anonfun$fromSockets$17.applyOrElse(BuildServerConnection.scala:678)
+	at scala.meta.internal.metals.BuildServerConnection$$anonfun$fromSockets$17.applyOrElse(BuildServerConnection.scala:675)
+	at scala.concurrent.impl.Promise$Transformation.run(Promise.scala:490)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.lang.Thread.run(Thread.java:833)
+Caused by: java.io.IOException: CreateProcess error=2, Das System kann die angegebene Datei nicht finden
+	at java.lang.ProcessImpl.create(Native Method)
+	at java.lang.ProcessImpl.<init>(ProcessImpl.java:494)
+	at java.lang.ProcessImpl.start(ProcessImpl.java:159)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1110)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1073)
+	at scala.meta.internal.process.SystemProcess$.run(SystemProcess.scala:48)
+	at scala.meta.internal.bsp.BspServers.newConnection$1(BspServers.scala:117)
+	at scala.meta.internal.bsp.BspServers.$anonfun$newServer$8(BspServers.scala:160)
+	at scala.meta.internal.metals.BuildServerConnection$.setupServer$1(BuildServerConnection.scala:593)
+	at scala.meta.internal.metals.BuildServerConnection$.fromSockets(BuildServerConnection.scala:661)
+	at scala.meta.internal.metals.BuildServerConnection$$anonfun$fromSockets$17.applyOrElse(BuildServerConnection.scala:678)
+	at scala.meta.internal.metals.BuildServerConnection$$anonfun$fromSockets$17.applyOrElse(BuildServerConnection.scala:675)
+	at scala.concurrent.impl.Promise$Transformation.run(Promise.scala:490)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.lang.Thread.run(Thread.java:833)
+
+2024.08.07 15:45:48 INFO  tracing is disabled for protocol BSP, to enable tracing of incoming and outgoing JSON messages create an empty file at G:\Projects\Bachelor-Thesis\Ikaros\.metals\bsp.trace.json or C:\Users\cyril\AppData\Local\scalameta\metals\cache\bsp.trace.json
+2024.08.07 15:46:48 ERROR Timeout waiting for 'build/initialize' response
+2024.08.07 15:46:48 WARN  Retrying connection to the build server scala-cli
+2024.08.07 15:46:48 INFO  Running BSP server List(C:\Users\cyril\AppData\Local\Coursier\data\bin\.scala-cli.aux.exe, bsp, --json-options, G:\Projects\Bachelor-Thesis\Ikaros\.scala-build\ide-options-v2.json, G:\Projects\Bachelor-Thesis\Ikaros)
+2024.08.07 15:46:48 ERROR Running process 'C:\Users\cyril\AppData\Local\Coursier\data\bin\.scala-cli.aux.exe bsp --json-options G:\Projects\Bachelor-Thesis\Ikaros\.scala-build\ide-options-v2.json G:\Projects\Bachelor-Thesis\Ikaros' failed
+java.io.IOException: Cannot run program "C:\Users\cyril\AppData\Local\Coursier\data\bin\.scala-cli.aux.exe" (in directory "G:\Projects\Bachelor-Thesis\Ikaros"): CreateProcess error=2, Das System kann die angegebene Datei nicht finden
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1143)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1073)
+	at scala.meta.internal.process.SystemProcess$.run(SystemProcess.scala:48)
+	at scala.meta.internal.bsp.BspServers.newConnection$1(BspServers.scala:117)
+	at scala.meta.internal.bsp.BspServers.$anonfun$newServer$8(BspServers.scala:160)
+	at scala.meta.internal.metals.BuildServerConnection$.setupServer$1(BuildServerConnection.scala:593)
+	at scala.meta.internal.metals.BuildServerConnection$.fromSockets(BuildServerConnection.scala:661)
+	at scala.meta.internal.metals.BuildServerConnection$$anonfun$fromSockets$17.applyOrElse(BuildServerConnection.scala:678)
+	at scala.meta.internal.metals.BuildServerConnection$$anonfun$fromSockets$17.applyOrElse(BuildServerConnection.scala:675)
+	at scala.concurrent.impl.Promise$Transformation.run(Promise.scala:490)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.lang.Thread.run(Thread.java:833)
+Caused by: java.io.IOException: CreateProcess error=2, Das System kann die angegebene Datei nicht finden
+	at java.lang.ProcessImpl.create(Native Method)
+	at java.lang.ProcessImpl.<init>(ProcessImpl.java:494)
+	at java.lang.ProcessImpl.start(ProcessImpl.java:159)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1110)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1073)
+	at scala.meta.internal.process.SystemProcess$.run(SystemProcess.scala:48)
+	at scala.meta.internal.bsp.BspServers.newConnection$1(BspServers.scala:117)
+	at scala.meta.internal.bsp.BspServers.$anonfun$newServer$8(BspServers.scala:160)
+	at scala.meta.internal.metals.BuildServerConnection$.setupServer$1(BuildServerConnection.scala:593)
+	at scala.meta.internal.metals.BuildServerConnection$.fromSockets(BuildServerConnection.scala:661)
+	at scala.meta.internal.metals.BuildServerConnection$$anonfun$fromSockets$17.applyOrElse(BuildServerConnection.scala:678)
+	at scala.meta.internal.metals.BuildServerConnection$$anonfun$fromSockets$17.applyOrElse(BuildServerConnection.scala:675)
+	at scala.concurrent.impl.Promise$Transformation.run(Promise.scala:490)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.lang.Thread.run(Thread.java:833)
+
+2024.08.07 15:46:48 INFO  tracing is disabled for protocol BSP, to enable tracing of incoming and outgoing JSON messages create an empty file at G:\Projects\Bachelor-Thesis\Ikaros\.metals\bsp.trace.json or C:\Users\cyril\AppData\Local\scalameta\metals\cache\bsp.trace.json
+2024.08.07 15:47:48 ERROR Timeout waiting for 'build/initialize' response
+2024.08.07 15:47:48 WARN  Retrying connection to the build server scala-cli
+2024.08.07 15:47:48 INFO  Running BSP server List(C:\Users\cyril\AppData\Local\Coursier\data\bin\.scala-cli.aux.exe, bsp, --json-options, G:\Projects\Bachelor-Thesis\Ikaros\.scala-build\ide-options-v2.json, G:\Projects\Bachelor-Thesis\Ikaros)
+2024.08.07 15:47:48 ERROR Running process 'C:\Users\cyril\AppData\Local\Coursier\data\bin\.scala-cli.aux.exe bsp --json-options G:\Projects\Bachelor-Thesis\Ikaros\.scala-build\ide-options-v2.json G:\Projects\Bachelor-Thesis\Ikaros' failed
+java.io.IOException: Cannot run program "C:\Users\cyril\AppData\Local\Coursier\data\bin\.scala-cli.aux.exe" (in directory "G:\Projects\Bachelor-Thesis\Ikaros"): CreateProcess error=2, Das System kann die angegebene Datei nicht finden
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1143)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1073)
+	at scala.meta.internal.process.SystemProcess$.run(SystemProcess.scala:48)
+	at scala.meta.internal.bsp.BspServers.newConnection$1(BspServers.scala:117)
+	at scala.meta.internal.bsp.BspServers.$anonfun$newServer$8(BspServers.scala:160)
+	at scala.meta.internal.metals.BuildServerConnection$.setupServer$1(BuildServerConnection.scala:593)
+	at scala.meta.internal.metals.BuildServerConnection$.fromSockets(BuildServerConnection.scala:661)
+	at scala.meta.internal.metals.BuildServerConnection$$anonfun$fromSockets$17.applyOrElse(BuildServerConnection.scala:678)
+	at scala.meta.internal.metals.BuildServerConnection$$anonfun$fromSockets$17.applyOrElse(BuildServerConnection.scala:675)
+	at scala.concurrent.impl.Promise$Transformation.run(Promise.scala:490)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.lang.Thread.run(Thread.java:833)
+Caused by: java.io.IOException: CreateProcess error=2, Das System kann die angegebene Datei nicht finden
+	at java.lang.ProcessImpl.create(Native Method)
+	at java.lang.ProcessImpl.<init>(ProcessImpl.java:494)
+	at java.lang.ProcessImpl.start(ProcessImpl.java:159)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1110)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1073)
+	at scala.meta.internal.process.SystemProcess$.run(SystemProcess.scala:48)
+	at scala.meta.internal.bsp.BspServers.newConnection$1(BspServers.scala:117)
+	at scala.meta.internal.bsp.BspServers.$anonfun$newServer$8(BspServers.scala:160)
+	at scala.meta.internal.metals.BuildServerConnection$.setupServer$1(BuildServerConnection.scala:593)
+	at scala.meta.internal.metals.BuildServerConnection$.fromSockets(BuildServerConnection.scala:661)
+	at scala.meta.internal.metals.BuildServerConnection$$anonfun$fromSockets$17.applyOrElse(BuildServerConnection.scala:678)
+	at scala.meta.internal.metals.BuildServerConnection$$anonfun$fromSockets$17.applyOrElse(BuildServerConnection.scala:675)
+	at scala.concurrent.impl.Promise$Transformation.run(Promise.scala:490)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.lang.Thread.run(Thread.java:833)
+
+2024.08.07 15:47:48 INFO  tracing is disabled for protocol BSP, to enable tracing of incoming and outgoing JSON messages create an empty file at G:\Projects\Bachelor-Thesis\Ikaros\.metals\bsp.trace.json or C:\Users\cyril\AppData\Local\scalameta\metals\cache\bsp.trace.json
+2024.08.07 15:48:48 ERROR Timeout waiting for 'build/initialize' response
+2024.08.07 15:48:48 ERROR Failed to connect with build server, no functionality will work.
+java.util.concurrent.TimeoutException
+	at java.util.concurrent.CompletableFuture.timedGet(CompletableFuture.java:1960)
+	at java.util.concurrent.CompletableFuture.get(CompletableFuture.java:2095)
+	at scala.meta.internal.metals.BuildServerConnection$.initialize(BuildServerConnection.scala:745)
+	at scala.meta.internal.metals.BuildServerConnection$.$anonfun$fromSockets$1(BuildServerConnection.scala:619)
+	at scala.concurrent.impl.Promise$Transformation.run(Promise.scala:467)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.lang.Thread.run(Thread.java:833)
+
+2024.08.07 15:48:48 INFO  no build target found for G:\Projects\Bachelor-Thesis\Ikaros\out\Programs\Construction\scalac\batches\exhaustive_batch\batch_prog_10.scala. Using presentation compiler with project's scala-library version: 3.3.1
+2024.08.07 15:48:48 WARN  Running javac-semanticdb failed for file:///G:/Projects/Bachelor-Thesis/Ikaros/out/Programs/Construction/javac/batches/exhaustive_batch/batch_prog_0.java. Output:
+
+2024.08.07 15:48:48 INFO  no build target found for G:\Projects\Bachelor-Thesis\Ikaros\out\Programs\Construction\scalac\batches\exhaustive_batch\batch_prog_3.scala. Using presentation compiler with project's scala-library version: 3.3.1
+2024.08.07 15:48:48 INFO  no build target found for G:\Projects\Bachelor-Thesis\Ikaros\out\Programs\Construction\scalac\batches\exhaustive_batch\batch_prog_0.scala. Using presentation compiler with project's scala-library version: 3.3.1
+2024.08.07 15:48:48 INFO  no build target found for G:\Projects\Bachelor-Thesis\Ikaros\out\Programs\Construction\scalac\batches\exhaustive_batch\batch_prog_4.scala. Using presentation compiler with project's scala-library version: 3.3.1
+2024.08.07 15:48:48 INFO  no build target found for G:\Projects\Bachelor-Thesis\Ikaros\out\Programs\Construction\scalac\batches\exhaustive_batch\batch_prog_7.scala. Using presentation compiler with project's scala-library version: 3.3.1
+2024.08.07 15:48:48 INFO  no build target found for G:\Projects\Bachelor-Thesis\Ikaros\out\Programs\Construction\scalac\batches\exhaustive_batch\batch_prog_8.scala. Using presentation compiler with project's scala-library version: 3.3.1
+2024.08.07 15:48:48 INFO  no build target found for G:\Projects\Bachelor-Thesis\Ikaros\out\Programs\Construction\scalac\batches\exhaustive_batch\batch_prog_6.scala. Using presentation compiler with project's scala-library version: 3.3.1
+2024.08.07 15:48:49 INFO  no build target found for G:\Projects\Bachelor-Thesis\Ikaros\out\Programs\Construction\scalac\batches\exhaustive_batch\batch_prog_1.scala. Using presentation compiler with project's scala-library version: 3.3.1
+2024.08.07 15:48:49 INFO  no build target found for G:\Projects\Bachelor-Thesis\Ikaros\out\Programs\Construction\scalac\batches\exhaustive_batch\batch_prog_9.scala. Using presentation compiler with project's scala-library version: 3.3.1
+2024.08.07 15:51:08 WARN  Flyway upgrade recommended: H2 2.3.230 is newer than this version of Flyway and support has not been tested. The latest supported version of H2 is 2.2.220.
+2024.08.07 15:51:08 WARN  Running javac-semanticdb failed for file:///G:/Projects/Bachelor-Thesis/Possible%20Bugs/Java%20Reducing/reported/program_1_reduced.java. Output:
+
+2024.08.07 15:51:10 INFO  no build target found for G:\Projects\Bachelor-Thesis\Possible Bugs\Java Reducing\reported\program_1_reduced.java. Using presentation compiler with project's scala-library version: 3.3.3
+2024.08.07 15:51:11 WARN  Running javac-semanticdb failed for file:///G:/Projects/Bachelor-Thesis/Possible%20Bugs/Java%20Reducing/reported/program_2_reduced.java. Output:
+
+2024.08.07 15:51:13 INFO  no build target found for G:\Projects\Bachelor-Thesis\Possible Bugs\Java Reducing\reported\program_2_reduced.java. Using presentation compiler with project's scala-library version: 3.3.3
+2024.08.07 15:51:17 WARN  Running javac-semanticdb failed for file:///G:/Projects/Bachelor-Thesis/Possible%20Bugs/Java%20Reducing/reduced/program_12_reduced.java. Output:
+
+2024.08.07 15:51:19 INFO  no build target found for G:\Projects\Bachelor-Thesis\Possible Bugs\Java Reducing\reduced\program_12_reduced.java. Using presentation compiler with project's scala-library version: 3.3.3
+2024.08.07 20:15:53 INFO  Shutting down server
+2024.08.07 20:15:53 INFO  shutting down Metals
+2024.08.07 20:15:54 INFO  Exiting server

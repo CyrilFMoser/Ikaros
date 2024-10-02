@@ -9,6 +9,7 @@ use crate::{
         pattern::Pattern,
         statements::{Declaration, Statement, VarDecl},
     },
+    mutate::mutator,
     statistics::matchstats::MatchStatistics,
     types::{type_graph::graph::Graph, type_trait::Type},
     Oracle,
@@ -36,11 +37,12 @@ pub struct ProgramGenerator<
 > {
     pub typ_gen: TypeGenerator<LangTyp>,
     rng: ChaCha8Rng,
-    graph: Option<Graph<LangTyp>>,
+    pub graph: Option<Graph<LangTyp>>,
     match_gen_args: Option<MatchArgs>,
     random_match_gen_args: Option<RandomMatchArgs>,
-    match_statements: Vec<Statement<LangTyp>>,
+    pub match_statements: Vec<Statement<LangTyp>>,
     pub removed_pattern: Option<String>,
+    pub mutate_info: Option<String>,
     random_match_gen: Option<RandomMatchGenerator<LangTyp>>,
     pub correct: bool, // If the generated program is correct
 }
@@ -68,6 +70,7 @@ impl<
             match_statements: Vec::new(),
             removed_pattern: None,
             random_match_gen: None,
+            mutate_info: None,
             correct,
         }
     }
@@ -155,6 +158,51 @@ impl<
         ));
     }
 
+    pub fn mutate(&mut self, result: &SatResult, batchsize: usize) -> u32 {
+        let match_statement = self.match_statements.get(1).unwrap();
+        let Statement::Decl(Declaration::Var(VarDecl {
+            name,
+            typ_annotation,
+            typ,
+            exp,
+        })) = match_statement;
+
+        //let old_match_statment = match_statement.clone();
+        let matchexp = exp.clone();
+        let name = name.clone();
+        let typ_annotation = *typ_annotation;
+        let typ = typ.clone();
+
+        let num_progs = 1;
+        let exhaustive = true;
+        if let Expression::Match(matchexp) = matchexp {
+            if exhaustive {
+                return mutator::mutate_match_exhaustive(self, result, batchsize);
+            } else {
+                let (mutated_match, info) = mutator::mutate_match(
+                    matchexp,
+                    result,
+                    self.graph.as_mut().unwrap(),
+                    self.rng.clone(),
+                );
+
+                *self.match_statements.get_mut(1).unwrap() =
+                    Statement::Decl(Declaration::Var(VarDecl {
+                        name: name.clone(),
+                        typ_annotation,
+                        typ: typ.clone(),
+                        exp: Expression::Match(mutated_match),
+                    }));
+                self.mutate_info = Some(info);
+                let exhaustive = matches!(result, SatResult::Unsat);
+                self.process_batch(exhaustive, Oracle::Mutation, batchsize);
+                // *self.match_statements.get_mut(1).unwrap() = old_match_statment;
+                self.mutate_info = None;
+            }
+        }
+        num_progs
+    }
+
     pub fn generate_z3(&mut self) -> Option<Duration> {
         let time = Instant::now();
         if let Some(statements) = self.random_match_gen.as_mut().unwrap().generate() {
@@ -196,6 +244,7 @@ impl<
         let oracle_string = match oracle {
             Oracle::Z3 => "Z3",
             Oracle::Construction => "Construction",
+            Oracle::Mutation => "Mutation",
         };
 
         let cur_folder = format!(
@@ -216,7 +265,9 @@ impl<
             create_dir(&cur_batch_folder).unwrap();
         }
 
-        if matches!(oracle, Oracle::Z3) && LangTyp::get_compiler_name() == "javac" {
+        if (matches!(oracle, Oracle::Z3) || matches!(oracle, Oracle::Mutation))
+            && LangTyp::get_compiler_name() == "javac"
+        {
             Self::remove_unreachable(&cur_batch_folder);
         } else if num_progs < batchsize {
             return;
@@ -233,8 +284,9 @@ impl<
         actual_command.push_str(&format!(" *.{}", LangTyp::get_suffix()));
         cmd.arg(actual_command);
         cmd.current_dir(&cur_batch_folder);
-
+        println!("Compiling...");
         let output = cmd.output().unwrap();
+        println!("Finished Compiling");
         let error_message = std::str::from_utf8(&output.stderr).unwrap();
         //println!("{error_message}");
         let crash_regex = LangTyp::get_crash_regex();
@@ -325,6 +377,7 @@ impl<
                 let oracle_string = match oracle {
                     Oracle::Construction => "Construction",
                     Oracle::Z3 => "Z3",
+                    Oracle::Mutation => "Mutation",
                 };
                 let new_folder = format!(
                     "out/Programs/{oracle_string}/{}/inexhaustive/false_positive",
@@ -350,6 +403,7 @@ impl<
             let oracle_string = match oracle {
                 Oracle::Construction => "Construction",
                 Oracle::Z3 => "Z3",
+                Oracle::Mutation => "Mutation",
             };
             let new_folder = format!(
                 "out/Programs/{oracle_string}/{}/inexhaustive/false_negative",
@@ -384,6 +438,18 @@ impl<
             let new = removed.replace('\n', &format!("\n{}", LangTyp::get_comment()));
             cur_program.push_str(
                 format!("\n{} This is not matched: {new}", LangTyp::get_comment()).as_str(),
+            );
+        }
+
+        if let Some(info) = &self.mutate_info {
+            let new = info.replace('\n', &format!("\n{}", LangTyp::get_comment()));
+            cur_program.push_str(
+                format!(
+                    "\n{} Mutation information: \n{} {new}",
+                    LangTyp::get_comment(),
+                    LangTyp::get_comment()
+                )
+                .as_str(),
             );
         }
 

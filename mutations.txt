@@ -1,0 +1,16 @@
+Strengthening:
+
+- Add additional case to wildcard pattern with a constant pattern ✅
+
+- Change concrete pattern to wildcard pattern ✅
+
+- Add additional case to wildcard pattern of a trait with (possibly multiple) subcase patterns ✅
+
+Weakening:
+
+- Delete Pattern ✅
+
+- Replace Wildcard for trait with strict subset of subcases ✅
+
+- Replace Wildcard with constant pattern ✅
+

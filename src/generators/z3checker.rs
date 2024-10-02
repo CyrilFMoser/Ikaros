@@ -105,7 +105,7 @@ impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display + Ord + Par
         let to_match_type_constraints_ref: Vec<&Bool> = to_match_type_constraints.iter().collect();
         let to_match_type_constraints = &Bool::and(&ctx, &to_match_type_constraints_ref);
 
-        println!("TO_MATCH_TYPE_CONSTRAINTS: \n {to_match_type_constraints}");
+        //println!("TO_MATCH_TYPE_CONSTRAINTS: \n {to_match_type_constraints}");
 
         s.assert(to_match_type_constraints);
 
@@ -115,7 +115,7 @@ impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display + Ord + Par
         s.assert(&matches.not());
 
         let solver_start = Instant::now();
-        println!("Solver: \n {s}");
+        //println!("Solver: \n {s}");
         let result = s.check();
         let solver_time = solver_start.elapsed();
 
@@ -219,7 +219,7 @@ impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display + Ord + Par
 
         let or_vec_ref: Vec<&Bool> = or_vec.iter().collect();
         let condition = Bool::or(ctx, &or_vec_ref).simplify();
-        println!("MATCHES CONDITION: \n{condition}");
+        //println!("MATCHES CONDITION: \n{condition}");
         condition
     }
 
@@ -273,7 +273,7 @@ impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display + Ord + Par
         let or_vec_ref: Vec<&Bool> = or_vec.iter().collect();
         let condition = Bool::or(ctx, &or_vec_ref);
 
-        println!("TYPARG_EQ_CONDITION: \n {condition}");
+        //println!("TYPARG_EQ_CONDITION: \n {condition}");
         typarg_eq.add_def(&[&typ1, &typ2], &condition);
         typarg_eq
     }
@@ -439,7 +439,7 @@ impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display + Ord + Par
         let typ2_wildcard = wildcard_tester.apply(&[&typ2]).as_bool().unwrap();
 
         let condition = Bool::or(ctx, &[&actual_subcase, &typ2_wildcard, &typ1_wildcard]);
-        println!("SUBCASES CONDITION: \n {condition}");
+        //println!("SUBCASES CONDITION: \n {condition}");
         subcase.add_def(&[&typ1, &typ2], &condition);
         subcase
     }
@@ -552,7 +552,7 @@ impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display + Ord + Par
         let typ1_not_base_vec_ref: Vec<&Bool> = typ1_not_base_vec.iter().collect();
 
         let condition = Bool::and(ctx, &typ1_not_base_vec_ref);
-        println!("CONSTRUCTABLE: \n{condition}");
+        //println!("CONSTRUCTABLE: \n{condition}");
         constructable.add_def(&[&constructable_type], &condition);
         constructable
     }
@@ -733,7 +733,7 @@ impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display + Ord + Par
 
         let and_vec_ref: Vec<&Bool> = and_vec.iter().collect();
         let valid_condition = Bool::and(ctx, &and_vec_ref);
-        println!("VALID CONDITION: \n{valid_condition}");
+        //println!("VALID CONDITION: \n{valid_condition}");
         valid.add_def(&[&t], &valid_condition);
         valid
     }
