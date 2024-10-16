@@ -117,6 +117,24 @@ impl<LangTyp: Type + Clone + PartialOrd> Pattern<LangTyp> {
             }
         }
     }
+
+    pub fn get_place_holder(&self) -> Pattern<LangTyp> {
+        match self {
+            Pattern::Constant(_) | Pattern::WildCard(_) => self.clone(),
+            Pattern::Variant(v) => Variant::get_variant_pattern(&v.typ),
+            Pattern::Tuple(p1, p2) => {
+                let w1 = Pattern::WildCard(WildCard {
+                    typ: p1.get_actual_type(),
+                    annotate: false,
+                });
+                let w2 = Pattern::WildCard(WildCard {
+                    typ: p2.get_actual_type(),
+                    annotate: false,
+                });
+                Pattern::Tuple(Box::new(w1), Box::new(w2))
+            }
+        }
+    }
 }
 #[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct WildCard<T> {

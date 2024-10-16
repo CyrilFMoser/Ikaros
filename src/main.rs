@@ -14,7 +14,7 @@ use statistics::constructionstats::ConstructionStatistics;
 use statistics::z3stats::Z3Statistics;
 use std::env;
 use std::fmt::{Debug, Display};
-use std::fs::{create_dir, read_dir, remove_file, File, OpenOptions};
+use std::fs::{create_dir, read_dir, remove_dir_all, remove_file, File, OpenOptions};
 use std::hash::Hash;
 use std::io::{Read, Write};
 use std::path::Path;
@@ -25,6 +25,7 @@ use z3::SatResult;
 mod generators;
 mod matches;
 mod mutate;
+mod reduction;
 mod statistics;
 mod types;
 fn main() {
@@ -33,7 +34,7 @@ fn main() {
     let mut language = Language::Scala;
     let mut oracle = Oracle::Z3;
 
-    let mut args_iter = args.into_iter();
+    let mut args_iter = args.into_iter().skip(1);
     while let Some(arg) = args_iter.next() {
         if arg == "language" {
             let next_arg = args_iter.next().unwrap();
@@ -51,6 +52,8 @@ fn main() {
                 "mutation" => Oracle::Mutation,
                 _ => panic!("Invalid oracle"),
             }
+        } else {
+            panic!("{} is an invalid option", arg);
         }
     }
 
@@ -183,6 +186,8 @@ fn main() {
     let mut unsat_count = 0;
     let mut sat_count = 0;
     let mut prog_count = 0;
+
+    delete_batches(&language, &oracle);
 
     let mut z3_stats = Vec::new();
     let mut construction_stats = Vec::new();
@@ -356,6 +361,16 @@ pub enum Oracle {
     Construction,
     Mutation,
 }
+impl Oracle {
+    fn to_string(&self) -> String {
+        match self {
+            Oracle::Construction => "Construction".to_string(),
+            Oracle::Mutation => "Mutation".to_string(),
+            Oracle::Z3 => "Z3".to_string(),
+        }
+    }
+}
+
 // used for coverage
 fn save_file(prog: String, oracle: Oracle) {
     let oracle_string = match oracle {
@@ -368,6 +383,25 @@ fn save_file(prog: String, oracle: Oracle) {
     let cur_file_path = format!("{folder}/prog_{num_files}.hs");
     let mut source_file = File::create(cur_file_path).unwrap();
     source_file.write_all(prog.as_bytes()).unwrap();
+}
+
+fn delete_batches(language: &Language, oracle: &Oracle) {
+    let compiler_string = match language {
+        Language::Haskell => "ghc",
+        Language::Java => "javac",
+        Language::Scala => "scalac",
+    };
+    let path = format!(
+        "out/Programs/{}/{compiler_string}/batches",
+        oracle.to_string()
+    );
+    for p in [
+        format!("{path}/exhaustive_batch"),
+        format!("{path}/inexhaustive_batch"),
+    ] {
+        remove_dir_all(&p).unwrap();
+        create_dir(p).unwrap();
+    }
 }
 
 fn run_prog_z3<
@@ -392,8 +426,10 @@ fn run_prog_z3<
     sat_count: &mut u32,
     z3stats: &mut Vec<Z3Statistics>,
 ) -> u32 {
-    let seed = thread_rng().gen();
-    //println!("using seed: {}", seed);
+    let mut seed = thread_rng().gen();
+    //seed = 7029476259678759020; // type construction seed (reduction)
+    seed = 7885844270095127252; // pattern construction seed (reduction)
+    println!("using seed: {}", seed); // ! BATCH SIZE IS 1 FOR EVERYTHING
     let rng = ChaCha8Rng::seed_from_u64(seed);
     let mut program_generator: ProgramGenerator<T> =
         ProgramGenerator::new(args, rng, None, Some(match_args.clone()), false);
@@ -409,7 +445,7 @@ fn run_prog_z3<
     let batchsize = if T::get_compiler_name() == "javac" {
         1
     } else {
-        32
+        1 // ! CHANGE THIS BACK TO 32 AFTER DEBUGGING
     };
     let mut cur_count = 0;
     while let Some(gen_duration) = program_generator.generate_z3() {

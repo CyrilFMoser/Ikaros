@@ -10,6 +10,7 @@ use crate::{
         statements::{Declaration, Statement, VarDecl},
     },
     mutate::mutator,
+    reduction::reducer::Reducer,
     statistics::matchstats::MatchStatistics,
     types::{type_graph::graph::Graph, type_trait::Type},
     Oracle,
@@ -18,7 +19,10 @@ use core::fmt::Debug;
 use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
 use regex::Regex;
-use std::{collections::HashSet, time::Instant};
+use std::{
+    collections::{HashMap, HashSet},
+    time::Instant,
+};
 use std::{
     error,
     fmt::{format, Display},
@@ -42,6 +46,7 @@ pub struct ProgramGenerator<
     random_match_gen_args: Option<RandomMatchArgs>,
     pub match_statements: Vec<Statement<LangTyp>>,
     pub removed_pattern: Option<String>,
+    pub file_map: HashMap<String, (TypeGenerator<LangTyp>, Vec<Statement<LangTyp>>)>,
     pub mutate_info: Option<String>,
     random_match_gen: Option<RandomMatchGenerator<LangTyp>>,
     pub correct: bool, // If the generated program is correct
@@ -72,12 +77,13 @@ impl<
             random_match_gen: None,
             mutate_info: None,
             correct,
+            file_map: HashMap::new(),
         }
     }
 
     pub fn generate_types(&mut self) {
         self.typ_gen.generate();
-        let mut graph = Graph::new(
+        let graph = Graph::new(
             &self.typ_gen.all_types,
             &self.typ_gen.declarations,
             ChaCha8Rng::from_seed(self.typ_gen.rng.get_seed()),
@@ -257,7 +263,7 @@ impl<
         }
         //println!("{cur_batch_folder}");
 
-        self.save_for_batch(cur_batch_folder.clone());
+        self.save_for_batch(cur_batch_folder.clone(), exhaustive);
         let num_progs = read_dir(&cur_batch_folder).unwrap().count();
 
         if num_progs > batchsize {
@@ -372,6 +378,7 @@ impl<
                 .filter(|name| !problematic_programs.contains(&name.as_str()))
                 .collect();
             for file in false_positives {
+                self.reduce(cur_batch_folder, &file, exhaustive);
                 let old_path = format!("{cur_batch_folder}/{file}");
                 //println!("Old path: {old_path}");
                 let oracle_string = match oracle {
@@ -399,6 +406,7 @@ impl<
             .collect();
 
         for file in false_negatives {
+            self.reduce(cur_batch_folder, file, exhaustive);
             let old_path = format!("{cur_batch_folder}/{file}");
             let oracle_string = match oracle {
                 Oracle::Construction => "Construction",
@@ -414,8 +422,34 @@ impl<
             rename(old_path, new_path).unwrap();
         }
     }
+    /// exhaustive here means the compiler claims the match is inexhaustive even though it is exhaustive
+    fn reduce(&self, cur_batch_folder: &str, file: &str, exhaustive: bool) {
+        let old_file_path = format!("{cur_batch_folder}/{file}");
 
-    fn save_for_batch(&mut self, cur_batch_folder: String) {
+        let temp_folder = format!("{cur_batch_folder}/temp");
+        let new_file_path = format!("{temp_folder}/{file}");
+
+        create_dir(&temp_folder).unwrap();
+
+        rename(old_file_path, new_file_path).unwrap();
+
+        let file_map_name = if exhaustive {
+            format!("{file}_exhaustive")
+        } else {
+            format!("{file}_inexhaustive")
+        };
+        let (type_gen, match_statements) = self.file_map.get(&file_map_name).unwrap();
+        let mut reducer = Reducer::new(
+            file.to_string(),
+            temp_folder,
+            exhaustive,
+            type_gen.clone(),
+            match_statements.clone(),
+        );
+        reducer.reduce();
+    }
+
+    fn save_for_batch(&mut self, cur_batch_folder: String, exhaustive: bool) {
         let num_progs = read_dir(&cur_batch_folder).unwrap().count();
         //println!("{num_progs}");
         let semicolon = if LangTyp::get_compiler_name() == "javac" {
@@ -463,6 +497,16 @@ impl<
         {
             remove_file(cur_file_path).unwrap();
         }
+
+        let file_map_name = if exhaustive {
+            format!("{file_name}_exhaustive")
+        } else {
+            format!("{file_name}_inexhaustive")
+        };
+        self.file_map.insert(
+            file_map_name,
+            (self.typ_gen.clone(), self.match_statements.clone()),
+        );
     }
 
     fn remove_unreachable(cur_batch_folder: &str) {
