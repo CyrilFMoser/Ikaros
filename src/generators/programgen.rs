@@ -37,6 +37,7 @@ use std::{
 use z3::SatResult;
 
 pub struct ProgramGenerator<
+    'a,
     LangTyp: Type + Clone + PartialEq + Eq + Ord + PartialOrd + Hash + Display + Sync + 'static,
 > {
     pub typ_gen: TypeGenerator<LangTyp>,
@@ -46,15 +47,16 @@ pub struct ProgramGenerator<
     random_match_gen_args: Option<RandomMatchArgs>,
     pub match_statements: Vec<Statement<LangTyp>>,
     pub removed_pattern: Option<String>,
-    pub file_map: HashMap<String, (TypeGenerator<LangTyp>, Vec<Statement<LangTyp>>)>,
+    pub file_map: &'a mut HashMap<String, (TypeGenerator<LangTyp>, Vec<Statement<LangTyp>>)>,
     pub mutate_info: Option<String>,
     random_match_gen: Option<RandomMatchGenerator<LangTyp>>,
     pub correct: bool, // If the generated program is correct
 }
 
 impl<
+        'a,
         LangTyp: Type + Clone + PartialEq + Debug + Ord + PartialOrd + Eq + Hash + Display + Sync + Send,
-    > ProgramGenerator<LangTyp>
+    > ProgramGenerator<'a, LangTyp>
 {
     pub fn new(
         typctxt_args: &TypeContextArgs,
@@ -62,6 +64,7 @@ impl<
         match_gen_args: Option<MatchArgs>,
         random_match_gen_args: Option<RandomMatchArgs>,
         correct: bool,
+        file_map: &'a mut HashMap<String, (TypeGenerator<LangTyp>, Vec<Statement<LangTyp>>)>,
     ) -> Self {
         ProgramGenerator {
             typ_gen: TypeGenerator::new(
@@ -77,7 +80,7 @@ impl<
             random_match_gen: None,
             mutate_info: None,
             correct,
-            file_map: HashMap::new(),
+            file_map,
         }
     }
 
@@ -263,7 +266,12 @@ impl<
         }
         //println!("{cur_batch_folder}");
 
-        self.save_for_batch(cur_batch_folder.clone(), exhaustive);
+        self.save_for_batch(
+            cur_batch_folder.clone(),
+            exhaustive,
+            self.output_prog(),
+            None,
+        );
         let num_progs = read_dir(&cur_batch_folder).unwrap().count();
 
         if num_progs > batchsize {
@@ -278,6 +286,16 @@ impl<
         } else if num_progs < batchsize {
             return;
         }
+        self.test_compile(&cur_batch_folder, cur_folder, exhaustive, oracle);
+    }
+
+    fn test_compile(
+        &mut self,
+        cur_batch_folder: &str,
+        cur_folder: String,
+        exhaustive: bool,
+        oracle: Oracle,
+    ) {
         let mut cmd = Command::new("sh");
         cmd.arg("-c");
 
@@ -289,7 +307,7 @@ impl<
         }
         actual_command.push_str(&format!(" *.{}", LangTyp::get_suffix()));
         cmd.arg(actual_command);
-        cmd.current_dir(&cur_batch_folder);
+        cmd.current_dir(cur_batch_folder);
         println!("Compiling...");
         let output = cmd.output().unwrap();
         println!("Finished Compiling");
@@ -301,7 +319,7 @@ impl<
             let num_batches = read_dir(&crash_folder).unwrap().count();
             let cur_crash_folder = format!("{crash_folder}/batch_{num_batches}");
             create_dir(&cur_crash_folder).unwrap();
-            for file in read_dir(&cur_batch_folder).unwrap() {
+            for file in read_dir(cur_batch_folder).unwrap() {
                 let file_name = file.unwrap().file_name().into_string().unwrap();
                 if file_name.ends_with(&format!(".{}", LangTyp::get_suffix())) {
                     let old_path = format!("{cur_batch_folder}/{file_name}");
@@ -318,18 +336,18 @@ impl<
         if compiler_not_exhaustive || !exhaustive || look_for_unreachable {
             self.process_batch_error(
                 error_message,
-                &cur_batch_folder,
+                cur_batch_folder,
                 exhaustive,
                 look_for_unreachable,
                 oracle,
             )
         }
-        remove_dir_all(&cur_batch_folder).unwrap();
-        create_dir(&cur_batch_folder).unwrap();
+        remove_dir_all(cur_batch_folder).unwrap();
+        create_dir(cur_batch_folder).unwrap();
     }
 
     fn process_batch_error(
-        &self,
+        &mut self,
         error_message: &str,
         cur_batch_folder: &str,
         exhaustive: bool,
@@ -423,7 +441,7 @@ impl<
         }
     }
     /// exhaustive here means the compiler claims the match is inexhaustive even though it is exhaustive
-    fn reduce(&self, cur_batch_folder: &str, file: &str, exhaustive: bool) {
+    fn reduce(&mut self, cur_batch_folder: &str, file: &str, exhaustive: bool) {
         let old_file_path = format!("{cur_batch_folder}/{file}");
 
         let temp_folder = format!("{cur_batch_folder}/temp");
@@ -438,18 +456,35 @@ impl<
         } else {
             format!("{file}_inexhaustive")
         };
+        //println!("Checking {file_map_name}");
         let (type_gen, match_statements) = self.file_map.get(&file_map_name).unwrap();
         let mut reducer = Reducer::new(
             file.to_string(),
-            temp_folder,
+            temp_folder.clone(),
             exhaustive,
             type_gen.clone(),
             match_statements.clone(),
         );
-        reducer.reduce();
+        let program = reducer.reduce();
+        remove_dir_all(temp_folder).unwrap();
+        self.save_for_batch(
+            cur_batch_folder.to_string(),
+            exhaustive,
+            program,
+            Some(file.to_string()),
+        );
+        if LangTyp::get_compiler_name() == "javac" {
+            Self::remove_unreachable(cur_batch_folder);
+        }
     }
 
-    fn save_for_batch(&mut self, cur_batch_folder: String, exhaustive: bool) {
+    fn save_for_batch(
+        &mut self,
+        cur_batch_folder: String,
+        exhaustive: bool,
+        program: String,
+        file_name: Option<String>,
+    ) {
         let num_progs = read_dir(&cur_batch_folder).unwrap().count();
         //println!("{num_progs}");
         let semicolon = if LangTyp::get_compiler_name() == "javac" {
@@ -457,8 +492,6 @@ impl<
         } else {
             ""
         };
-
-        let program = self.output_prog();
 
         let package_name = format!("Program_{num_progs}");
         let package_string = if LangTyp::get_compiler_name() == "ghc" {
@@ -487,7 +520,11 @@ impl<
             );
         }
 
-        let file_name = format!("batch_prog_{num_progs}.{}", LangTyp::get_suffix());
+        let file_name = if let Some(file_name) = file_name {
+            file_name
+        } else {
+            format!("batch_prog_{num_progs}.{}", LangTyp::get_suffix())
+        };
         let cur_file_path = format!("{cur_batch_folder}/{file_name}");
         let mut source_file = File::create(&cur_file_path).unwrap();
 
@@ -503,13 +540,14 @@ impl<
         } else {
             format!("{file_name}_inexhaustive")
         };
+        //println!("Saving {file_map_name}");
         self.file_map.insert(
             file_map_name,
             (self.typ_gen.clone(), self.match_statements.clone()),
         );
     }
 
-    fn remove_unreachable(cur_batch_folder: &str) {
+    pub fn remove_unreachable(cur_batch_folder: &str) {
         let mut cmd = Command::new("sh");
         cmd.arg("-c");
 
@@ -558,7 +596,7 @@ impl<
             for (i, line) in reader.lines().enumerate() {
                 let line = line.as_ref().unwrap();
                 if line_numbers.contains(&(i + 1)) {
-                    writeln!(writer, "//{}", line).unwrap();
+                    //writeln!(writer, "//{}", line).unwrap();
                 } else {
                     writeln!(writer, "{}", line).unwrap();
                 }

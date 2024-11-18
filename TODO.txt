@@ -1,4 +1,3 @@
-- Merge generics
 
-- Z3:
+- store number of generated test cases per x (throughput)
 

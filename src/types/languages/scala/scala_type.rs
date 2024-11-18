@@ -309,11 +309,6 @@ impl Type for ScalaType {
                     if n > 0 {
                         out.push('[');
                         for i in 0..n {
-                            match variances.get(i).unwrap() {
-                                Variance::Covariant => out.push('+'),
-                                Variance::Contravariant => out.push('-'),
-                                Variance::Invariant => (),
-                            }
                             out.push_str(typargs.get(i).unwrap().get_name());
                             out.push_str(", ");
                         }
@@ -342,11 +337,13 @@ impl Type for ScalaType {
             }
             out.push(')');
             if let Some(extends) = cc.get_bases() {
-                out.push_str(" extends ");
-                for tr in extends {
-                    out.push_str(format!("{},", tr).as_str());
+                if !extends.is_empty() {
+                    out.push_str(" extends ");
+                    for tr in extends {
+                        out.push_str(format!("{},", tr).as_str());
+                    }
+                    out.pop(); // remove ,
                 }
-                out.pop(); // remove ,
             }
             out.push('\n');
         }

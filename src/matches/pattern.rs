@@ -72,15 +72,30 @@ impl<LangTyp: Type + Clone + PartialOrd> Pattern<LangTyp> {
         }
     }
 
+    pub fn replace_type(&mut self, typ: LangTyp) {
+        match self {
+            Pattern::WildCard(wild_card) => wild_card.typ = typ,
+            Pattern::Variant(variant) => variant.typ = typ,
+            Pattern::Constant(constant) => constant.typ = typ,
+            Pattern::Tuple(pattern1, pattern2) => {
+                let params = typ.get_params().unwrap();
+                pattern1.replace_type(params.first().unwrap().clone());
+                pattern2.replace_type(params.get(1).unwrap().clone());
+            }
+        }
+    }
+
     pub fn get_actual_type(&self) -> LangTyp {
         match self {
             Pattern::WildCard(w) => w.typ.clone(),
             Pattern::Constant(c) => c.typ.clone(),
             Pattern::Variant(v) => {
                 let mut new_typ = v.typ.clone();
-                for (i, param) in new_typ.get_params_mut().unwrap().iter_mut().enumerate() {
-                    let pattern_typ = v.parameters.get(i).unwrap().get_actual_type();
-                    *param = pattern_typ;
+                if let Some(params) = new_typ.get_params_mut() {
+                    for (i, param) in params.iter_mut().enumerate() {
+                        let pattern_typ = v.parameters.get(i).unwrap().get_actual_type();
+                        *param = pattern_typ;
+                    }
                 }
                 new_typ
             }

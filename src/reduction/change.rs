@@ -23,7 +23,7 @@ pub enum Change<
     LangTyp: Type + Clone + PartialEq + Debug + Ord + PartialOrd + Eq + Hash + Display + Sync + Send,
 > {
     // Type Context Changes
-    AddVariant(String),
+    AddVariant(String, LangTyp),
     AddBase(String),
     AddGeneric(usize, LangTyp),
     AddParameter(usize, String, LangTyp),
@@ -35,12 +35,21 @@ pub enum Change<
 
 impl<
         LangTyp: Type + Clone + PartialEq + Debug + Ord + PartialOrd + Eq + Hash + Display + Sync + Send,
+    > Change<LangTyp>
+{
+    pub fn is_root_type(&self) -> bool {
+        matches!(self, Change::AddBase(_) | Change::AddVariant(_, _))
+    }
+}
+
+impl<
+        LangTyp: Type + Clone + PartialEq + Debug + Ord + PartialOrd + Eq + Hash + Display + Sync + Send,
     > Display for Change<LangTyp>
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         use Change as C;
         match self {
-            C::AddVariant(name) => write!(f, "Add Variant {name}"),
+            C::AddVariant(name, _) => write!(f, "Add Variant {name}"),
             C::AddBase(name) => write!(f, "Add Base {name}"),
             C::AddGeneric(pos, t) => write!(f, "Add Typeargument {t} at position {pos}"),
             C::AddParameter(pos, name, t) => {

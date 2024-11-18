@@ -57,7 +57,17 @@ impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display + Ord + Par
                 Some(String::from("Pattern match is empty without constants")),
                 Duration::default(),
             );
-        }
+        } /*
+          println!("---------------------------------------------------------------------------------------------------------------------------");
+          for typ in all_types {
+              dbg!(typ);
+          }
+          println!("--------------------------------------------------------------");
+          for pattern in &self.matchexp.cases {
+              dbg!(pattern);
+          }
+          println!("---------------------------------------------------------------------------------------------------------------------------");
+          */
         let mut typ = DatatypeBuilder::new(&ctx, "Type");
 
         typ = Self::add_bases(typ, declarations, all_types);
@@ -195,6 +205,7 @@ impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display + Ord + Par
         let mut or_vec = vec![];
         for cur_pattern in &self.matchexp.cases {
             let cur_typ = cur_pattern.get_type();
+            //dbg!("{}", &cur_typ);
             type_vec.push(cur_typ);
         }
         for cur_pos in 0..self.matchexp.cases.len() {
@@ -211,7 +222,6 @@ impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display + Ord + Par
             let p_and = Bool::and(ctx, &p_constraints_ref);
             or_vec.push(p_and.simplify());
         }
-
         let wildcard_tester = &typ.variants.get(typ.variants.len() - 2).unwrap().tester;
 
         let is_wildcard = wildcard_tester.apply(&[t]).as_bool().unwrap();
@@ -321,29 +331,30 @@ impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display + Ord + Par
             }
             // VARIANT <: TRAIT
             if let Some(extends) = cur_typ.get_bases() {
-                let base = extends.first().unwrap();
-                let base_id = name_to_variant.get(base.get_name()).unwrap();
-                let tester = &typ.variants.get(*base_id).unwrap().tester;
-                let typ2_is_base = tester.apply(&[&typ2]).as_bool().unwrap();
+                if let Some(base) = extends.first() {
+                    let base_id = name_to_variant.get(base.get_name()).unwrap();
+                    let tester = &typ.variants.get(*base_id).unwrap().tester;
+                    let typ2_is_base = tester.apply(&[&typ2]).as_bool().unwrap();
 
-                let variant_id = name_to_variant.get(cur_typ.get_name()).unwrap();
-                let typ1_tester = &typ.variants.get(*variant_id).unwrap().tester;
-                let typ1_is_cur_typ = typ1_tester.apply(&[&typ1]).as_bool().unwrap();
-                let typ1_extends = &typ
-                    .variants
-                    .get(*variant_id)
-                    .unwrap()
-                    .accessors
-                    .last()
-                    .unwrap()
-                    .apply(&[&typ1])
-                    .as_datatype()
-                    .unwrap();
+                    let variant_id = name_to_variant.get(cur_typ.get_name()).unwrap();
+                    let typ1_tester = &typ.variants.get(*variant_id).unwrap().tester;
+                    let typ1_is_cur_typ = typ1_tester.apply(&[&typ1]).as_bool().unwrap();
+                    let typ1_extends = &typ
+                        .variants
+                        .get(*variant_id)
+                        .unwrap()
+                        .accessors
+                        .last()
+                        .unwrap()
+                        .apply(&[&typ1])
+                        .as_datatype()
+                        .unwrap();
 
-                let is_eq = typarg_eq.apply(&[typ1_extends, &typ2]).as_bool().unwrap();
+                    let is_eq = typarg_eq.apply(&[typ1_extends, &typ2]).as_bool().unwrap();
 
-                let condition = Bool::and(ctx, &[&typ2_is_base, &typ1_is_cur_typ, &is_eq]);
-                or_vec.push(condition);
+                    let condition = Bool::and(ctx, &[&typ2_is_base, &typ1_is_cur_typ, &is_eq]);
+                    or_vec.push(condition);
+                }
             }
             // VARIANT <: VARIANT
             if let Some(params) = cur_typ.get_params() {
@@ -635,6 +646,7 @@ impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display + Ord + Par
                         .unwrap();
                     let mut or_wild_card =
                         vec![wildcard_tester.apply(&[&new_z3]).as_bool().unwrap()];
+
                     let conditions =
                         if !param.is_complex() && !param.is_generic() && !param.is_tuple() {
                             Self::to_z3(
@@ -1026,12 +1038,8 @@ impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display + Ord + Par
         if let Some(typargs) = cur_typ.get_typargs() {
             let accessors = &typ.variants.get(*variant_id).unwrap().accessors;
             for (id, typarg) in typargs.iter().enumerate() {
-                let new_z3 = accessors
-                    .get(id)
-                    .unwrap()
-                    .apply(&[&cur_typ_z3])
-                    .as_datatype()
-                    .unwrap();
+                let new_z3 = accessors.get(id).unwrap();
+                let new_z3 = new_z3.apply(&[&cur_typ_z3]).as_datatype().unwrap();
                 let mut cur_constraints = Self::to_z3(
                     ctx,
                     typ,

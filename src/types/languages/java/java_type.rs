@@ -369,7 +369,7 @@ impl Type for JavaType {
             Pattern::WildCard(_) => "var WILDCARD".to_string(),
             Pattern::Variant(Variant { typ, parameters }) => {
                 let mut out = typ.get_name().to_string();
-                if let Some(typargs) = typ.get_typargs() {
+                /*if let Some(typargs) = typ.get_typargs() {
                     let mut typarg_string = String::new();
                     for typarg in typargs {
                         typarg_string.push_str(format!("{typarg}, ").as_str());
@@ -379,7 +379,7 @@ impl Type for JavaType {
                         typarg_string.pop(); // space
                         out.push_str(format!("<{typarg_string}>").as_str());
                     }
-                }
+                }*/
 
                 out.push('(');
                 for p in parameters {

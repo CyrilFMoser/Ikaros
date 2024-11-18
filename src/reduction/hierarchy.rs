@@ -12,7 +12,7 @@ use crate::{
 use core::fmt::Debug;
 use std::{
     cmp::max,
-    collections::{HashMap, VecDeque},
+    collections::{HashMap, HashSet, VecDeque},
     fmt::Display,
     fs::{remove_file, File},
     hash::Hash,
@@ -25,11 +25,12 @@ use super::change::Change;
 pub struct Hierarchy<
     LangTyp: Type + Clone + PartialEq + Debug + Ord + PartialOrd + Eq + Hash + Display + Sync + Send,
 > {
-    changes: Vec<Change<LangTyp>>,
-    num_type_changes: usize,
-    type_levels: Vec<Vec<usize>>,
-    pattern_levels: Vec<Vec<usize>>,
-    edges: HashMap<usize, Vec<usize>>,
+    pub changes: Vec<Change<LangTyp>>,
+    pub num_type_changes: usize,
+    pub type_levels: Vec<Vec<usize>>,
+    pub pattern_levels: Vec<Vec<usize>>,
+    pub edges: HashMap<usize, Vec<usize>>,
+    pub to_match_type: LangTyp,
 }
 // Hierarchy type building
 impl<
@@ -40,7 +41,8 @@ impl<
         let root: Change<LangTyp> = if typ.is_base() {
             Change::AddBase(typ.get_name().to_string())
         } else if typ.is_variant() {
-            Change::AddVariant(typ.get_name().to_string())
+            let base = typ.get_bases().unwrap().first().unwrap().clone();
+            Change::AddVariant(typ.get_name().to_string(), base)
         } else {
             panic!("Tried processing a root type that is neither a base nor a variant")
         };
@@ -62,9 +64,9 @@ impl<
             }
         }
 
-        if typ.is_variant() {
+        /*if typ.is_variant() {
             self.process_extends(typ, id);
-        }
+        } */
     }
 
     fn process_typarg(&mut self, typ: &LangTyp, pos: usize, prev_id: usize) {
@@ -96,6 +98,32 @@ impl<
                 self.add_edge(prev_id, cur_id);
             }
         }
+    }
+
+    pub fn remove_orphans(&self, used_changes: HashSet<usize>) -> HashSet<usize> {
+        used_changes
+            .clone()
+            .into_iter()
+            .filter(|u| self.is_alive(u, &used_changes))
+            .collect()
+    }
+
+    /// either is a root or has parents
+    fn is_alive(&self, u: &usize, used_changes: &HashSet<usize>) -> bool {
+        let change = self.changes.get(*u).unwrap();
+        if change.is_root_type() || matches!(change, Change::AddPattern(_, _)) {
+            return true;
+        }
+
+        for (parent, children) in &self.edges {
+            if children.contains(u) {
+                if !used_changes.contains(parent) {
+                    return false;
+                }
+                return self.is_alive(parent, used_changes);
+            }
+        }
+        false
     }
 }
 
@@ -170,6 +198,15 @@ impl<
             typ: _,
             exp,
         })) = match_statement;
+
+        let to_match_statement = match_statements.first().unwrap();
+        let Statement::Decl(Declaration::Var(VarDecl {
+            name: _,
+            typ_annotation: _,
+            typ: to_match_type,
+            exp: _,
+        })) = to_match_statement;
+
         let matchexp = match exp {
             Expression::Match(m) => m,
             _ => panic!("Not a match expression"),
@@ -182,6 +219,7 @@ impl<
             pattern_levels: Vec::new(),
             edges: HashMap::new(),
             num_type_changes: 0,
+            to_match_type: to_match_type.clone(),
         };
         // first process all the bases
         for id in &type_gen.declarations {
@@ -213,7 +251,7 @@ impl<
 
         for (i, change) in self.changes.iter().enumerate() {
             if i < self.num_type_changes {
-                if matches!(change, Change::AddBase(_) | Change::AddVariant(_)) {
+                if matches!(change, Change::AddBase(_) | Change::AddVariant(_, _)) {
                     root_types.push(i);
                 }
             } else if matches!(change, Change::AddPattern(_, _)) {
@@ -269,6 +307,35 @@ impl<
 
     fn add_edge(&mut self, from: usize, to: usize) {
         self.edges.entry(from).or_default().push(to);
+    }
+
+    pub fn get_direct_children(&self, used_changes: &HashSet<usize>) -> HashSet<usize> {
+        let mut children = HashSet::new();
+
+        for id in used_changes.iter() {
+            if let Some(edges) = self.edges.get(id) {
+                for to_id in edges {
+                    children.insert(*to_id);
+                }
+            }
+        }
+        children
+    }
+
+    pub fn add_children(&self, used_changes: &mut HashSet<usize>) {
+        let mut children = HashSet::new();
+
+        for id in used_changes.iter() {
+            if let Some(edges) = self.edges.get(id) {
+                for to_id in edges {
+                    children.insert(*to_id);
+                }
+                self.add_children(&mut children);
+            }
+        }
+        for change in children {
+            used_changes.insert(change);
+        }
     }
 
     #[allow(dead_code)]
