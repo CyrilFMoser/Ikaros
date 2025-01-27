@@ -1,3 +1,12 @@
+calculate throughput of methods, characteristics of the programs, of the reduction 
 
-- store number of generated test cases per x (throughput)
+bug finding capability, number of bugs, time per bug, find root causes of bugs (assign scala programs to different folders)
 
+report scala inconsistency bug
+
+
+
+
+
+process evaluation data (add more statistics for reduction)
+tables + explanations/findings

@@ -79,7 +79,7 @@ fn main() {
         level_prob: 0.7,
         refine_prob: 0.7,
         primitive_prob: 0.1,
-        max_refine_depth: 3,
+        max_refine_depth: 4,
         max_to_match_depth: 0,
         const_refine_prob: 0.2,
     };
@@ -88,7 +88,27 @@ fn main() {
         max_num_base_cases: 4,
         max_num_base_typargs: 2,
         max_type_depth: 2,
-        max_num_params: 3,
+        max_num_params: 4,
+        contravariance_prob: 0., // 1
+        covariance_prob: 0.,     // 0.2
+        base_instantiation_prob: 0.3,
+        typarg_parameter_prob: 0.2,
+        use_same_instantiation_prob: 0.7,
+        use_prelude_type_prob: 0.2,
+        instantiate_existing_complex_type_prob: 0.1,
+        add_additional_typarg_case_prob: 0.05,
+        tuple_prob: 0.1,
+    };
+    let random_match_args = RandomMatchArgs {
+        level_prob: 0.7,
+        max_refine_depth: 4, //5
+    };
+    let haskell_args = TypeContextArgs {
+        max_num_bases: 2,
+        max_num_base_cases: 4,
+        max_num_base_typargs: 2,
+        max_type_depth: 3,
+        max_num_params: 4,
         contravariance_prob: 0., // 1
         covariance_prob: 0.,     // 0.2
         base_instantiation_prob: 0.3,
@@ -99,40 +119,20 @@ fn main() {
         add_additional_typarg_case_prob: 0.,
         tuple_prob: 0.1,
     };
-    let random_match_args = RandomMatchArgs {
-        level_prob: 1.,
-        max_refine_depth: 5, //5
-    };
-    let haskell_args = TypeContextArgs {
-        max_num_bases: 4,
-        max_num_base_cases: 6,
-        max_num_base_typargs: 2,
-        max_type_depth: 2,
-        max_num_params: 3,
-        contravariance_prob: 0., // 1
-        covariance_prob: 0.,     // 0.2
-        base_instantiation_prob: 0.3,
-        typarg_parameter_prob: 0.2,
-        use_same_instantiation_prob: 0.7,
-        use_prelude_type_prob: 0.2,
-        instantiate_existing_complex_type_prob: 0.1,
-        add_additional_typarg_case_prob: 0.,
-        tuple_prob: 0.2,
-    };
     let haskell_match_args = MatchArgs {
-        level_prob: 1.,
-        refine_prob: 0.55,
+        level_prob: 0.7,
+        refine_prob: 0.7,
         primitive_prob: 0.1,
-        max_refine_depth: 5,
+        max_refine_depth: 4,
         max_to_match_depth: 0,
-        const_refine_prob: 0.1,
+        const_refine_prob: 0.2,
     };
     let haskell_args_z3 = TypeContextArgs {
         max_num_bases: 2,
         max_num_base_cases: 4,
         max_num_base_typargs: 2,
         max_type_depth: 2,
-        max_num_params: 3,
+        max_num_params: 4,
         contravariance_prob: 0., // 1
         covariance_prob: 0.,     // 0.2
         base_instantiation_prob: 0.3,
@@ -141,14 +141,14 @@ fn main() {
         use_prelude_type_prob: 0.2,
         instantiate_existing_complex_type_prob: 0.1,
         add_additional_typarg_case_prob: 0.,
-        tuple_prob: 0.2,
+        tuple_prob: 0.1,
     };
     let java_args_z3 = TypeContextArgs {
         max_num_bases: 2,
         max_num_base_cases: 4,
         max_num_base_typargs: 2,
         max_type_depth: 2,
-        max_num_params: 3,
+        max_num_params: 4,
         contravariance_prob: 0., // 1
         covariance_prob: 0.,     // 0.2
         base_instantiation_prob: 0.3,
@@ -177,7 +177,7 @@ fn main() {
     };
     let java_match_args = MatchArgs {
         level_prob: 0.7,
-        refine_prob: 0.5,
+        refine_prob: 0.7,
         primitive_prob: 0.1,
         max_refine_depth: 4,
         max_to_match_depth: 0,
@@ -197,8 +197,10 @@ fn main() {
 
     let mut z3_stats = Vec::new();
     let mut construction_stats = Vec::new();
-    while prog_count <= 100000 {
-        println!("ROUND {prog_count}");
+
+    //update_weeks(&oracle, &language);
+    while prog_count <= 1000 {
+        //println!("ROUND {prog_count}");
         let cur_count = match language {
             Language::Haskell => {
                 if matches!(oracle, Oracle::Construction) {
@@ -291,7 +293,7 @@ fn main() {
                 }
             }
         };
-        stats(&oracle, &language, &cur_count);
+        //stats(&oracle, &language, &cur_count);
 
         if matches!(oracle, Oracle::Z3) {
             println!(
@@ -308,7 +310,6 @@ fn main() {
             );
         }
     }
-    return;
     let oracle_string = match oracle {
         Oracle::Construction => "Construction",
         Oracle::Z3 => "Z3",
@@ -336,6 +337,42 @@ fn main() {
     writer.flush().unwrap();
 }
 
+fn update_weeks(oracle: &Oracle, language: &Language) {
+    let oracle_string = match oracle {
+        Oracle::Construction => "Construction",
+        Oracle::Z3 => "Z3",
+        Oracle::Mutation => "Mutation",
+    };
+    let compiler_string = match language {
+        Language::Haskell => "ghc",
+        Language::Java => "javac",
+        Language::Scala => "scalac",
+    };
+    let weeks_file = format!("out/Programs/{oracle_string}/{compiler_string}/weeks.txt");
+    if !Path::new(&weeks_file).exists() {
+        File::create(&weeks_file).unwrap();
+    }
+    let mut count = String::new();
+    OpenOptions::new()
+        .read(true)
+        .open(&weeks_file)
+        .unwrap()
+        .read_to_string(&mut count)
+        .unwrap();
+    let prev_value = if let Ok(num) = count.parse::<u32>() {
+        num
+    } else {
+        0
+    };
+    let mut f = OpenOptions::new()
+        .write(true)
+        .truncate(true)
+        .open(&weeks_file)
+        .unwrap();
+    let new_count = prev_value + 1;
+    f.write_all(new_count.to_string().as_bytes()).unwrap();
+}
+
 fn stats(oracle: &Oracle, language: &Language, prog_count: &u32) {
     let oracle_string = match oracle {
         Oracle::Construction => "Construction",
@@ -351,7 +388,6 @@ fn stats(oracle: &Oracle, language: &Language, prog_count: &u32) {
     if !Path::new(&stats_file).exists() {
         File::create(&stats_file).unwrap();
     }
-
     let mut count = String::new();
     OpenOptions::new()
         .read(true)
@@ -371,6 +407,7 @@ fn stats(oracle: &Oracle, language: &Language, prog_count: &u32) {
         .unwrap();
     let new_count = prev_value + *prog_count;
     f.write_all(new_count.to_string().as_bytes()).unwrap();
+
     /*remove_file(&stats_file).unwrap();
     let mut new_f = File::create(&stats_file).unwrap();
 
@@ -457,12 +494,14 @@ fn run_prog_z3<
     file_map: &mut FileMap<T>,
 ) -> u32 {
     let mut seed = thread_rng().gen();
+    //seed = 6295501894041247234;
+    //seed = 7409235621545235445; scala performance bug
     //seed = 1436571824521298399; // java seed 2
     //seed = 10149628916913093765; // java seed
     //seed = 5640078996971350470;
     //seed = 7029476259678759020; // type construction seed (reduction)
     //seed = 7885844270095127252; // pattern construction seed (reduction)
-    println!("using seed: {}", seed); // ! BATCH SIZE IS 1 FOR EVERYTHING
+    println!("using seed: {}", seed);
     let rng = ChaCha8Rng::seed_from_u64(seed);
     let mut program_generator: ProgramGenerator<T> =
         ProgramGenerator::new(args, rng, None, Some(match_args.clone()), false, file_map);
@@ -474,11 +513,10 @@ fn run_prog_z3<
     let enumeration_start = Instant::now();
     program_generator.generate_cases();
     let enumeration_time = enumeration_start.elapsed();
-
     let batchsize = if T::get_compiler_name() == "javac" {
         1
     } else {
-        32 // ! CHANGE THIS BACK TO 32 AFTER DEBUGGING
+        16
     };
     let mut cur_count = 0;
     while let Some(gen_duration) = program_generator.generate_z3() {
@@ -604,8 +642,9 @@ fn run_prog_mutate<
     prog_count: &mut u32,
     file_map: &mut FileMap<T>,
 ) -> u32 {
-    let seed = thread_rng().gen();
-    //println!("using seed: {}", seed);
+    let mut seed = thread_rng().gen();
+    //seed = 10394945786380950586;
+    println!("using seed: {}", seed);
     let rng = ChaCha8Rng::seed_from_u64(seed);
     let mut program_generator: ProgramGenerator<T> =
         ProgramGenerator::new(args, rng, None, Some(match_args.clone()), false, file_map);

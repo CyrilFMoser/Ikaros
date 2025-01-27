@@ -96,10 +96,10 @@ impl<
 
                 if let Some(extends) = new_typ.get_bases_mut() {
                     for extend in extends {
-                        if !generic_positions.contains_key(extend.get_name()) {
+                        Self::fix_type_generics(extend, &generic_positions);
+                        if !Self::type_is_defined(extend, &param_positions, &generic_positions) {
                             return Err(Invalid {});
                         }
-                        Self::fix_type_generics(extend, &generic_positions);
                         for generic in TypeGenerator::get_generics(extend) {
                             used_generics.insert(generic);
                         }
@@ -139,7 +139,7 @@ impl<
 
         if let Some(typargs) = to_match_type.get_typargs() {
             for typarg in typargs {
-                if !Self::type_is_defined(typarg, &param_positions) {
+                if !Self::type_is_defined(typarg, &param_positions, &generic_positions) {
                     return Err(Invalid {});
                 }
             }
@@ -455,7 +455,7 @@ impl<
                     .chain(cur_typ.get_bases().unwrap_or(&vec![]))
                     .chain(generics)
                 {
-                    if !Self::type_is_defined(param, parameter_positions) {
+                    if !Self::type_is_defined(param, parameter_positions, generic_positions) {
                         println!("Used undefined param {param} in {cur_typ}");
                         return Err(Invalid {});
                     }
@@ -464,7 +464,7 @@ impl<
 
                 for generic in cur_generics {
                     if !generics.contains(&generic) {
-                        println!("Used undefined generics");
+                        //println!("Used undefined generics");
                         return Err(Invalid {});
                     }
                 }
@@ -510,28 +510,40 @@ impl<
     }
 
     /// only checks the type arguments, this is mainly intended for to_match_type
-    fn type_is_defined(typ: &LangTyp, param_positions: &HashMap<String, HashSet<usize>>) -> bool {
+    fn type_is_defined(
+        typ: &LangTyp,
+        param_positions: &HashMap<String, HashSet<usize>>,
+        generic_positions: &HashMap<String, HashSet<usize>>,
+    ) -> bool {
         if typ.is_primitive() || typ.is_generic() {
             return true;
         }
 
         if typ.is_tuple() {
             let params = typ.get_params().unwrap();
-            let first_defined = Self::type_is_defined(params.first().unwrap(), param_positions);
+            let first_defined =
+                Self::type_is_defined(params.first().unwrap(), param_positions, generic_positions);
             if !first_defined {
                 return false;
             }
-            return Self::type_is_defined(params.get(1).unwrap(), param_positions);
+            return Self::type_is_defined(
+                params.get(1).unwrap(),
+                param_positions,
+                generic_positions,
+            );
         }
 
         if typ.is_base() || typ.is_variant() {
-            if !param_positions.contains_key(typ.get_name()) {
+            if !generic_positions.contains_key(typ.get_name()) {
                 return false;
             }
             if let Some(typargs) = typ.get_typargs() {
+                if typargs.len() != generic_positions.get(typ.get_name()).unwrap().len() {
+                    return false;
+                }
                 return typargs
                     .iter()
-                    .all(|t| Self::type_is_defined(t, param_positions));
+                    .all(|t| Self::type_is_defined(t, param_positions, generic_positions));
             }
             return true;
         }

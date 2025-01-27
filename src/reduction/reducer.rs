@@ -176,12 +176,12 @@ impl<
         wtr.flush().unwrap();
     }
 
-    pub fn reduce(&mut self) -> String {
+    pub fn reduce(&mut self) -> Option<String> {
         //self.hierarchy.output_graph_viz();
 
         let prev_stats = self.get_stats(&(0..self.hierarchy.changes.len()).collect());
         let reduce_start = Instant::now();
-        println!("Reducing");
+        //println!("Reducing");
         let used_changes: HashSet<usize> = self.hdd();
         let reduction_time = reduce_start.elapsed();
         let new_stats = self.get_stats(&used_changes);
@@ -190,9 +190,9 @@ impl<
 
         let restructer = Restructer::new(&self.hierarchy, &used_changes);
         if let Ok(prog) = restructer.restruct() {
-            prog.output_prog()
+            Some(prog.output_prog())
         } else {
-            panic!("Failed to reduce")
+            None
         }
     }
 
@@ -276,7 +276,7 @@ impl<
                 break;
             }
             n_changes = final_set.len();
-            println!("Going again with {n_changes} #changes");
+            //println!("Going again with {n_changes} #changes");
         }
 
         // checks each root individually
@@ -287,7 +287,7 @@ impl<
             if cur_change.is_root_type() || matches!(cur_change, Change::AddPattern(_, _)) {
                 final_set.remove(&i);
                 let result = self.test(&empty_set, &final_set);
-                println!("Tried to remove {cur_change}, test result was: {result}");
+                //println!("Tried to remove {cur_change}, test result was: {result}");
                 if !matches!(result, TestResult::Bug) {
                     final_set.insert(i);
                 }
@@ -303,7 +303,7 @@ impl<
         final_set: &HashSet<usize>,
         n: usize,
     ) -> HashSet<usize> {
-        println!("Calling dd_min");
+        //println!("Calling dd_min");
         if used_changes.len() < n {
             if used_changes.len() > 2 {
                 return used_changes;
@@ -322,14 +322,14 @@ impl<
 
             return used_changes;
         }
-        println!("<><><><><><><><><><><><><>\n");
+        /*println!("<><><><><><><><><><><><><>\n");
         println!("Trying: ");
         self.print_changes(&used_changes);
         println!("<><><><><><><><><><><><><>");
         let test_result = self.test(&used_changes, final_set);
         if !matches!(test_result, TestResult::Bug) {
             println!("Was {test_result}");
-        }
+        }*/
 
         let delta_i_size = used_changes.len() / n;
 
@@ -351,7 +351,7 @@ impl<
 
             let test_result = self.test(&delta_i, final_set);
             if matches!(test_result, TestResult::Bug) {
-                self.print_changes(&delta_i);
+                //self.print_changes(&delta_i);
                 return self.dd_min(delta_i, final_set, 2); // reduce to subset
             }
             deltas.push(delta_i);
@@ -363,7 +363,7 @@ impl<
 
             let test_result = self.test(&nabla_i, final_set);
             if matches!(test_result, TestResult::Bug) {
-                self.print_changes(&nabla_i);
+                //self.print_changes(&nabla_i);
                 return self.dd_min(nabla_i, final_set, max(n - 1, 2)); // reduce to complement
             }
         }

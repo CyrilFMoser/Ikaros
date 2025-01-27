@@ -1,0 +1,7 @@
+When looking at the first program and going through all the possible cases of I_A, one can see that it is exhaustive, even though javac claims that it is not.
+
+An easier way to see this though, is that if we modify R_B's parameter a, to be I_A (therefore only making the type more general, meaning more would have to be covered in the switch statement. This means that if it was inexhaustive before, it should still be inexhaustive).
+
+This then allows us to remove the intermediate (and irrelevant) R_A in case 0 and 1. This keeps the same complexity, as the intermediate R_A didn't add anything else except for a wildcard.
+
+But if we now compile this new program, we no longer get an inexhaustive warning from javac, which is a contradiction with itself.

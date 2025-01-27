@@ -1,14 +1,15 @@
-object Test {
-sealed trait T_A[A, B]
-sealed trait T_B[C, D]
-case class CC_A(a: T_B[T_A[Byte, Byte], T_A[Int, Byte]], b: T_A[T_B[Boolean, Int], (Char,Boolean)]) extends T_A[T_B[Byte, Char], T_A[Int, T_A[Char, Boolean]]]
-case class CC_B(a: Boolean, b: CC_A, c: CC_A) extends T_A[T_B[Byte, Char], T_A[Int, T_A[Char, Boolean]]]
-case class CC_C[F, E](a: T_A[F, E], b: Int) extends T_B[F, E]
-case class CC_D[H, G](a: T_B[G, G]) extends T_B[H, G]
+package Program_63 
 
-val v_a: T_A[T_B[Byte, Char], T_A[Int, T_A[Char, Boolean]]] = null
+object Test {
+sealed trait T_A[A]
+sealed trait T_B[C, D]
+case class CC_A(a: T_B[T_B[Char, Boolean], T_A[Int]], b: T_A[T_B[Char, Byte]]) extends T_A[Byte]
+case class CC_C[F, E]() extends T_B[E, F]
+case class CC_D[H, G]() extends T_B[H, G]
+
+val v_a: CC_A = null
 val v_b: Int = v_a match{
-  case CC_A(CC_D(_), _) => 0 
-  case CC_B(_, CC_A(_, _), _) => 1 
+  case CC_A(CC_C(), _) => 0 
 }
-}// Removed this case: CC_A(CC_C(_, _), _)
+}
+// This is not matched: CC_B(CC_A(_, _, _), _, CC_A(_, _, _))

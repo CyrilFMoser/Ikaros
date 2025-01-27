@@ -377,6 +377,8 @@ impl Type for ScalaType {
     }
 
     fn get_compiler_path() -> String {
+        /*"/local/home/cymoser/scala3/dist/target/universal/scala3-3.6.1-RC1-bin-SNAPSHOT/bin/scalac"
+        .to_string()*/
         "scalac".to_string()
     }
 

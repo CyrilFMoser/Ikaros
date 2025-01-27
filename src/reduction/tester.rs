@@ -15,10 +15,12 @@ use std::fmt::Debug;
 use std::fmt::Display;
 use std::fs::create_dir;
 use std::fs::read_dir;
+use std::fs::remove_dir_all;
 use std::fs::File;
 use std::hash::Hash;
 use std::io::Write;
 use std::process::Command;
+use std::time::Instant;
 
 pub enum TestResult {
     Bug,
@@ -74,11 +76,11 @@ impl<
         let prog = if let Ok(prog) = restructer.restruct() {
             prog
         } else {
-            println!("Could not restruct");
+            //println!("Could not restruct");
             return TestResult::Unknown;
         };
 
-        println!("{}", prog.output_prog());
+        //println!("{}", prog.output_prog());
 
         if prog.patterns.is_empty() {
             // We don't care about empty pattern matches
@@ -118,23 +120,23 @@ impl<
 
         let (result, s, _) = z3_checker.check(&declarations, &prog.types);
         if matches!(result, SatResult::Unknown) {
-            println!("Solver result was unknown");
+            //println!("Solver result was unknown");
             return TestResult::Unknown;
         }
 
         if self.exhaustive && matches!(result, SatResult::Sat) {
             // patternmatch is no longer exhaustive
-            println!("No longer exhaustive");
+            //println!("No longer exhaustive");
             return TestResult::Unknown;
         }
 
         if !self.exhaustive && matches!(result, SatResult::Unsat) {
             // patternmatch is no longer inexhaustive
-            println!("No longer inexhaustive");
+            //println!("No longer inexhaustive");
             return TestResult::Unknown;
         }
 
-        if let Some(x) = s {
+        /*if let Some(x) = s {
             println!("String from checker: {x}");
         }
 
@@ -144,7 +146,7 @@ impl<
             SatResult::Unknown => "Unknown",
         };
 
-        println!("Checker says this program is {result_string}");
+        println!("Checker says this program is {result_string}");*/
         /*
         println!("Final set:");
         self.print_changes(&final_set);
@@ -157,6 +159,71 @@ impl<
             println!("{}", prog_string);
         }
         result
+    }
+
+    fn time_test(&self, prog: String) -> TestResult {
+        let temp_folder = format!("{}/temp", self.folder_path);
+
+        create_dir(&temp_folder).unwrap();
+
+        let file_path = format!("{temp_folder}/{}", self.file_name);
+
+        let mut source_file = File::create(&file_path).unwrap();
+
+        source_file.write_all(prog.as_bytes()).unwrap();
+
+        let mut cmd = Command::new("sh");
+        cmd.arg("-c");
+
+        let mut old_command = String::from("scalac");
+        if let Some(args) = LangTyp::get_compiler_args() {
+            for arg in args.iter() {
+                old_command.push_str(&format!(" {arg}"));
+            }
+        }
+        old_command.push_str(&format!(" *.{}", LangTyp::get_suffix()));
+        cmd.arg(old_command);
+        cmd.current_dir(&temp_folder);
+        println!("Compiling for Reduction... Old");
+        let start_old = Instant::now();
+        cmd.output().unwrap();
+        let old_time = start_old.elapsed().as_secs();
+        println!("Finished Compiling for Reduction Old");
+
+        remove_dir_all(&temp_folder).unwrap();
+
+        create_dir(&temp_folder).unwrap();
+
+        let mut source_file = File::create(file_path).unwrap();
+
+        source_file.write_all(prog.as_bytes()).unwrap();
+
+        let mut cmd = Command::new("sh");
+        cmd.arg("-c");
+
+        let mut new_command = format!("timeout 10's' {}", LangTyp::get_compiler_path());
+        if let Some(args) = LangTyp::get_compiler_args() {
+            for arg in args.iter() {
+                new_command.push_str(&format!(" {arg}"));
+            }
+        }
+        new_command.push_str(&format!(" *.{}", LangTyp::get_suffix()));
+        cmd.arg(new_command);
+        cmd.current_dir(&temp_folder);
+        println!("Compiling for Reduction... New");
+        let start_new = Instant::now();
+        cmd.output().unwrap();
+        let new_time = start_new.elapsed().as_secs();
+        println!("Finished Compiling for Reduction New");
+
+        remove_dir_all(&temp_folder).unwrap();
+
+        if new_time >= 4 * old_time || new_time >= 10 {
+            println!("{new_time}");
+            TestResult::Bug
+        } else {
+            TestResult::NoBug
+        }
     }
 
     fn compiler_test(&self, prog: String) -> TestResult {

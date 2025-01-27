@@ -278,7 +278,7 @@ impl<
                 let result_cases: Vec<Pattern<LangTyp>> = cur_this
                     .read()
                     .unwrap()
-                    .refine_variant(&variant, 0)
+                    .refine_variant(&variant, 1)
                     .into_iter()
                     .collect();
                 //println!("FINISHED");

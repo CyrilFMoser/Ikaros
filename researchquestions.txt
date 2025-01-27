@@ -1,0 +1,13 @@
+- bug finding capability
+
+- performance of different methods, generation time + test oracle time
+
+- characteristics of programs
+
+
+
+java: 22.0.2-tem
+
+haskell: ghc 9.0.2
+
+scala: 3.0.0

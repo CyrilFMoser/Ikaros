@@ -21,6 +21,7 @@ use rand_chacha::ChaCha8Rng;
 use regex::Regex;
 use std::{
     collections::{HashMap, HashSet},
+    io::Read,
     time::Instant,
 };
 use std::{
@@ -299,7 +300,7 @@ impl<
         let mut cmd = Command::new("sh");
         cmd.arg("-c");
 
-        let mut actual_command = LangTyp::get_compiler_path();
+        let mut actual_command = format!("timeout 20's' {}", LangTyp::get_compiler_path());
         if let Some(args) = LangTyp::get_compiler_args() {
             for arg in args.iter() {
                 actual_command.push_str(&format!(" {arg}"));
@@ -311,36 +312,46 @@ impl<
         println!("Compiling...");
         let output = cmd.output().unwrap();
         println!("Finished Compiling");
-        let error_message = std::str::from_utf8(&output.stderr).unwrap();
-        //println!("{error_message}");
-        let crash_regex = LangTyp::get_crash_regex();
-        if crash_regex.is_match(error_message) {
-            let crash_folder = format!("{cur_folder}/crash");
-            let num_batches = read_dir(&crash_folder).unwrap().count();
-            let cur_crash_folder = format!("{crash_folder}/batch_{num_batches}");
-            create_dir(&cur_crash_folder).unwrap();
-            for file in read_dir(cur_batch_folder).unwrap() {
-                let file_name = file.unwrap().file_name().into_string().unwrap();
-                if file_name.ends_with(&format!(".{}", LangTyp::get_suffix())) {
-                    let old_path = format!("{cur_batch_folder}/{file_name}");
-                    let new_path = format!("{cur_crash_folder}/{file_name}");
-                    rename(old_path, new_path).unwrap();
+
+        let crashed = if let Some(code) = output.status.code() {
+            code == 124
+        } else {
+            false
+        };
+
+        if !crashed {
+            let error_message = std::str::from_utf8(&output.stderr).unwrap();
+            //println!("{error_message}");
+            let crash_regex = LangTyp::get_crash_regex();
+            if crash_regex.is_match(error_message) {
+                let crash_folder = format!("{cur_folder}/crash");
+                let num_batches = read_dir(&crash_folder).unwrap().count();
+                let cur_crash_folder = format!("{crash_folder}/batch_{num_batches}");
+                create_dir(&cur_crash_folder).unwrap();
+                for file in read_dir(cur_batch_folder).unwrap() {
+                    let file_name = file.unwrap().file_name().into_string().unwrap();
+                    if file_name.ends_with(&format!(".{}", LangTyp::get_suffix())) {
+                        let old_path = format!("{cur_batch_folder}/{file_name}");
+                        let new_path = format!("{cur_crash_folder}/{file_name}");
+                        rename(old_path, new_path).unwrap();
+                    }
                 }
             }
-        }
 
-        let compiler_not_exhaustive = error_message.contains(&LangTyp::get_not_exhaustive());
-        let compiler_not_reachable = error_message.contains(&LangTyp::get_unreachable());
-        let look_for_unreachable = matches!(oracle, Oracle::Construction) && compiler_not_reachable;
+            let compiler_not_exhaustive = error_message.contains(&LangTyp::get_not_exhaustive());
+            let compiler_not_reachable = error_message.contains(&LangTyp::get_unreachable());
+            let look_for_unreachable =
+                matches!(oracle, Oracle::Construction) && compiler_not_reachable;
 
-        if compiler_not_exhaustive || !exhaustive || look_for_unreachable {
-            self.process_batch_error(
-                error_message,
-                cur_batch_folder,
-                exhaustive,
-                look_for_unreachable,
-                oracle,
-            )
+            if compiler_not_exhaustive || !exhaustive || look_for_unreachable {
+                self.process_batch_error(
+                    error_message,
+                    cur_batch_folder,
+                    exhaustive,
+                    look_for_unreachable,
+                    oracle,
+                )
+            }
         }
         remove_dir_all(cur_batch_folder).unwrap();
         create_dir(cur_batch_folder).unwrap();
@@ -354,6 +365,19 @@ impl<
         look_for_unreachable: bool,
         oracle: Oracle,
     ) {
+        if LangTyp::get_compiler_name() == "ghc" {
+            let regex =
+                Regex::new(r"(?<scope>[a-z | _ | \d*]*.hs):\d*:\d*: error:\n    Not in scope:")
+                    .unwrap();
+            let captures = regex.captures_iter(error_message);
+            let file_names: HashSet<&str> = captures
+                .filter_map(|c| c.name("scope").map(|m| m.as_str()))
+                .collect();
+            for file in file_names {
+                remove_file(format!("{cur_batch_folder}/{file}")).unwrap();
+            }
+        }
+
         if look_for_unreachable {
             let unreachable_regex = LangTyp::get_unreachable_regex();
             let captures = unreachable_regex.captures_iter(error_message);
@@ -363,6 +387,9 @@ impl<
             for file in file_names {
                 let old_path = format!("{cur_batch_folder}/{file}");
                 //println!("{old_path}");
+                if !Path::new(&old_path).exists() {
+                    continue;
+                }
                 let new_folder = format!(
                     "out/Programs/Construction/{}/unreachable/unreduced",
                     LangTyp::get_compiler_name()
@@ -396,9 +423,13 @@ impl<
                 .filter(|name| !problematic_programs.contains(&name.as_str()))
                 .collect();
             for file in false_positives {
-                self.reduce(cur_batch_folder, &file, exhaustive);
                 let old_path = format!("{cur_batch_folder}/{file}");
                 //println!("Old path: {old_path}");
+                if !Path::new(&old_path).exists() {
+                    continue;
+                }
+                self.reduce(cur_batch_folder, &file, exhaustive);
+
                 let oracle_string = match oracle {
                     Oracle::Construction => "Construction",
                     Oracle::Z3 => "Z3",
@@ -424,8 +455,11 @@ impl<
             .collect();
 
         for file in false_negatives {
-            self.reduce(cur_batch_folder, file, exhaustive);
             let old_path = format!("{cur_batch_folder}/{file}");
+            if !Path::new(&old_path).exists() {
+                continue;
+            }
+            self.reduce(cur_batch_folder, file, exhaustive);
             let oracle_string = match oracle {
                 Oracle::Construction => "Construction",
                 Oracle::Z3 => "Z3",
@@ -449,6 +483,15 @@ impl<
 
         create_dir(&temp_folder).unwrap();
 
+        let mut old_prog = String::new();
+        OpenOptions::new()
+            .read(true)
+            .open(&old_file_path)
+            .unwrap()
+            .read_to_string(&mut old_prog)
+            .unwrap();
+
+        //println!("{old_file_path} to {new_file_path}");
         rename(old_file_path, new_file_path).unwrap();
 
         let file_map_name = if exhaustive {
@@ -465,7 +508,11 @@ impl<
             type_gen.clone(),
             match_statements.clone(),
         );
-        let program = reducer.reduce();
+        let program = if let Some(program) = reducer.reduce() {
+            program
+        } else {
+            old_prog
+        };
         remove_dir_all(temp_folder).unwrap();
         self.save_for_batch(
             cur_batch_folder.to_string(),
