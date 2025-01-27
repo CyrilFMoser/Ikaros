@@ -1,0 +1,19 @@
+package Program_14 
+
+package Program_4 
+
+object Test {
+sealed trait T_A[A, B]
+sealed trait T_B[C]
+case class CC_A[D, E, F](a: T_A[F, E]) extends T_A[D, E]
+case class CC_B[G](a: G, b: CC_A[G, G, G]) extends T_A[T_A[G, G], G]
+
+val v_a: T_A[T_A[Byte, Byte], Byte] = null
+val v_b: Int = v_a match{
+  case CC_A(_) => 0 
+  case CC_B(0, CC_A(_)) => 1 
+  case CC_B(_, _) => 2 
+}
+}
+// This is not matched: (CC_A (T_A Byte Byte) Byte Boolean Wildcard (T_A (T_A Byte Byte) Byte))
+// This is not matched: (CC_A (CC_A Char Boolean) (T_A (CC_A Char Boolean)))
