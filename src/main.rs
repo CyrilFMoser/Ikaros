@@ -199,7 +199,7 @@ fn main() {
     let mut construction_stats = Vec::new();
 
     //update_weeks(&oracle, &language);
-    while prog_count <= 1000 {
+    while true {
         //println!("ROUND {prog_count}");
         let cur_count = match language {
             Language::Haskell => {
@@ -309,32 +309,32 @@ fn main() {
                 (sat_count as f32) / (prog_count as f32)
             );
         }
-    }
-    let oracle_string = match oracle {
-        Oracle::Construction => "Construction",
-        Oracle::Z3 => "Z3",
-        Oracle::Mutation => "Mutation",
-    };
-    let compiler_string = match language {
-        Language::Haskell => "ghc",
-        Language::Java => "javac",
-        Language::Scala => "scalac",
-    };
-    let stats_file = format!("out/Programs/{oracle_string}/{compiler_string}/more_stats.csv");
-    if !Path::new(&stats_file).exists() {
-        File::create(&stats_file).unwrap();
-    }
-    let mut writer = csv::Writer::from_path(stats_file).unwrap();
-    if matches!(oracle, Oracle::Z3) {
-        for stat in z3_stats {
-            writer.serialize(stat).unwrap();
+        let oracle_string = match oracle {
+            Oracle::Construction => "Construction",
+            Oracle::Z3 => "Z3",
+            Oracle::Mutation => "Mutation",
+        };
+        let compiler_string = match language {
+            Language::Haskell => "ghc",
+            Language::Java => "javac",
+            Language::Scala => "scalac",
+        };
+        let stats_file = format!("out/Programs/{oracle_string}/{compiler_string}/more_stats.csv");
+        if !Path::new(&stats_file).exists() {
+            File::create(&stats_file).unwrap();
         }
-    } else {
-        for stat in construction_stats {
-            writer.serialize(stat).unwrap();
+        let mut writer = csv::Writer::from_path(stats_file).unwrap();
+        if matches!(oracle, Oracle::Z3) {
+            for stat in &z3_stats {
+                writer.serialize(stat).unwrap();
+            }
+        } else {
+            for stat in &construction_stats {
+                writer.serialize(stat).unwrap();
+            }
         }
+        writer.flush().unwrap();
     }
-    writer.flush().unwrap();
 }
 
 fn update_weeks(oracle: &Oracle, language: &Language) {
