@@ -272,6 +272,7 @@ impl<
             exhaustive,
             self.output_prog(),
             None,
+            true
         );
         let num_progs = read_dir(&cur_batch_folder).unwrap().count();
 
@@ -501,24 +502,26 @@ impl<
         };
         //println!("Checking {file_map_name}");
         let (type_gen, match_statements) = self.file_map.get(&file_map_name).unwrap();
-        let mut reducer = Reducer::new(
-            file.to_string(),
-            temp_folder.clone(),
-            exhaustive,
-            type_gen.clone(),
-            match_statements.clone(),
-        );
-        let program = if let Some(program) = reducer.reduce() {
-            program
-        } else {
-            old_prog
-        };
+        // let mut reducer = Reducer::new(
+        //     file.to_string(),
+        //     temp_folder.clone(),
+        //     exhaustive,
+        //     type_gen.clone(),
+        //     match_statements.clone(),
+        // );
+        // let program = if let Some(program) = reducer.reduce() {
+        //     program
+        // } else {
+        //     old_prog
+        // };
+        let program = old_prog;
         remove_dir_all(temp_folder).unwrap();
         self.save_for_batch(
             cur_batch_folder.to_string(),
             exhaustive,
             program,
             Some(file.to_string()),
+            false
         );
         if LangTyp::get_compiler_name() == "javac" {
             Self::remove_unreachable(cur_batch_folder);
@@ -531,6 +534,7 @@ impl<
         exhaustive: bool,
         program: String,
         file_name: Option<String>,
+        package: bool
     ) {
         let num_progs = read_dir(&cur_batch_folder).unwrap().count();
         //println!("{num_progs}");
@@ -541,10 +545,12 @@ impl<
         };
 
         let package_name = format!("Program_{num_progs}");
-        let package_string = if LangTyp::get_compiler_name() == "ghc" {
+        let package_string = if package && LangTyp::get_compiler_name() == "ghc" {
             format!("module {package_name} () where")
-        } else {
+        } else if package {
             format!("package {package_name}{semicolon}")
+        } else {
+            format!("")
         };
         let mut cur_program = format!("{package_string} \n\n{program}");
 

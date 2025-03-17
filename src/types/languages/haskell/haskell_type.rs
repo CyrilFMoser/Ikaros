@@ -357,6 +357,7 @@ impl Type for HaskellType {
         Some(Box::new([
             "-fwarn-incomplete-patterns".to_string(),
             "-Woverlapping-patterns".to_string(),
+            "-fmax-pmcheck-models=300".to_string(),
             "-XGADTs".to_string(),
             "-fdiagnostics-color=never".to_string(),
         ]))
