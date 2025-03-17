@@ -258,7 +258,8 @@ impl Type for HaskellType {
     }
 
     fn allows_base_instantiation(&self) -> bool {
-        false
+        matches!(self, HaskellType::Base(_))
+        //false
     }
 
     fn can_have_own_typargs(&self) -> bool {
@@ -320,36 +321,22 @@ impl Type for HaskellType {
     where
         Self: Sized,
     {
-        let mut case_map: HashMap<HaskellType, Vec<&Case>> = HashMap::new();
-        for typ in types.iter().filter_map(|t| {
-            if let HaskellType::Case(c) = t {
-                Some(c)
-            } else {
-                None
-            }
-        }) {
-            let base = typ.extends.first().unwrap();
-            if !case_map.contains_key(base) {
-                case_map.insert(base.clone(), Vec::new());
-            }
-            case_map.get_mut(base).unwrap().push(typ);
-        }
         let mut out = String::new();
-        out.push_str("main = print $ show v_b\n");
-        for (base, cases) in case_map {
+        let bases = types.iter().filter(|t| matches!(t, Self::Base(_)));
+        for base in bases {
             out.push_str(format!("data {}", base.get_name()).as_str());
             for typarg in base.get_typargs().unwrap_or(&Vec::new()) {
                 out.push_str(format!(" {}", typarg).as_str());
             }
-            out.push_str(" =");
-            for case in &cases {
-                out.push_str(format!(" {case} |").as_str());
+            out.push_str(" where\n");
+            let cases = types.iter().filter(|t| matches!(t, Self::Case(_)));
+            for case in cases {
+                if let Some(extends) = case.get_bases() {
+                    if !extends.is_empty() && extends.get(0).unwrap().get_name() == base.get_name() {
+                        out.push_str(format!(" {case}\n").as_str());
+                    }
+                }
             }
-            if !cases.is_empty() {
-                out.pop();
-                out.pop();
-            }
-            out.push('\n');
         }
         out
     }
@@ -370,7 +357,7 @@ impl Type for HaskellType {
         Some(Box::new([
             "-fwarn-incomplete-patterns".to_string(),
             "-Woverlapping-patterns".to_string(),
-            "-fmax-pmcheck-models=10000".to_string(),
+            "-XGADTs".to_string(),
             "-fdiagnostics-color=never".to_string(),
         ]))
     }

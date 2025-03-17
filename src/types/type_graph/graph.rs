@@ -371,7 +371,7 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Debug + Hash + Display> Graph<Lang
             cur_constraints.add_equality(&generic, t);
         }
         let mut visited = vec![cur_node.id];
-        while self.rng.gen_bool(p) {
+        while self.rng.gen_bool(p) || !cur_node.parents.is_empty() {
             let cur_parents: Vec<NodeId> = cur_node
                 .parents
                 .iter()
