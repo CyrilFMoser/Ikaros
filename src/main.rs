@@ -199,7 +199,7 @@ fn main() {
     let mut construction_stats = Vec::new();
 
     //update_weeks(&oracle, &language);
-    while true {
+    while prog_count < 10000 {
         //println!("ROUND {prog_count}");
         let cur_count = match language {
             Language::Haskell => {

@@ -61,6 +61,16 @@ impl<LangTyp: Type + Debug + Clone + PartialEq + Eq + Hash + Display> TypeGenera
             generic_count: 0,
         }
     }
+
+    pub fn get_declarations(self) -> Vec<LangTyp> {
+        let mut types = Vec::new();
+        for id in self.declarations.iter() {
+            let n = self.all_types.get(*id).unwrap();
+            types.push((*n).clone());
+        }
+        return types
+    }
+
     pub fn generate(&mut self) {
         self.generate_bases();
     }

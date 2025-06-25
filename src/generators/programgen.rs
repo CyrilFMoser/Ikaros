@@ -115,6 +115,48 @@ impl<
     where
         T: MatchStatistics,
     {
+        let nodes = self.typ_gen.clone().get_declarations();
+        stats.set_num_types(nodes.len() as u32);
+        let mut constructors: Vec<LangTyp> = Vec::new();
+        let mut generics: u32 = 0;
+        let mut constructor_params: Vec<u32> = Vec::new();
+        let mut bases: Vec<LangTyp> = Vec::new();
+        for ttype in nodes {
+            if !ttype.is_base() {
+                constructors.push(ttype.clone());
+                if let Some(params) = ttype.get_params() {
+                    constructor_params.push(params.len() as u32);
+                }
+            } else {
+                bases.push(ttype.clone());
+            }
+            if let Some(targs) = ttype.get_typargs() {
+                if !targs.is_empty() {
+                    generics += 1;
+                }
+            }
+
+        }
+        let con_num: u32 = constructors.len() as u32;
+        let mut gadts = 0;
+        for con in constructors {
+            if let Some(con_bases) = con.get_bases() {
+                if let Some(b) = con_bases.first() {
+                    if !bases.contains(b) {
+                        gadts += 1;
+                    }
+                }
+            }
+        }
+
+
+        let avg_params = constructor_params.iter().sum::<u32>() as f32 / con_num as f32;
+        stats.set_num_constructors(con_num);
+        stats.set_num_generics(generics);
+        stats.set_num_constructor_params(avg_params);
+        stats.set_num_gadts(gadts);
+        stats.set_num_bases(bases.len() as u32);
+
         let Statement::Decl(Declaration::Var(VarDecl {
             name: _,
             typ_annotation: _,

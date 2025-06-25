@@ -118,6 +118,10 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Debug + Hash + Display> Graph<Lang
         graph
     }
 
+    pub fn get_nodes(self) -> Vec<Node<LangTyp>> {
+        return self.nodes.values().cloned().collect()
+    }
+
     fn remove_edge(&mut self, edge_id: &EdgeId) {
         let edge = self.edges.get(edge_id).unwrap();
         if let Some(edge_list) = self.node_edges.get_mut(&edge.u) {
