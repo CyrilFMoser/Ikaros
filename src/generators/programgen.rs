@@ -36,6 +36,8 @@ use std::{
     time::Duration,
 };
 use z3::SatResult;
+use crate::paths::{PATH_PREFIX, EX_SUFFIX, RED_SUFFIX};
+
 
 pub struct ProgramGenerator<
     'a,
@@ -52,6 +54,7 @@ pub struct ProgramGenerator<
     pub mutate_info: Option<String>,
     random_match_gen: Option<RandomMatchGenerator<LangTyp>>,
     pub correct: bool, // If the generated program is correct
+    redundancy: bool,
 }
 
 impl<
@@ -66,6 +69,7 @@ impl<
         random_match_gen_args: Option<RandomMatchArgs>,
         correct: bool,
         file_map: &'a mut HashMap<String, (TypeGenerator<LangTyp>, Vec<Statement<LangTyp>>)>,
+        redundancy: bool,
     ) -> Self {
         ProgramGenerator {
             typ_gen: TypeGenerator::new(
@@ -82,6 +86,7 @@ impl<
             mutate_info: None,
             correct,
             file_map,
+            redundancy
         }
     }
 
@@ -300,7 +305,7 @@ impl<
         };
 
         let cur_folder = format!(
-            "out/Programs/{oracle_string}/{}",
+            "{PATH_PREFIX}/{oracle_string}/{}",
             LangTyp::get_compiler_name()
         );
         let cur_batch_folder = format!("{cur_folder}/batches/{cur_batch_name}");
@@ -382,7 +387,8 @@ impl<
 
             let compiler_not_exhaustive = error_message.contains(&LangTyp::get_not_exhaustive());
             let compiler_not_reachable = error_message.contains(&LangTyp::get_unreachable());
-            let look_for_unreachable = false;
+            let look_for_unreachable = matches!(oracle, Oracle::Construction)
+                && compiler_not_reachable && self.redundancy;
 
             if compiler_not_exhaustive || !exhaustive || look_for_unreachable {
                 self.process_batch_error(
@@ -432,7 +438,7 @@ impl<
                     continue;
                 }
                 let new_folder = format!(
-                    "out/Programs/Construction/{}/unreachable/unreduced",
+                    "{PATH_PREFIX}/Construction/{}/{RED_SUFFIX}",
                     LangTyp::get_compiler_name()
                 );
                 let num_progs = read_dir(&new_folder).unwrap().count();
@@ -449,7 +455,7 @@ impl<
             let problematic_programs: Vec<&str> = captures
                 .filter_map(|c| c.name("inexhaustive").map(|m| m.as_str()))
                 .collect();
-            let false_positives: Vec<String> = read_dir(cur_batch_folder)
+            let false_negatives: Vec<String> = read_dir(cur_batch_folder)
                 .unwrap()
                 .filter(|f| f.as_ref().unwrap().file_type().unwrap().is_file())
                 .filter(|f| {
@@ -463,9 +469,8 @@ impl<
                 .map(|f| f.unwrap().file_name().into_string().unwrap())
                 .filter(|name| !problematic_programs.contains(&name.as_str()))
                 .collect();
-            for file in false_positives {
+            for file in false_negatives {
                 let old_path = format!("{cur_batch_folder}/{file}");
-                //println!("Old path: {old_path}");
                 if !Path::new(&old_path).exists() {
                     continue;
                 }
@@ -477,7 +482,7 @@ impl<
                     Oracle::Mutation => "Mutation",
                 };
                 let new_folder = format!(
-                    "out/Programs/{oracle_string}/{}/inexhaustive/false_positive",
+                    "{PATH_PREFIX}/{oracle_string}/{}/{EX_SUFFIX}/false_negative",
                     LangTyp::get_compiler_name()
                 );
                 let num_progs = read_dir(&new_folder).unwrap().count();
@@ -491,11 +496,11 @@ impl<
         // compiler should not complain about any program
         let inexhaustive_regex = LangTyp::get_not_exhaustive_regex();
         let captures = inexhaustive_regex.captures_iter(error_message);
-        let false_negatives: Vec<&str> = captures
+        let false_positives: Vec<&str> = captures
             .filter_map(|c| c.name("inexhaustive").map(|m| m.as_str()))
             .collect();
 
-        for file in false_negatives {
+        for file in false_positives {
             let old_path = format!("{cur_batch_folder}/{file}");
             if !Path::new(&old_path).exists() {
                 continue;
@@ -507,7 +512,7 @@ impl<
                 Oracle::Mutation => "Mutation",
             };
             let new_folder = format!(
-                "out/Programs/{oracle_string}/{}/inexhaustive/false_negative",
+                "{PATH_PREFIX}/{oracle_string}/{}/{EX_SUFFIX}/false_positive",
                 LangTyp::get_compiler_name()
             );
             let num_progs = read_dir(&new_folder).unwrap().count();
@@ -713,26 +718,26 @@ impl<
             }
         }
 
-        let cur_folder = format!("out/Programs/{}", LangTyp::get_compiler_name());
-        let mut num_progs = read_dir(format!("{}/{}", cur_folder, "inexhaustive"))
+        let cur_folder = format!("{PATH_PREFIX}/{}", LangTyp::get_compiler_name());
+        let mut num_progs = read_dir(format!("{}/{}", cur_folder, "{EX_SUFFIX}"))
             .unwrap()
             .count();
-        num_progs += read_dir(format!("{}/{}", cur_folder, "unreachable"))
+        num_progs += read_dir(format!("{}/{}", cur_folder, "{RED_SUFFIX}"))
             .unwrap()
             .count();
         let name = format!("Program_{}", num_progs + 1);
-        if Path::new("out/Programs/temp").exists() {
-            remove_dir_all("out/Programs/temp").unwrap();
+        if Path::new("{PATH_PREFIX}/temp").exists() {
+            remove_dir_all("{PATH_PREFIX}/temp").unwrap();
         }
         create_dir("out/Programs/temp").unwrap();
         let file_name = format!("tempprog.{}", LangTyp::get_suffix());
         let mut source_file =
-            File::create(format!("out/Programs/temp/{}", file_name.clone())).unwrap();
+            File::create(format!("{PATH_PREFIX}/temp/{}", file_name.clone())).unwrap();
         source_file
             .write_all(self.output_prog().as_bytes())
             .unwrap();
         let mut cmd = Command::new(LangTyp::get_compiler_path());
-        cmd.arg(file_name).current_dir("out/Programs/temp");
+        cmd.arg(file_name).current_dir("{PATH_PREFIX}/temp");
         if let Some(args) = LangTyp::get_compiler_args() {
             cmd.args(args.iter());
         }
@@ -744,7 +749,7 @@ impl<
         } */
 
         if LangTyp::get_compiler_name() == "javac" && error_message.contains("code too large") {
-            remove_dir_all("out/Programs/temp").unwrap();
+            remove_dir_all("{PATH_PREFIX}/temp").unwrap();
             return;
         }
 
@@ -755,25 +760,25 @@ impl<
             self.handle_no_error(name);
             return;
         }
-        remove_dir_all("out/Programs/temp").unwrap();
+        remove_dir_all("{PATH_PREFIX}/temp").unwrap();
     }
     // Compiler gave an error eventhough it should not have
     fn handle_error(&mut self, name: String, error_message: &str) {
         let file_name = format!("tempprog.{}", LangTyp::get_suffix());
         let _ = copy(
-            format!("out/Programs/temp/{}", file_name),
-            format!("out/Programs/reduction/{}", file_name),
+            format!("{PATH_PREFIX}/temp/{}", file_name),
+            format!("{PATH_PREFIX}/reduction/{}", file_name),
         );
-        let mut error_file = File::create("out/Programs/reduction/temp.txt").unwrap();
+        let mut error_file = File::create("{PATH_PREFIX}/reduction/temp.txt").unwrap();
         error_file.write_all(error_message.as_bytes()).unwrap();
         self.reduce_prog(name.clone());
-        remove_file("out/Programs/reduction/temp.txt").unwrap();
-        remove_dir_all("out/Programs/temp").unwrap();
+        remove_file("{PATH_PREFIX}/reduction/temp.txt").unwrap();
+        remove_dir_all("{PATH_PREFIX}/temp").unwrap();
     }
 
     fn handle_no_error(&mut self, name: String) {
         let file_name = format!("tempprog.{}", LangTyp::get_suffix());
-        let old_path = format!("out/Programs/temp/{file_name}");
+        let old_path = format!("{PATH_PREFIX}/temp/{file_name}");
         let mut source_file = OpenOptions::new()
             .append(true)
             .open(old_path.clone())
@@ -786,11 +791,11 @@ impl<
         );
         writeln!(source_file, "{}", comment).unwrap();
         let new_path = format!(
-            "out/Programs/{}/inexhaustive/{name}",
+            "{PATH_PREFIX}/{}/{EX_SUFFIX}/{name}",
             LangTyp::get_compiler_name()
         );
         rename(old_path, new_path).unwrap();
-        remove_dir_all("out/Programs/temp").unwrap();
+        remove_dir_all("{PATH_PREFIX}/temp").unwrap();
     }
 
     fn reduce_prog(&mut self, name: String) {
@@ -802,23 +807,23 @@ impl<
             .arg(LangTyp::get_test_script())
             .arg("--input-file")
             .arg(temp_file_name.clone())
-            .current_dir("out/Programs/reduction")
+            .current_dir("{PATH_PREFIX}/reduction")
             .spawn()
             .unwrap();
         reducer.wait().unwrap();
-        let new_path = format!("out/Programs/{}/unreachable", LangTyp::get_compiler_name());
+        let new_path = format!("{PATH_PREFIX}/{}/{RED_SUFFIX}", LangTyp::get_compiler_name());
         rename(
-            format!("out/Programs/reduction/perses_result/{}", temp_file_name),
+            format!("{PATH_PREFIX}/reduction/perses_result/{}", temp_file_name),
             format!("{}/{}_reduced.{}", new_path, name, LangTyp::get_suffix()),
         )
         .unwrap();
-        let files = read_dir("out/Programs/reduction").unwrap();
+        let files = read_dir("{PATH_PREFIX}/reduction").unwrap();
         for file in files {
             let f = file.unwrap();
             if f.file_name().into_string().unwrap().starts_with("tempprog") {
                 remove_file(f.path()).unwrap();
             }
         }
-        remove_dir_all("out/Programs/reduction/perses_result").unwrap();
+        remove_dir_all("{PATH_PREFIX}/reduction/perses_result").unwrap();
     }
 }
