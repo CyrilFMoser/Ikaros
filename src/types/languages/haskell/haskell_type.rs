@@ -450,13 +450,13 @@ impl Type for HaskellType {
 
     fn get_not_exhaustive_regex() -> Regex {
         Regex::new(
-            r"(?<inexhaustive>[a-z | _ | \d*]*.hs)(:\d*:\d*: warning: \[-Wincomplete-patterns\])",
+            r"(?<inexhaustive>[a-z | _ | \d*]*.hs)(:\d*:\d*: warning:.* \[-Wincomplete-patterns\])",
         )
         .unwrap()
     }
     fn get_unreachable_regex() -> Regex {
         Regex::new(
-            r"(?<unreachable>[a-z | _ | \d*]*.hs)(:\d*:\d*: warning: \[-Woverlapping-patterns\])",
+            r"(?<unreachable>[a-z | _ | \d*]*.hs)(:\d*:\d*: warning:.* \[-Woverlapping-patterns\])",
         )
         .unwrap()
     }
