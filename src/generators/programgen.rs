@@ -307,7 +307,6 @@ impl<
         if !Path::new(&cur_batch_folder).exists() {
             create_dir(&cur_batch_folder).unwrap();
         }
-        //println!("{cur_batch_folder}");
 
         self.save_for_batch(
             cur_batch_folder.clone(),
@@ -383,8 +382,7 @@ impl<
 
             let compiler_not_exhaustive = error_message.contains(&LangTyp::get_not_exhaustive());
             let compiler_not_reachable = error_message.contains(&LangTyp::get_unreachable());
-            let look_for_unreachable =
-                matches!(oracle, Oracle::Construction) && compiler_not_reachable;
+            let look_for_unreachable = false;
 
             if compiler_not_exhaustive || !exhaustive || look_for_unreachable {
                 self.process_batch_error(

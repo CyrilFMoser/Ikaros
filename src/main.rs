@@ -16,13 +16,21 @@ use statistics::z3stats::Z3Statistics;
 use std::collections::HashMap;
 use std::env;
 use std::fmt::{Debug, Display};
-use std::fs::{create_dir, read_dir, remove_dir_all, remove_file, File, OpenOptions};
+use std::fs::{create_dir_all, read_dir, remove_dir_all, remove_file, File, OpenOptions};
 use std::hash::Hash;
 use std::io::{Read, Write};
 use std::path::Path;
 use std::time::Instant;
 use types::languages::java::java_type::JavaType;
 use types::languages::scala::scala_type::ScalaType;
+use paths::{
+    get_stats_file, get_more_stats_file,
+    get_exhaustive_batch, get_inexhaustive_batch,
+    get_exhaustiveness_fn_bugs,
+    get_exhaustiveness_fp_bugs
+};
+use itertools::Either;
+use clap::{Parser, ValueEnum};
 use z3::SatResult;
 mod generators;
 mod matches;
@@ -30,34 +38,52 @@ mod mutate;
 mod reduction;
 mod statistics;
 mod types;
+mod paths;
+
+
+#[derive(Parser, Debug)]
+#[command(author, version, about)]
+struct Args {
+    /// Name of the person to greet
+    #[arg(short, long)]
+    pattern_gen: Oracle,
+
+    /// Activate debug mode
+    #[arg(short, long)]
+    language: Language,
+
+    #[arg(short, long)]
+    iterations: Option<usize>,
+
+    #[arg(short, long, default_value_t = 16)]
+    batch_size: usize,
+
+    #[arg(short, long, default_value_t = false)]
+    redundancy: bool,
+
+    #[arg(short, long, default_value_t = false)]
+    reduce: bool,
+}
+
+#[derive(ValueEnum, Debug, Clone)]
+pub enum Language {
+    Haskell,
+    Scala,
+    Java,
+}
+
+#[derive(ValueEnum, Debug, Clone)]
+pub enum Oracle {
+    Z3,
+    Construction,
+    Mutation,
+}
+
 fn main() {
-    let args: Vec<String> = env::args().collect();
+    let args = Args::parse();
 
-    let mut language = Language::Scala;
-    let mut oracle = Oracle::Z3;
-
-    let mut args_iter = args.into_iter().skip(1);
-    while let Some(arg) = args_iter.next() {
-        if arg == "language" {
-            let next_arg = args_iter.next().unwrap();
-            language = match next_arg.as_str() {
-                "scala" => Language::Scala,
-                "haskell" => Language::Haskell,
-                "java" => Language::Java,
-                _ => panic!("Invalid language"),
-            }
-        } else if arg == "oracle" {
-            let next_arg = args_iter.next().unwrap();
-            oracle = match next_arg.as_str() {
-                "z3" => Oracle::Z3,
-                "construction" => Oracle::Construction,
-                "mutation" => Oracle::Mutation,
-                _ => panic!("Invalid oracle"),
-            }
-        } else {
-            panic!("{} is an invalid option", arg);
-        }
-    }
+    let mut oracle = args.pattern_gen;
+    let mut language = args.language;
 
     let scala_args = TypeContextArgs {
         max_num_bases: 2,
@@ -187,7 +213,6 @@ fn main() {
     let mut unknown_count = 0;
     let mut unsat_count = 0;
     let mut sat_count = 0;
-    let mut prog_count = 0;
 
     delete_batches(&language, &oracle);
 
@@ -198,9 +223,13 @@ fn main() {
     let mut z3_stats = Vec::new();
     let mut construction_stats = Vec::new();
 
-    //update_weeks(&oracle, &language);
-    while prog_count < 10000 {
-        //println!("ROUND {prog_count}");
+    let mut prog_count = 0;
+    let iter = match args.iterations {
+        Some(n) => Either::Left((0..n).map(|_| ())),
+        None => Either::Right(std::iter::repeat(())),
+    };
+
+    for _ in iter {
         let cur_count = match language {
             Language::Haskell => {
                 if matches!(oracle, Oracle::Construction) {
@@ -209,6 +238,7 @@ fn main() {
                         &haskell_match_args,
                         &mut construction_stats,
                         &mut file_map_haskell,
+                        args.batch_size,
                     );
                     prog_count += 1;
                     1
@@ -218,6 +248,7 @@ fn main() {
                         &random_match_args,
                         &mut prog_count,
                         &mut file_map_haskell,
+                        args.batch_size,
                     )
                 } else {
                     run_prog_z3::<HaskellType>(
@@ -229,6 +260,7 @@ fn main() {
                         &mut sat_count,
                         &mut z3_stats,
                         &mut file_map_haskell,
+                        args.batch_size,
                     )
                 }
             }
@@ -239,6 +271,7 @@ fn main() {
                         &scala_match_args,
                         &mut construction_stats,
                         &mut file_map_scala,
+                        args.batch_size,
                     );
                     prog_count += 1;
                     1
@@ -248,6 +281,7 @@ fn main() {
                         &random_match_args,
                         &mut prog_count,
                         &mut file_map_scala,
+                        args.batch_size,
                     )
                 } else {
                     run_prog_z3::<ScalaType>(
@@ -259,6 +293,7 @@ fn main() {
                         &mut sat_count,
                         &mut z3_stats,
                         &mut file_map_scala,
+                        args.batch_size,
                     )
                 }
             }
@@ -269,6 +304,7 @@ fn main() {
                         &java_match_args,
                         &mut construction_stats,
                         &mut file_map_java,
+                        args.batch_size,
                     );
                     prog_count += 1;
                     1
@@ -278,6 +314,7 @@ fn main() {
                         &random_match_args,
                         &mut prog_count,
                         &mut file_map_java,
+                        args.batch_size,
                     )
                 } else {
                     run_prog_z3::<JavaType>(
@@ -289,6 +326,7 @@ fn main() {
                         &mut sat_count,
                         &mut z3_stats,
                         &mut file_map_java,
+                        args.batch_size,
                     )
                 }
             }
@@ -309,17 +347,7 @@ fn main() {
                 (sat_count as f32) / (prog_count as f32)
             );
         }
-        let oracle_string = match oracle {
-            Oracle::Construction => "Construction",
-            Oracle::Z3 => "Z3",
-            Oracle::Mutation => "Mutation",
-        };
-        let compiler_string = match language {
-            Language::Haskell => "ghc",
-            Language::Java => "javac",
-            Language::Scala => "scalac",
-        };
-        let stats_file = format!("out/Programs/{oracle_string}/{compiler_string}/more_stats.csv");
+        let stats_file = get_more_stats_file(&language, &oracle);
         if !Path::new(&stats_file).exists() {
             File::create(&stats_file).unwrap();
         }
@@ -337,54 +365,8 @@ fn main() {
     }
 }
 
-fn update_weeks(oracle: &Oracle, language: &Language) {
-    let oracle_string = match oracle {
-        Oracle::Construction => "Construction",
-        Oracle::Z3 => "Z3",
-        Oracle::Mutation => "Mutation",
-    };
-    let compiler_string = match language {
-        Language::Haskell => "ghc",
-        Language::Java => "javac",
-        Language::Scala => "scalac",
-    };
-    let weeks_file = format!("out/Programs/{oracle_string}/{compiler_string}/weeks.txt");
-    if !Path::new(&weeks_file).exists() {
-        File::create(&weeks_file).unwrap();
-    }
-    let mut count = String::new();
-    OpenOptions::new()
-        .read(true)
-        .open(&weeks_file)
-        .unwrap()
-        .read_to_string(&mut count)
-        .unwrap();
-    let prev_value = if let Ok(num) = count.parse::<u32>() {
-        num
-    } else {
-        0
-    };
-    let mut f = OpenOptions::new()
-        .write(true)
-        .truncate(true)
-        .open(&weeks_file)
-        .unwrap();
-    let new_count = prev_value + 1;
-    f.write_all(new_count.to_string().as_bytes()).unwrap();
-}
-
 fn stats(oracle: &Oracle, language: &Language, prog_count: &u32) {
-    let oracle_string = match oracle {
-        Oracle::Construction => "Construction",
-        Oracle::Z3 => "Z3",
-        Oracle::Mutation => "Mutation",
-    };
-    let compiler_string = match language {
-        Language::Haskell => "ghc",
-        Language::Java => "javac",
-        Language::Scala => "scalac",
-    };
-    let stats_file = format!("out/Programs/{oracle_string}/{compiler_string}/stats.txt");
+    let stats_file = get_stats_file(&language, &oracle);
     if !Path::new(&stats_file).exists() {
         File::create(&stats_file).unwrap();
     }
@@ -407,26 +389,12 @@ fn stats(oracle: &Oracle, language: &Language, prog_count: &u32) {
         .unwrap();
     let new_count = prev_value + *prog_count;
     f.write_all(new_count.to_string().as_bytes()).unwrap();
-
-    /*remove_file(&stats_file).unwrap();
-    let mut new_f = File::create(&stats_file).unwrap();
-
-    new_f.write_all(new_count.to_string().as_bytes()).unwrap();*/
 }
 
-pub enum Language {
-    Haskell,
-    Scala,
-    Java,
-}
 
 type FileMap<LangTyp> = HashMap<String, (TypeGenerator<LangTyp>, Vec<Statement<LangTyp>>)>;
 
-pub enum Oracle {
-    Z3,
-    Construction,
-    Mutation,
-}
+
 impl Oracle {
     fn to_string(&self) -> String {
         match self {
@@ -457,16 +425,16 @@ fn delete_batches(language: &Language, oracle: &Oracle) {
         Language::Java => "javac",
         Language::Scala => "scalac",
     };
-    let path = format!(
-        "out/Programs/{}/{compiler_string}/batches",
-        oracle.to_string()
-    );
     for p in [
-        format!("{path}/exhaustive_batch"),
-        format!("{path}/inexhaustive_batch"),
+        get_exhaustive_batch(&language, &oracle),
+        get_inexhaustive_batch(&language, &oracle),
+        get_exhaustiveness_fn_bugs(&language, &oracle),
+        get_exhaustiveness_fp_bugs(&language, &oracle),
     ] {
-        remove_dir_all(&p).unwrap();
-        create_dir(p).unwrap();
+        let _ = match remove_dir_all(&p) {
+            _ => ()
+        };
+        create_dir_all(p).unwrap();
     }
 }
 
@@ -492,6 +460,7 @@ fn run_prog_z3<
     sat_count: &mut u32,
     z3stats: &mut Vec<Z3Statistics>,
     file_map: &mut FileMap<T>,
+    batch_size_option: usize
 ) -> u32 {
     let mut seed = thread_rng().gen();
     //seed = 6295501894041247234;
@@ -516,7 +485,7 @@ fn run_prog_z3<
     let batchsize = if T::get_compiler_name() == "javac" {
         1
     } else {
-        16
+        batch_size_option
     };
     let mut cur_count = 0;
     while let Some(gen_duration) = program_generator.generate_z3() {
@@ -576,6 +545,7 @@ fn run_prog<
     match_args: &MatchArgs,
     stats: &mut Vec<ConstructionStatistics>,
     file_map: &mut FileMap<T>,
+    batch_size_option: usize,
 ) {
     let total_time = Instant::now();
     let seed = thread_rng().gen();
@@ -588,7 +558,7 @@ fn run_prog<
     let batchsize = if T::get_compiler_name() == "javac" {
         1
     } else {
-        32
+        batch_size_option
     };
 
     let mut cur_stats = ConstructionStatistics::new();
@@ -641,6 +611,7 @@ fn run_prog_mutate<
     match_args: &RandomMatchArgs,
     prog_count: &mut u32,
     file_map: &mut FileMap<T>,
+    batch_size_option: usize,
 ) -> u32 {
     let mut seed = thread_rng().gen();
     //seed = 10394945786380950586;
@@ -656,7 +627,7 @@ fn run_prog_mutate<
     let batchsize = if T::get_compiler_name() == "javac" {
         1
     } else {
-        32
+        batch_size_option
     };
     let mut cur_count = 0;
     while program_generator.generate_z3().is_some() {
