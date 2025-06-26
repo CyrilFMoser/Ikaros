@@ -27,7 +27,6 @@ use paths::{
     get_stats_file, get_more_stats_file,
     prepare_paths,
 };
-use itertools::Either;
 use clap::{Parser, ValueEnum};
 use z3::SatResult;
 mod generators;
@@ -223,12 +222,8 @@ fn main() {
     let mut construction_stats = Vec::new();
 
     let mut prog_count = 0;
-    let iter = match args.iterations {
-        Some(n) => Either::Left((0..n).map(|_| ())),
-        None => Either::Right(std::iter::repeat(())),
-    };
 
-    for _ in iter {
+    loop {
         let cur_count = match language {
             Language::Haskell => {
                 if matches!(oracle, Oracle::Construction) {
@@ -359,6 +354,11 @@ fn main() {
             }
         }
         writer.flush().unwrap();
+        if let Some(n) = args.iterations {
+            if prog_count as usize >= n {
+                break;
+            }
+        }
     }
 }
 
