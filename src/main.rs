@@ -71,7 +71,7 @@ struct Args {
 
     /// If provided, Ikaros attempts to minimize bug-triggering programs via
     /// reduction.
-    #[arg(short, long, default_value_t = false)]
+    #[arg(long, default_value_t = false)]
     reduce: bool,
 }
 
