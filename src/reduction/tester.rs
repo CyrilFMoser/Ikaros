@@ -10,7 +10,6 @@ use crate::matches::expression::MatchExp;
 use crate::matches::statements::VarDecl;
 use crate::types::type_trait::Type;
 use std::collections::HashSet;
-use std::fmt::write;
 use std::fmt::Debug;
 use std::fmt::Display;
 use std::fs::create_dir;
@@ -118,40 +117,19 @@ impl<
             .filter_map(|(i, t)| if t.needs_declaration() { Some(i) } else { None })
             .collect();
 
-        let (result, s, _) = z3_checker.check(&declarations, &prog.types);
+        let (result, _, _) = z3_checker.check(&declarations, &prog.types);
         if matches!(result, SatResult::Unknown) {
-            //println!("Solver result was unknown");
             return TestResult::Unknown;
         }
 
         if self.exhaustive && matches!(result, SatResult::Sat) {
             // patternmatch is no longer exhaustive
-            //println!("No longer exhaustive");
             return TestResult::Unknown;
         }
 
         if !self.exhaustive && matches!(result, SatResult::Unsat) {
-            // patternmatch is no longer inexhaustive
-            //println!("No longer inexhaustive");
             return TestResult::Unknown;
         }
-
-        /*if let Some(x) = s {
-            println!("String from checker: {x}");
-        }
-
-        let result_string = match result {
-            SatResult::Sat => "Inexhaustive",
-            SatResult::Unsat => "Exhaustive",
-            SatResult::Unknown => "Unknown",
-        };
-
-        println!("Checker says this program is {result_string}");*/
-        /*
-        println!("Final set:");
-        self.print_changes(&final_set);
-        println!("Used set:");
-        self.print_changes(&used_changes);*/
 
         // do actual compiler testing
         let result = self.compiler_test(prog_string.clone());
@@ -161,6 +139,7 @@ impl<
         result
     }
 
+    #[allow(dead_code)]
     fn time_test(&self, prog: String) -> TestResult {
         let temp_folder = format!("{}/temp", self.folder_path);
 

@@ -1,6 +1,4 @@
-use std::time::Duration;
 
-use z3::SatResult;
 
 use super::matchstats::MatchStatistics;
 use serde::Serialize;
@@ -60,13 +58,6 @@ impl MatchStatistics for Z3Statistics {
         self.num_generics = Some(x);
     }
 
-    fn set_num_subpatterns(&mut self, x: u32) {
-        self.num_subpatterns = Some(x);
-    }
-
-    fn set_processing_time(&mut self, x: Duration) {
-        self.processing_time = Some(x.as_millis());
-    }
     fn set_num_patterns(&mut self, x: u32) {
         self.num_patterns = Some(x);
     }

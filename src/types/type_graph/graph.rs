@@ -7,7 +7,6 @@ use dot_generator::{graph, id};
 use graphviz_rust::printer::{DotPrinter, PrinterContext};
 use rand::Rng;
 use rand_chacha::ChaCha8Rng;
-use std::cell::RefCell;
 use std::collections::HashSet;
 use std::fs::{remove_file, File};
 use std::hash::Hash;
@@ -38,7 +37,7 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Debug + Hash + Display> Graph<Lang
         all_types: &[LangTyp],
         declarations: &[usize],
         rng: ChaCha8Rng,
-        typgen: TypeGenerator<LangTyp>,
+        _typgen: TypeGenerator<LangTyp>,
     ) -> Self {
         let mut graph = Graph {
             nodes: HashMap::new(),
@@ -103,8 +102,8 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Debug + Hash + Display> Graph<Lang
             graph.edges = new_edges;
             for edge in &to_remove {
                 let cur_edge = graph.edges.get(edge).unwrap();
-                let u = graph.nodes.get(&cur_edge.u).unwrap().typ.clone();
-                let v = graph.nodes.get(&cur_edge.v).unwrap().typ.clone();
+                let _u = graph.nodes.get(&cur_edge.u).unwrap().typ.clone();
+                let _v = graph.nodes.get(&cur_edge.v).unwrap().typ.clone();
                 graph.remove_edge(edge);
                 //println!("REMOVING EDGE FROM {} to {}", u, v);
             }
@@ -116,10 +115,6 @@ impl<LangTyp: Type + Clone + PartialEq + Eq + Debug + Hash + Display> Graph<Lang
                 .collect(),
         );
         graph
-    }
-
-    pub fn get_nodes(self) -> Vec<Node<LangTyp>> {
-        return self.nodes.values().cloned().collect()
     }
 
     fn remove_edge(&mut self, edge_id: &EdgeId) {

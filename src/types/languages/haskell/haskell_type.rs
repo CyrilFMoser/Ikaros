@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fmt::Display, hash::Hash};
+use std::{fmt::Display, hash::Hash};
 
 use regex::Regex;
 
@@ -332,7 +332,7 @@ impl Type for HaskellType {
             let cases = types.iter().filter(|t| matches!(t, Self::Case(_)));
             for case in cases {
                 if let Some(extends) = case.get_bases() {
-                    if !extends.is_empty() && extends.get(0).unwrap().get_name() == base.get_name() {
+                    if !extends.is_empty() && extends.first().unwrap().get_name() == base.get_name() {
                         out.push_str(format!(" {case}\n").as_str());
                     }
                 }
@@ -378,7 +378,7 @@ impl Type for HaskellType {
                 HaskellType::pattern_to_string(p1),
                 HaskellType::pattern_to_string(p2)
             ),
-            Pattern::Constant(c) => exp_to_string(&*c.exp),
+            Pattern::Constant(c) => exp_to_string(&c.exp),
             Pattern::WildCard(_) => "_".to_string(),
             Pattern::Variant(Variant { typ, parameters }) => {
                 let mut out = typ.get_name().to_string();

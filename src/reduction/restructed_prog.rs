@@ -1,17 +1,10 @@
-use super::hierarchy::Hierarchy;
-use crate::generators::typegen::TypeGenerator;
 use crate::matches::expression::Expression;
 use crate::matches::expression::MatchExp;
 use crate::matches::pattern::Pattern;
-use crate::matches::pattern::WildCard;
 use crate::matches::statements::Declaration;
 use crate::matches::statements::Statement;
 use crate::matches::statements::VarDecl;
-use crate::reduction::change::Change;
-use crate::types::template::Template;
 use crate::types::type_trait::Type;
-use std::collections::HashMap;
-use std::collections::HashSet;
 use std::fmt::Debug;
 use std::fmt::Display;
 use std::hash::Hash;

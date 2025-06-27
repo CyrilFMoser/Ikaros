@@ -304,7 +304,7 @@ impl Type for ScalaType {
             out.push_str("sealed trait ");
             out.push_str(tr.get_name());
             if let Some(typargs) = tr.get_typargs() {
-                if let Some(variances) = tr.get_variances() {
+                if tr.get_variances().is_some() {
                     let n = typargs.len();
                     if n > 0 {
                         out.push('[');

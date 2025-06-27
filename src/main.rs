@@ -6,25 +6,22 @@ use crate::{
 use generators::random_matchgen_args::RandomMatchArgs;
 use generators::typegen::TypeGenerator;
 use generators::typegen_args::TypeContextArgs;
-use matches::expression::{Expression, MatchExp};
+use matches::expression::Expression;
 use matches::statements::{Declaration, Statement, VarDecl};
 use rand::{thread_rng, Rng, SeedableRng};
 use rand_chacha::ChaCha8Rng;
-use serde::Serialize;
 use statistics::constructionstats::ConstructionStatistics;
 use statistics::z3stats::Z3Statistics;
 use std::collections::HashMap;
-use std::env;
 use std::fmt::{Debug, Display};
-use std::fs::{read_dir, remove_file, File, OpenOptions};
+use std::fs::File;
 use std::hash::Hash;
-use std::io::{Read, Write};
 use std::path::Path;
 use std::time::Instant;
 use types::languages::java::java_type::JavaType;
 use types::languages::scala::scala_type::ScalaType;
 use paths::{
-    get_stats_file, get_more_stats_file,
+    get_more_stats_file,
     prepare_paths,
 };
 use clap::{Parser, ValueEnum};
@@ -96,8 +93,8 @@ fn main() {
     let args = Args::parse();
 
     let cli_args = args.clone();
-    let mut oracle = args.pattern_gen;
-    let mut language = args.language;
+    let oracle = args.pattern_gen;
+    let language = args.language;
 
     let scala_args = TypeContextArgs {
         max_num_bases: 2,
@@ -240,7 +237,7 @@ fn main() {
     let mut prog_count = 0;
 
     loop {
-        let cur_count = match language {
+        let _ = match language {
             Language::Haskell => {
                 if matches!(oracle, Oracle::Construction) {
                     run_prog::<HaskellType>(
@@ -378,32 +375,6 @@ fn main() {
     }
 }
 
-fn stats(oracle: &Oracle, language: &Language, prog_count: &u32) {
-    let stats_file = get_stats_file(&language, &oracle);
-    if !Path::new(&stats_file).exists() {
-        File::create(&stats_file).unwrap();
-    }
-    let mut count = String::new();
-    OpenOptions::new()
-        .read(true)
-        .open(&stats_file)
-        .unwrap()
-        .read_to_string(&mut count)
-        .unwrap();
-    let prev_value = if let Ok(num) = count.parse::<u32>() {
-        num
-    } else {
-        0
-    };
-    let mut f = OpenOptions::new()
-        .write(true)
-        .truncate(true)
-        .open(&stats_file)
-        .unwrap();
-    let new_count = prev_value + *prog_count;
-    f.write_all(new_count.to_string().as_bytes()).unwrap();
-}
-
 
 type FileMap<LangTyp> = HashMap<String, (TypeGenerator<LangTyp>, Vec<Statement<LangTyp>>)>;
 
@@ -416,20 +387,6 @@ impl Oracle {
             Oracle::Z3 => "Z3".to_string(),
         }
     }
-}
-
-// used for coverage
-fn save_file(prog: String, oracle: Oracle) {
-    let oracle_string = match oracle {
-        Oracle::Z3 => "z3",
-        Oracle::Construction => "construction",
-        Oracle::Mutation => "mutation",
-    };
-    let folder = format!("programs/{oracle_string}");
-    let num_files = read_dir(&folder).unwrap().count();
-    let cur_file_path = format!("{folder}/prog_{num_files}.hs");
-    let mut source_file = File::create(cur_file_path).unwrap();
-    source_file.write_all(prog.as_bytes()).unwrap();
 }
 
 
@@ -457,7 +414,7 @@ fn run_prog_z3<
     file_map: &mut FileMap<T>,
     cli_args: &Args,
 ) -> u32 {
-    let mut seed = thread_rng().gen();
+    let seed = thread_rng().gen();
     //seed = 6295501894041247234;
     //seed = 7409235621545235445; scala performance bug
     //seed = 1436571824521298399; // java seed 2
@@ -484,7 +441,6 @@ fn run_prog_z3<
     };
     let mut cur_count = 0;
     while let Some(gen_duration) = program_generator.generate_z3() {
-        //save_file(program_generator.output_prog(), Oracle::Z3);
         *prog_count += 1;
         cur_count += 1;
         let total = Instant::now();
@@ -565,8 +521,6 @@ fn run_prog<
     let match_start = Instant::now();
     program_generator.generate_match();
     let match_time = match_start.elapsed();
-    //save_file(program_generator.output_prog(), Oracle::Construction);
-    //return;
     cur_stats.typegen_time = Some(type_gen_time.as_micros());
     cur_stats.match_gen_time = Some(match_time.as_micros());
     cur_stats.correct = Some(correct);
@@ -608,7 +562,7 @@ fn run_prog_mutate<
     file_map: &mut FileMap<T>,
     cli_args: &Args,
 ) -> u32 {
-    let mut seed = thread_rng().gen();
+    let seed = thread_rng().gen();
     //seed = 10394945786380950586;
     println!("using seed: {}", seed);
     let rng = ChaCha8Rng::seed_from_u64(seed);

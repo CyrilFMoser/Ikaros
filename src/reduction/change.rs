@@ -1,6 +1,5 @@
 use crate::{
-    generators::typegen::TypeGenerator,
-    matches::{pattern::Pattern, statements::Statement},
+    matches::pattern::Pattern,
     types::type_trait::Type,
 };
 use core::fmt::Debug;
@@ -19,6 +18,7 @@ use std::{fmt::Display, hash::Hash};
 ///
 /// `ExpandParam` Expands the parameter at the specified position with the given pattern
 #[derive(Clone)]
+#[allow(dead_code)]
 pub enum Change<
     LangTyp: Type + Clone + PartialEq + Debug + Ord + PartialOrd + Eq + Hash + Display + Sync + Send,
 > {

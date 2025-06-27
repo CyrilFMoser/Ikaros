@@ -1,4 +1,4 @@
-use std::{collections::HashSet, fmt::Display};
+use std::fmt::Display;
 
 use crate::types::{type_trait::Type, variance::Variance};
 use core::fmt::Debug;

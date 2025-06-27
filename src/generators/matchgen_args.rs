@@ -6,6 +6,7 @@
 /// * `const_refine_prob` - Probability to refine a pattern to a constant like Int => 1 and _
 /// * `max_refine_depth` - Maximal depth of refinement
 /// * `max_to_match_depth` - Maximal depth of type to be matched against
+#[allow(dead_code)]
 pub struct MatchArgs {
     pub level_prob: f64,
     pub refine_prob: f64,

@@ -88,6 +88,7 @@ impl<
         self.add_edge(prev_id, cur_id);
     }
 
+    #[allow(dead_code)]
     fn process_extends(&mut self, typ: &LangTyp, prev_id: usize) {
         if let Some(bases) = typ.get_bases() {
             for base in bases {

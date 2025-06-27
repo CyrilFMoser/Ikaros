@@ -68,7 +68,7 @@ impl<LangTyp: Type + Debug + Clone + PartialEq + Eq + Hash + Display> TypeGenera
             let n = self.all_types.get(*id).unwrap();
             types.push((*n).clone());
         }
-        return types
+        types
     }
 
     pub fn generate(&mut self) {
@@ -194,11 +194,7 @@ impl<LangTyp: Type + Debug + Clone + PartialEq + Eq + Hash + Display> TypeGenera
                 }
                 // this case has parameters that we should instantiate
                 if template.0.get_params().is_some() {
-                    let min_params = if let Some(minimum) = template.0.get_min_params() {
-                        minimum
-                    } else {
-                        0
-                    };
+                    let min_params = template.0.get_min_params().unwrap_or_default();
                     let max_params = if let Some(maximum) = template.0.get_max_params() {
                         maximum
                     } else {

@@ -500,9 +500,8 @@ impl<LangTyp: Type + Clone + PartialEq + Debug + Eq + Hash + Display + Ord + Par
                 for (i, cur_param) in cur_typ.get_params().unwrap().iter().enumerate() {
                     if !cur_param.is_base()
                         && !cur_param.is_generic()
-                        && !cur_param
-                            .get_params()
-                            .is_some_and(|params| !params.is_empty())
+                        && cur_param
+                            .get_params().is_none_or(|params| params.is_empty())
                     {
                         continue;
                     }

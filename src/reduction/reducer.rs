@@ -51,7 +51,9 @@ pub struct Reducer<
     pub file_name: String,
     pub folder_path: String,
     pub exhaustive: bool,
+    #[allow(dead_code)]
     pub type_gen: TypeGenerator<LangTyp>,
+    #[allow(dead_code)]
     pub match_statements: Vec<Statement<LangTyp>>,
     pub hierarchy: Hierarchy<LangTyp>,
 }
@@ -369,6 +371,7 @@ impl<
         used_changes // done
     }
 
+    #[allow(dead_code)]
     pub fn print_changes(&self, cur_changes: &HashSet<usize>) {
         let mut s = String::from("[");
         let mut count = 0;

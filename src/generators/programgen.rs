@@ -5,8 +5,7 @@ use super::{
 };
 use crate::{
     matches::{
-        expression::{Expression, Var},
-        pattern::Pattern,
+        expression::Expression,
         statements::{Declaration, Statement, VarDecl},
     },
     mutate::mutator,
@@ -25,14 +24,12 @@ use std::{
     time::Instant,
 };
 use std::{
-    error,
-    fmt::{format, Display},
+    fmt::Display,
     fs::{copy, create_dir, read_dir, remove_dir_all, remove_file, rename, File, OpenOptions},
     hash::Hash,
     io::{BufRead, BufReader, BufWriter, Write},
     path::Path,
     process::Command,
-    thread::sleep,
     time::Duration,
 };
 use z3::SatResult;
@@ -301,11 +298,7 @@ impl<
             "inexhaustive_batch"
         };
 
-        let oracle_string = match oracle {
-            Oracle::Z3 => "Z3",
-            Oracle::Construction => "Construction",
-            Oracle::Mutation => "Mutation",
-        };
+        let oracle_string = oracle.to_string();
 
         let cur_folder = format!(
             "{PATH_PREFIX}/{oracle_string}/{}",
@@ -479,11 +472,7 @@ impl<
                 }
                 self.reduce(cur_batch_folder, &file, exhaustive);
 
-                let oracle_string = match oracle {
-                    Oracle::Construction => "Construction",
-                    Oracle::Z3 => "Z3",
-                    Oracle::Mutation => "Mutation",
-                };
+                let oracle_string = oracle.to_string();
                 let new_folder = format!(
                     "{PATH_PREFIX}/{oracle_string}/{}/{EX_SUFFIX}/false_negative",
                     LangTyp::get_compiler_name()
@@ -509,11 +498,7 @@ impl<
                 continue;
             }
             self.reduce(cur_batch_folder, file, exhaustive);
-            let oracle_string = match oracle {
-                Oracle::Construction => "Construction",
-                Oracle::Z3 => "Z3",
-                Oracle::Mutation => "Mutation",
-            };
+            let oracle_string = oracle.to_string();
             let new_folder = format!(
                 "{PATH_PREFIX}/{oracle_string}/{}/{EX_SUFFIX}/false_positive",
                 LangTyp::get_compiler_name()
@@ -597,7 +582,7 @@ impl<
         } else if package {
             format!("package {package_name}{semicolon}")
         } else {
-            format!("")
+            String::new()
         };
         let mut cur_program = format!("{package_string} \n\n{program}");
 
@@ -705,6 +690,7 @@ impl<
         }
     }
 
+    #[allow(dead_code)]
     pub fn process(&mut self) {
         if LangTyp::get_compiler_name() == "javac" {
             if let Some(Statement::Decl(Declaration::Var(VarDecl {
@@ -765,6 +751,7 @@ impl<
         remove_dir_all("{PATH_PREFIX}/temp").unwrap();
     }
     // Compiler gave an error eventhough it should not have
+    #[allow(dead_code)]
     fn handle_error(&mut self, name: String, error_message: &str) {
         let file_name = format!("tempprog.{}", LangTyp::get_suffix());
         let _ = copy(
@@ -778,6 +765,7 @@ impl<
         remove_dir_all("{PATH_PREFIX}/temp").unwrap();
     }
 
+    #[allow(dead_code)]
     fn handle_no_error(&mut self, name: String) {
         let file_name = format!("tempprog.{}", LangTyp::get_suffix());
         let old_path = format!("{PATH_PREFIX}/temp/{file_name}");
@@ -800,6 +788,7 @@ impl<
         remove_dir_all("{PATH_PREFIX}/temp").unwrap();
     }
 
+    #[allow(dead_code)]
     fn reduce_prog(&mut self, name: String) {
         let temp_file_name = format!("tempprog.{}", LangTyp::get_suffix());
         let mut reducer = Command::new("java")

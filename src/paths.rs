@@ -19,12 +19,7 @@ fn language2str(language: &Language) -> String {
 }
 
 fn oracle2str(oracle: &Oracle) -> String {
-    let oracle_string = match oracle {
-        Oracle::Construction => "Construction",
-        Oracle::Z3 => "Z3",
-        Oracle::Mutation => "Mutation",
-    };
-    oracle_string.to_string()
+    oracle.to_string()
 }
 
 pub fn get_more_stats_file(language: &Language, oracle: &Oracle) -> String {
@@ -32,13 +27,6 @@ pub fn get_more_stats_file(language: &Language, oracle: &Oracle) -> String {
     let oracle_string = oracle2str(oracle);
     format!("{PATH_PREFIX}/{oracle_string}/{compiler_string}/more_stats.csv")
 }
-
-pub fn get_stats_file(language: &Language, oracle: &Oracle) -> String {
-    let compiler_string = language2str(language);
-    let oracle_string = oracle2str(oracle);
-    format!("{PATH_PREFIX}/{oracle_string}/{compiler_string}/stats.txt")
-}
-
 
 pub fn get_exhaustive_batch(language: &Language, oracle: &Oracle) -> String {
     let compiler_string = language2str(language);
@@ -74,13 +62,13 @@ pub fn get_redundancy_fp_bugs(language: &Language, oracle: &Oracle) -> String {
 
 pub fn prepare_paths(language: &Language, oracle: &Oracle) {
     for p in [
-        get_exhaustive_batch(&language, &oracle),
-        get_inexhaustive_batch(&language, &oracle),
-        get_exhaustiveness_fn_bugs(&language, &oracle),
-        get_exhaustiveness_fp_bugs(&language, &oracle),
-        get_redundancy_fp_bugs(&language, &oracle),
+        get_exhaustive_batch(language, oracle),
+        get_inexhaustive_batch(language, oracle),
+        get_exhaustiveness_fn_bugs(language, oracle),
+        get_exhaustiveness_fp_bugs(language, oracle),
+        get_redundancy_fp_bugs(language, oracle),
     ] {
-        let _ = match remove_dir_all(&p) {
+        match remove_dir_all(&p) {
             _ => ()
         };
         create_dir_all(p).unwrap();

@@ -11,12 +11,9 @@ use crate::{
     types::{type_graph::graph::Graph, type_trait::Type},
 };
 use std::{
-    borrow::Borrow,
-    cell::RefCell,
     collections::HashSet,
     fmt::Debug,
-    rc::Rc,
-    sync::{Arc, Mutex, RwLock},
+    sync::{Arc, RwLock},
     thread,
 };
 use std::{fmt::Display, hash::Hash};
