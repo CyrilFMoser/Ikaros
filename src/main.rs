@@ -468,7 +468,7 @@ fn run_prog_z3<
     println!("using seed: {}", seed);
     let rng = ChaCha8Rng::seed_from_u64(seed);
     let mut program_generator: ProgramGenerator<T> =
-        ProgramGenerator::new(args, rng, None, Some(match_args.clone()), false, file_map, cli_args.redundancy);
+        ProgramGenerator::new(args, rng, None, Some(match_args.clone()), false, file_map, cli_args.redundancy, cli_args.reduce);
 
     let type_gen_start = Instant::now();
     program_generator.generate_types();
@@ -549,7 +549,7 @@ fn run_prog<
     let mut correct_rng = ChaCha8Rng::seed_from_u64(seed);
     let correct = correct_rng.gen_bool(0.5);
     let mut program_generator: ProgramGenerator<T> =
-        ProgramGenerator::new(args, rng, Some(match_args.clone()), None, correct, file_map, cli_args.redundancy);
+        ProgramGenerator::new(args, rng, Some(match_args.clone()), None, correct, file_map, cli_args.redundancy, cli_args.reduce);
     let batchsize = if T::get_compiler_name() == "javac" {
         1
     } else {
@@ -613,7 +613,7 @@ fn run_prog_mutate<
     println!("using seed: {}", seed);
     let rng = ChaCha8Rng::seed_from_u64(seed);
     let mut program_generator: ProgramGenerator<T> =
-        ProgramGenerator::new(args, rng, None, Some(match_args.clone()), false, file_map, cli_args.redundancy);
+        ProgramGenerator::new(args, rng, None, Some(match_args.clone()), false, file_map, cli_args.redundancy, cli_args.reduce);
 
     program_generator.generate_types();
 

@@ -164,7 +164,11 @@ impl<
             }
         }
         path = format!("{path}/reduction_stats.csv");
-        let mut file = OpenOptions::new().append(true).open(path).unwrap();
+        let mut file = OpenOptions::new()
+            .append(true)
+            .create(true)
+            .open(path)
+            .unwrap();
 
         let needs_headers = file.seek(std::io::SeekFrom::End(0)).unwrap() == 0;
 
@@ -177,11 +181,8 @@ impl<
     }
 
     pub fn reduce(&mut self) -> Option<String> {
-        //self.hierarchy.output_graph_viz();
-
         let prev_stats = self.get_stats(&(0..self.hierarchy.changes.len()).collect());
         let reduce_start = Instant::now();
-        //println!("Reducing");
         let used_changes: HashSet<usize> = self.hdd();
         let reduction_time = reduce_start.elapsed();
         let new_stats = self.get_stats(&used_changes);
@@ -322,15 +323,6 @@ impl<
 
             return used_changes;
         }
-        /*println!("<><><><><><><><><><><><><>\n");
-        println!("Trying: ");
-        self.print_changes(&used_changes);
-        println!("<><><><><><><><><><><><><>");
-        let test_result = self.test(&used_changes, final_set);
-        if !matches!(test_result, TestResult::Bug) {
-            println!("Was {test_result}");
-        }*/
-
         let delta_i_size = used_changes.len() / n;
 
         let mut deltas = Vec::new();

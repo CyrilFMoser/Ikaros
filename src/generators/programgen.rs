@@ -55,6 +55,7 @@ pub struct ProgramGenerator<
     random_match_gen: Option<RandomMatchGenerator<LangTyp>>,
     pub correct: bool, // If the generated program is correct
     redundancy: bool,
+    reduce_enabled: bool,
 }
 
 impl<
@@ -70,6 +71,7 @@ impl<
         correct: bool,
         file_map: &'a mut HashMap<String, (TypeGenerator<LangTyp>, Vec<Statement<LangTyp>>)>,
         redundancy: bool,
+        reduce_enabled: bool,
     ) -> Self {
         ProgramGenerator {
             typ_gen: TypeGenerator::new(
@@ -86,7 +88,8 @@ impl<
             mutate_info: None,
             correct,
             file_map,
-            redundancy
+            redundancy,
+            reduce_enabled,
         }
     }
 
@@ -547,19 +550,18 @@ impl<
         };
         //println!("Checking {file_map_name}");
         let (type_gen, match_statements) = self.file_map.get(&file_map_name).unwrap();
-        // let mut reducer = Reducer::new(
-        //     file.to_string(),
-        //     temp_folder.clone(),
-        //     exhaustive,
-        //     type_gen.clone(),
-        //     match_statements.clone(),
-        // );
-        // let program = if let Some(program) = reducer.reduce() {
-        //     program
-        // } else {
-        //     old_prog
-        // };
-        let program = old_prog;
+        let mut reducer = Reducer::new(
+            file.to_string(),
+            temp_folder.clone(),
+            exhaustive,
+            type_gen.clone(),
+            match_statements.clone(),
+        );
+        let program = if self.reduce_enabled {
+            reducer.reduce().unwrap_or(old_prog)
+        } else {
+            old_prog
+        }; 
         remove_dir_all(temp_folder).unwrap();
         self.save_for_batch(
             cur_batch_folder.to_string(),
