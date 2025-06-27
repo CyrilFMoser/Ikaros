@@ -41,23 +41,39 @@ mod paths;
 #[derive(Parser, Debug, Clone)]
 #[command(author, version, about)]
 struct Args {
-    /// Name of the person to greet
+    /// trategy used to generate pattern-matching expressions and
+    /// establish the test oracle.
+    ///
+    /// * construction: Refers to refinement-based pattern generation.
+    ///
+    /// * z3: Refers to random pattern generation using Z3 as the test oracle.
+    ///
+    /// * mutation: Uses semantic mutations to derive new programs from
+    /// existing ones.
     #[arg(short, long)]
     pattern_gen: Oracle,
 
-    /// Activate debug mode
+    /// Target programming language for the generated programs.
     #[arg(short, long)]
     language: Language,
 
+    /// Total number of programs to generate.
+    ///
+    /// If not specified, Ikaros will continue generating programs indefinitely.
     #[arg(short, long)]
     iterations: Option<usize>,
 
-    #[arg(short, long, default_value_t = 16)]
+    /// Number of programs per batch sent to the compiler under test.
+    #[arg(short, long, default_value_t = 10)]
     batch_size: usize,
 
+    /// If provided, Ikaros also checks for false positives in redundancy
+    /// diagnostics.
     #[arg(short, long, default_value_t = false)]
     redundancy: bool,
 
+    /// If provided, Ikaros attempts to minimize bug-triggering programs via
+    /// reduction.
     #[arg(short, long, default_value_t = false)]
     reduce: bool,
 }
