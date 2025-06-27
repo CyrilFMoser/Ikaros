@@ -9,7 +9,10 @@ cargo build --release
 
 ## Usage
 
-The `ikaros` executable provides a rich CLI with many available options.
+The `ikaros` executable
+(which can be found under `target/release` after
+successful building)
+provides a rich CLI with many available options.
 
 ```
 ./target/release/ikaros --help
